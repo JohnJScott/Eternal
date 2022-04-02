@@ -1,0 +1,206 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{49A128D3-C3F2-46B1-8F7A-EECD209EA860}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Zip_Reduced</RootNamespace>
+    <AssemblyName>Ionic.Zip.Reduced</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <StartupObject>
+    </StartupObject>
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccAuxPath>
+    </SccAuxPath>
+    <SccProvider>
+    </SccProvider>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\Ionic.snk</AssemblyOriginatorKeyFile>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <UpgradeBackupLocation />
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;AESCRYPTO;BZIP</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\Ionic.Zip.Reduced.XML</DocumentationFile>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE;AESCRYPTO;BZIP</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>..\..\..\..\EternalBasic.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+  </PropertyGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <ItemGroup>
+    <Compile Include="..\Zip\EncryptionAlgorithm.cs">
+      <Link>Zip\EncryptionAlgorithm</Link>
+    </Compile>
+    <Compile Include="..\Zip\Events.cs">
+      <Link>Zip\Events</Link>
+    </Compile>
+    <Compile Include="..\Zip\Exceptions.cs">
+      <Link>Zip\Exceptions</Link>
+    </Compile>
+    <Compile Include="..\Zip\ExtractExistingFileAction.cs">
+      <Link>Zip\ExtractExistingFileAction</Link>
+    </Compile>
+    <Compile Include="..\Zip\FileSelector.cs">
+      <Link>Zip\FileSelector</Link>
+    </Compile>
+    <Compile Include="..\Zip\OffsetStream.cs">
+      <Link>Zip\OffsetStream</Link>
+    </Compile>
+    <Compile Include="..\Zip\Shared.cs">
+      <Link>Zip\Shared</Link>
+    </Compile>
+    <Compile Include="..\Zip\WinZipAes.cs">
+      <Link>Zip\WinZipAes</Link>
+    </Compile>
+    <Compile Include="..\Zip\ZipConstants.cs">
+      <Link>Zip\ZipConstants</Link>
+    </Compile>
+    <Compile Include="..\Zip\ZipCrypto.cs">
+      <Link>Zip\ZipCrypto</Link>
+    </Compile>
+    <Compile Include="..\Zip\ZipDirEntry.cs">
+      <Link>Zip\ZipDirEntry</Link>
+    </Compile>
+    <Compile Include="..\Zip\ZipEntry.cs">
+      <Link>Zip\ZipEntry</Link>
+    </Compile>
+    <Compile Include="..\Zip\ZipEntry.Extract.cs">
+      <Link>Zip\ZipEntry.Extract</Link>
+    </Compile>
+    <Compile Include="..\Zip\ZipEntry.Read.cs">
+      <Link>Zip\ZipEntry.Read</Link>
+    </Compile>
+    <Compile Include="..\Zip\ZipEntry.Write.cs">
+      <Link>Zip\ZipEntry.Write</Link>
+    </Compile>
+    <Compile Include="..\Zip\ZipEntrySource.cs">
+      <Link>Zip\ZipEntrySource</Link>
+    </Compile>
+    <Compile Include="..\Zip\ZipErrorAction.cs">
+      <Link>Zip\ZipErrorAction</Link>
+    </Compile>
+    <Compile Include="..\Zip\ZipFile.AddUpdate.cs">
+      <Link>Zip\ZipFile.AddUpdate</Link>
+    </Compile>
+    <Compile Include="..\Zip\ZipFile.Check.cs">
+      <Link>Zip\ZipFile.Check</Link>
+    </Compile>
+    <Compile Include="..\Zip\ZipFile.cs">
+      <Link>Zip\ZipFile</Link>
+    </Compile>
+    <Compile Include="..\Zip\ZipFile.Events.cs">
+      <Link>Zip\ZipFile.Events</Link>
+    </Compile>
+    <Compile Include="..\Zip\ZipFile.Extract.cs">
+      <Link>Zip\ZipFile.Extract</Link>
+    </Compile>
+    <Compile Include="..\Zip\ZipFile.Read.cs">
+      <Link>Zip\ZipFile.Read</Link>
+    </Compile>
+    <Compile Include="..\Zip\ZipFile.Save.cs">
+      <Link>Zip\ZipFile.Save</Link>
+    </Compile>
+    <Compile Include="..\Zip\ZipFile.Selector.cs">
+      <Link>Zip\ZipFile.Selector</Link>
+    </Compile>
+    <Compile Include="..\Zip\ZipFile.x-IEnumerable.cs">
+      <Link>Zip\ZipFile.x-IEnumerable</Link>
+    </Compile>
+    <Compile Include="..\Zip\ZipInputStream.cs">
+      <Link>Zip\ZipInputStream</Link>
+    </Compile>
+    <Compile Include="..\Zip\ZipOutputStream.cs">
+      <Link>Zip\ZipOutputStream</Link>
+    </Compile>
+    <Compile Include="..\Zip\ZipSegmentedStream.cs">
+      <Link>Zip\ZipSegmentedStream</Link>
+    </Compile>
+    <Compile Include="..\BZip2\*.cs">
+      <Link>BZip2\%(FileName)</Link>
+    </Compile>
+    <Compile Include="..\Zlib\*.cs">
+      <Link>Zlib\%(FileName)</Link>
+    </Compile>
+    <Compile Include="..\CommonSrc\CRC32.cs">
+      <Link>CRC32.cs</Link>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="..\SolutionInfo.cs">
+      <Link>Properties\SolutionInfo.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Ionic.snk">
+      <Link>Ionic.snk</Link>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+</Project>
