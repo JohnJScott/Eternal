@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32526.322
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Eternal.UTF16MustDIE", "Eternal.UTF16MustDIE\Eternal.UTF16MustDIE.csproj", "{52209E83-6E04-4969-B0D6-25CBD64D5852}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Eternal.UTF16MustDIE.Tests", "Eternal.UTF16MustDIE.Tests\Eternal.UTF16MustDIE.Tests.csproj", "{3646596B-0E86-4840-B793-5ED504E6806C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{52209E83-6E04-4969-B0D6-25CBD64D5852}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{52209E83-6E04-4969-B0D6-25CBD64D5852}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{52209E83-6E04-4969-B0D6-25CBD64D5852}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{52209E83-6E04-4969-B0D6-25CBD64D5852}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3646596B-0E86-4840-B793-5ED504E6806C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3646596B-0E86-4840-B793-5ED504E6806C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3646596B-0E86-4840-B793-5ED504E6806C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3646596B-0E86-4840-B793-5ED504E6806C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A9CDDD93-DEB8-4D4C-9F7E-7D1E0729152F}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Description>Some Perforce helper functions.</Description>
+    <Copyright>Copyright 2022 Eternal Developments, LLC . All rights reserved.</Copyright>
+    <PackageProjectUrl>http://eternaldevelopments.com/docs/</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Version>$(VersionPrefix)</Version>
+    <PackageTags>Perforce</PackageTags>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <WarningLevel>5</WarningLevel>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <WarningLevel>5</WarningLevel>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Eternal.ConsoleUtilities" Version="1.0.0" />
+    <PackageReference Include="p4api.net.core" Version="2021.2.226.2490" />
+  </ItemGroup>
+
+    <PropertyGroup>
+    <VersionPrefix>1.0.6</VersionPrefix>
+    </PropertyGroup>
+
+</Project>
