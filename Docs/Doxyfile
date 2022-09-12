@@ -2701,6 +2701,3 @@ GENERATE_LEGEND        = YES
 
 DOT_CLEANUP            = YES
 
-EXCLUDE					=../Eternal.SourceServerIndexer
-
-EXCLUDE					+=../Eternal.SourceServerIndexer.Test

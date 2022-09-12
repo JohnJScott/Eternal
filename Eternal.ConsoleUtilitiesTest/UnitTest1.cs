@@ -9,10 +9,16 @@ using Eternal.ConsoleUtilities;
 
 namespace Eternal.ConsoleUtilitiesTest
 {
+	/// <summary>
+	/// A set of tests for the basic utilities
+	/// </summary>
 	[TestClass]
 	public class ConsoleUtilitiesTests
 	{
-		[TestMethod]
+		/// <summary>
+		/// A test that calls all the basic logging functions
+		/// </summary>
+		[TestMethod( "Basic logging functionality" )]
 		public void ConsoleLoggerTest()
 		{
 			ConsoleLogger.VerboseLogs = true;
@@ -44,7 +50,10 @@ namespace Eternal.ConsoleUtilitiesTest
 			ConsoleLogger.Log( line );
 		}
 
-		[TestMethod]
+		/// <summary>
+		/// A basic test of process launching and capturing of output
+		/// </summary>
+		[TestMethod( "Basic process functionality" )]
 		public void ConsoleProcessTest()
 		{
 			string cwd = Environment.GetEnvironmentVariable( "TEMP" ) ?? string.Empty;
@@ -77,7 +86,10 @@ namespace Eternal.ConsoleUtilitiesTest
 			public int TestInt = 123;
 		}
 
-		[TestMethod]
+		/// <summary>
+		/// A test that writes and reads a json file
+		/// </summary>
+		[TestMethod("Read and verify a json file")]
 		public void JsonHelperTest()
 		{
 			JsonTestClass test_class = new JsonTestClass();
@@ -92,13 +104,25 @@ namespace Eternal.ConsoleUtilitiesTest
 			Assert.AreEqual( 456, test_reult.TestInt, "Failed to read json int properly" );
 		}
 
+		/// <summary>
+		/// A test class that is required to be public for the XML abstraction to function.
+		/// </summary>
 		public class XmlTestClass
 		{
+			/// <summary>
+			/// A test bool field.
+			/// </summary>
 			public bool TestBool = false;
+			/// <summary>
+			/// A test integer field.
+			/// </summary>
 			public int TestInt = 123;
 		}
 
-		[TestMethod]
+		/// <summary>
+		/// A test the writes and reads an XML file.
+		/// </summary>
+		[TestMethod("Read and verify an XML file.")]
 		public void XmlHelperTest()
 		{
 			string cwd = Environment.GetEnvironmentVariable( "TEMP" ) ?? string.Empty;

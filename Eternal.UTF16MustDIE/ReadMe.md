@@ -13,7 +13,7 @@ MIT
 This utility does the following
 * Finds the local Perforce workspace based on the local folder and P4PORT
  * P4PORT may need to be set for it to find the correct Perforce server
-* Iterates only all files that are the filetype UTF-16, syncs to #head, and checks them out to a named changelist
+* Iterates only all files that are the filetype UTF-16, syncs to \#head, and checks them out to a named changelist
 * All pending changes (bar the default) are iterated over and any UTF-16 files are moved to another named changelist
 * All files in the above changelists are iterated over
  * If the file is broken, it is fixed

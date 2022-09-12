@@ -5,7 +5,7 @@ VisualStudioVersion = 17.2.32526.322
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Eternal.UTF16MustDIE", "Eternal.UTF16MustDIE\Eternal.UTF16MustDIE.csproj", "{52209E83-6E04-4969-B0D6-25CBD64D5852}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Eternal.UTF16MustDIE.Tests", "Eternal.UTF16MustDIE.Tests\Eternal.UTF16MustDIE.Tests.csproj", "{3646596B-0E86-4840-B793-5ED504E6806C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Eternal.UTF16MustDIE.Tests", "Eternal.UTF16MustDIE.Tests\Eternal.UTF16MustDIE.Tests.csproj", "{3646596B-0E86-4840-B793-5ED504E6806C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

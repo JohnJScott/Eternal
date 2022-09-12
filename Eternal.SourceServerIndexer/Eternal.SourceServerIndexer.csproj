@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net6.0-windows10.0.17763.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
@@ -12,7 +12,7 @@
   </ItemGroup>
 
     <PropertyGroup>
-    <VersionPrefix>1.0.2</VersionPrefix>
+    <VersionPrefix>1.0.1</VersionPrefix>
     <Copyright>Copyright 2022 Eternal Developments, LLC. All Rights Reserved.</Copyright>
     <PackageProjectUrl>http://eternaldevelopments.com/docs/index.html</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>

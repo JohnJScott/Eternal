@@ -7,9 +7,15 @@ using Eternal.PerforceUtilities;
 
 namespace Eternal.PerforceUtilities.Test
 {
+	/// <summary>
+	/// Basic tests for the PerforceUtilities class.
+	/// </summary>
     [TestClass]
     public class PerforceUtilitiesTest
     {
+		/// <summary>
+		/// Finds the local Perforce connection based on the current directory.
+		/// </summary>
         [TestMethod("Get the local Perforce connection based on the current directory.")]
         public void GetConnectionInfo()
         {
@@ -18,6 +24,9 @@ namespace Eternal.PerforceUtilities.Test
 			Assert.IsTrue( connection_info.Workspace.Length > 0, "Failed to get default connection" );
         }
 
+		/// <summary>
+		/// Syncs the default local connection to head.
+		/// </summary>
         [TestMethod("Get latest revision for all files in the workspace")]
         public void SyncWorkspace()
         {

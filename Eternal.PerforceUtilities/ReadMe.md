@@ -1,6 +1,6 @@
-# Eternal Console Utilities 
+# Eternal Perforce Utilities 
 
-## Eternal.ConsoleUtilies NuGet library package for Net6.0
+## Eternal.PerforceUtilies NuGet library package for Net6.0
 Copyright 2022 Eternal Developments, LLC. All Rights Reserved.
 
 ## License

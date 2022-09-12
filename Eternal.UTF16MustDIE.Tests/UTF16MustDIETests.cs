@@ -11,6 +11,9 @@ using File = Perforce.P4.File;
 
 namespace Eternal.UTF16MustDIE.Tests
 {
+	/// <summary>
+	/// A class to test various elements of the UTF16MustDIE utility.
+	/// </summary>
     [TestClass]
     public class UTF16MustDIETests
     {
@@ -105,7 +108,7 @@ namespace Eternal.UTF16MustDIE.Tests
 		}
 
 		[TestMethod("Find all UTF-16 files in the local workspace.")]
-        public void GetUTF16Files()
+		public void GetUTF16Files()
         {
 	        PerforceUtilities.PerforceConnectionInfo connection_info = PerforceUtilities.PerforceUtilities.GetConnectionInfo( Directory.GetCurrentDirectory() );
 			Assert.IsTrue( PerforceUtilities.PerforceUtilities.Connect( connection_info ), "Failed to connect" );

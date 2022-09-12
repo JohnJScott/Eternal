@@ -5,6 +5,9 @@ using Perforce.P4;
 
 namespace Eternal.PerforceUtilities
 {
+	/// <summary>
+	/// A class to store the current Perforce connection information.
+	/// </summary>
 	public class PerforceConnectionInfo
 	{
 		/// <summary>The Perforce repository.</summary>
@@ -138,6 +141,9 @@ namespace Eternal.PerforceUtilities
 		}
 	}
 
+	/// <summary>
+	/// A class to find the local Perforce connection information using the current working directory.
+	/// </summary>
     public class PerforceUtilities
     {
 		/// <summary>
@@ -246,7 +252,7 @@ namespace Eternal.PerforceUtilities
 	    }
 
 		/// <summary>
-		/// Sync all the files for the current workspace to #head.
+		/// Sync all the files for the current workspace to head.
 		/// </summary>
 		/// <param name="connectionInfo">The Perforce repository, user name, workspace, and port.</param>
 		/// <returns>True if the sync was successful.</returns>

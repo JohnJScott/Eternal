@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Eternal.SourceServerIndexer": {
+      "commandName": "Project",
+      "workingDirectory": "D:\\ISILDUR-Engine\\UE4\\ParabolisCity\\Saved\\StagedBuilds_SPunk_EndCinematic_P_Dev_Pak\\WindowsNoEditor\\ParabolisCity\\Binaries\\Win64"
+    }
+  }
+}

@@ -13,7 +13,7 @@ namespace Eternal.UTF16MustDIE
 	public class Perforce
 	{
 		/// <summary>
-		/// Syncs all files in the list of FileSpecs to #head.
+		/// Syncs all files in the list of FileSpecs to head.
 		/// </summary>
 		/// <param name="connectionInfo">The Perforce connection info.</param>
 		/// <param name="utf16Files">The container of files to sync.</param>
@@ -31,12 +31,10 @@ namespace Eternal.UTF16MustDIE
 		/// <returns>A list of file specifications of all files in the local workspace that have the base type of UTF-16.</returns>
 		public static IList<FileSpec> GetUTF16Files( PerforceConnectionInfo connectionInfo )
 		{
-			string client_root = connectionInfo.GetWorkspace()?.Root ?? String.Empty;
-
 			Repository repository = connectionInfo.PerforceRepository!;
 
 			GetDepotFilesCmdOptions opts = new GetDepotFilesCmdOptions( GetDepotFilesCmdFlags.NotDeleted, 0 );
-			FileSpec local_file_spec = new FileSpec( new ClientPath( client_root + "/..." ), null );
+			FileSpec local_file_spec = new FileSpec( new ClientPath( connectionInfo.WorkspaceRoot + "/..." ), null );
 			IList<File> local_files = repository.GetFiles( opts, local_file_spec );
 
 			IList<FileSpec> utf16_file_specs = local_files.Where( x => x.Type.BaseType == BaseFileType.UTF16 ).Select( x => ( FileSpec )x ).ToList();
@@ -52,11 +50,10 @@ namespace Eternal.UTF16MustDIE
 		public static IList<FileSpec> GetUTF16PendingFiles( PerforceConnectionInfo connectionInfo )
 		{
 			IList<FileSpec> pending_file_specs = new List<FileSpec>();
-			string client_root = connectionInfo.GetWorkspace()?.Root ?? String.Empty;
 
 			Repository repository = connectionInfo.PerforceRepository!;
 			ChangesCmdOptions changes_cmd_options = new ChangesCmdOptions( ChangesCmdFlags.None, connectionInfo.Workspace, Int32.MaxValue, ChangeListStatus.Pending, connectionInfo.User, 0 );
-			FileSpec local_file_spec = new FileSpec( new ClientPath( client_root + "/..." ), null );
+			FileSpec local_file_spec = new FileSpec( new ClientPath( connectionInfo.WorkspaceRoot + "/..." ), null );
 			IList<Changelist> changelists = repository.GetChangelists( changes_cmd_options, local_file_spec );
 			if( changelists != null )
 			{
