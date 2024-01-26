@@ -10,7 +10,7 @@
     <Copyright>Copyright 2024 Eternal Developments, LLC. All Rights Reserved.</Copyright>
     <PackageProjectUrl>https://eternaldevelopments.com</PackageProjectUrl>
     <PackageReadmeFile>ReadMe.md</PackageReadmeFile>
-    <RepositoryType>Perforce</RepositoryType>
+    <RepositoryType>Git</RepositoryType>
     <PackageTags>json; xml; logging</PackageTags>
     <NeutralLanguage>en</NeutralLanguage>
     <Company>Eternal Developments, LLC.</Company>
@@ -29,7 +29,8 @@
   </ItemGroup>
   
     <PropertyGroup>
-    <VersionPrefix>1.0.4</VersionPrefix>
+    <VersionPrefix>1.0.5</VersionPrefix>
+    <RepositoryUrl>https://github.com/JohnJScott/Eternal</RepositoryUrl>
     </PropertyGroup>
 	
 </Project>
