@@ -1,4 +1,4 @@
-// Copyright 2015-2022 Eternal Developments LLC. All Rights Reserved.
+// Copyright Eternal Developments LLC. All Rights Reserved.
 
 using System;
 using System.Collections.Generic;
@@ -40,6 +40,48 @@ namespace Eternal.ConsoleUtilitiesTest
 
 			Assert.IsTrue( ConsoleLogger.Title( "This is a title message" ) );
 			Assert.IsTrue( ConsoleLogger.Success( "This is a success" ) );
+		}
+
+		/// <summary>
+		/// A test that calls validates the human readable time duration string
+		/// </summary>
+		[TestMethod( "TimeString functionality" )]
+		public void ConsoleLoggerTimeStringTest()
+		{
+			Assert.AreEqual( "3 days 4 hours", ConsoleLogger.TimeString( new TimeSpan( 3, 4, 5, 6 ) ),  "Error for time string days" );
+			Assert.AreEqual( "1 day 12 hours", ConsoleLogger.TimeString( new TimeSpan( 1, 12, 5, 6 ) ),  "Error for time string days" );
+			Assert.AreEqual( "3 hours 14 minutes", ConsoleLogger.TimeString( new TimeSpan( 0, 3, 14, 6 ) ),  "Error for time string hours" );
+			Assert.AreEqual( "3 minutes 52 seconds", ConsoleLogger.TimeString( new TimeSpan( 0, 0, 3, 52 ) ),  "Error for time string minutes" );
+			Assert.AreEqual( "53 minutes 2 seconds", ConsoleLogger.TimeString( new TimeSpan( 0, 0, 53, 2 ) ),  "Error for time string minutes" );
+			Assert.AreEqual( "52.0 seconds", ConsoleLogger.TimeString( new TimeSpan( 0, 0, 0, 52 ) ),  "Error for time string seconds" );
+			Assert.AreEqual( "123 milliseconds", ConsoleLogger.TimeString( new TimeSpan( 0, 0, 0, 0, 123 ) ),  "Error for time string milliseconds" );
+			Assert.AreEqual( "999 milliseconds", ConsoleLogger.TimeString( new TimeSpan( 0, 0, 0, 0, 999 ) ),  "Error for time string milliseconds" );
+		}
+
+		/// <summary>
+		/// A test that calls validates the human readable time duration string
+		/// </summary>
+		[TestMethod( "TimeString pluralities" )]
+		public void ConsoleLoggerTimeStringPluralTest()
+		{
+			Assert.AreEqual( "1 day 1 hour", ConsoleLogger.TimeString( new TimeSpan( 1, 1, 5, 6 ) ),  "Error for time string days" );
+			Assert.AreEqual( "1 minute 1 second", ConsoleLogger.TimeString( new TimeSpan( 0, 0, 1, 1 ) ),  "Error for time string minutes" );
+			Assert.AreEqual( "59.0 seconds", ConsoleLogger.TimeString( new TimeSpan( 0, 0, 0, 59 ) ),  "Error for time string seconds" );
+			Assert.AreEqual( "123 milliseconds", ConsoleLogger.TimeString( new TimeSpan( 0, 0, 0, 0, 123 ) ),  "Error for time string milliseconds" );
+			Assert.AreEqual( "1 millisecond", ConsoleLogger.TimeString( new TimeSpan( 0, 0, 0, 0, 1 ) ),  "Error for time string millisecond" );
+		}
+
+		/// <summary>
+		/// A test that calls validates the human readable time duration string
+		/// </summary>
+		[TestMethod( "MemoryString functionality" )]
+		public void ConsoleLoggerMemoryStringTest()
+		{
+			Assert.AreEqual( "1.201 TB", ConsoleLogger.MemoryString( 1230 * 1024L * 1024L * 1024L ), "Error for memory string TB" );
+			Assert.AreEqual( "1.201 GB", ConsoleLogger.MemoryString( 1230 * 1024L * 1024L ), "Error for memory string GB" );
+			Assert.AreEqual( "1.201 MB", ConsoleLogger.MemoryString( 1230 * 1024L ), "Error for memory string MB" );
+			Assert.AreEqual( "1.201 kB", ConsoleLogger.MemoryString( 1230 ), "Error for memory string kB" );
+			Assert.AreEqual( "123 B", ConsoleLogger.MemoryString( 123 ), "Error for memory string B" );
 		}
 
 		private List<string> CapturedOuput = new List<string>();
@@ -97,11 +139,11 @@ namespace Eternal.ConsoleUtilitiesTest
 			test_class.TestInt = 456;
 			string json_string = JsonHelper.WriteJson( test_class );
 
-			JsonTestClass? test_reult = JsonHelper.ReadJson<JsonTestClass>( json_string );
+			JsonTestClass? test_result = JsonHelper.ReadJson<JsonTestClass>( json_string );
 
-			Assert.IsNotNull( test_reult, "Failed to read json" );
-			Assert.IsTrue( test_reult.TestBool, "Failed to read json bool properly" );
-			Assert.AreEqual( 456, test_reult.TestInt, "Failed to read json int properly" );
+			Assert.IsNotNull( test_result, "Failed to read json" );
+			Assert.IsTrue( test_result.TestBool, "Failed to read json bool properly" );
+			Assert.AreEqual( 456, test_result.TestInt, "Failed to read json int properly" );
 		}
 
 		/// <summary>
