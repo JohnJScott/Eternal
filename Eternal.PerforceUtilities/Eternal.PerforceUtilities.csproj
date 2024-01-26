@@ -1,12 +1,12 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Description>Some Perforce helper functions.</Description>
-    <Copyright>Copyright 2022 Eternal Developments, LLC . All rights reserved.</Copyright>
+    <Copyright>Copyright 2024 Eternal Developments, LLC . All rights reserved.</Copyright>
     <PackageProjectUrl>http://eternaldevelopments.com/docs/</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Version>$(VersionPrefix)</Version>
@@ -22,12 +22,22 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Eternal.ConsoleUtilities" Version="1.0.3" />
-    <PackageReference Include="p4api.net.core" Version="2021.2.233.6662" />
+    <PackageReference Include="Eternal.ConsoleUtilities" Version="1.0.5" />
+    <PackageReference Include="p4api.net" Version="2023.1.248.4623" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="ReadMe.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
     <PropertyGroup>
-    <VersionPrefix>1.0.8</VersionPrefix>
+    <VersionPrefix>1.0.9</VersionPrefix>
+    <PackageReadmeFile>ReadMe.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/JohnJScott/Eternal</RepositoryUrl>
+    <RepositoryType>Git</RepositoryType>
     </PropertyGroup>
 
 </Project>
