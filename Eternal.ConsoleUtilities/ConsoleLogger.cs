@@ -1,4 +1,4 @@
-// Copyright 2015-2022 Eternal Developments LLC. All Rights Reserved.
+// Copyright Eternal Developments LLC. All Rights Reserved.
 
 using System.Diagnostics;
 using System.Globalization;
@@ -53,7 +53,7 @@ namespace Eternal.ConsoleUtilities
 		}
 
 		/// <summary>Display a prominent message.</summary>
-		/// <param name="line">line of text to display prominently.</param>
+		/// <param name="line">Line of text to display prominently.</param>
 		public static bool Title( string line )
 		{
 			ConsoleColor foreground = Console.ForegroundColor;
@@ -66,7 +66,7 @@ namespace Eternal.ConsoleUtilities
 		}
 
 		/// <summary>Display a verbose logging message.</summary>
-		/// <param name="line">line of text to display.</param>
+		/// <param name="line">Line of text to display.</param>
 		public static bool Verbose( string line )
 		{
 			if( VerboseLogs )
@@ -79,7 +79,7 @@ namespace Eternal.ConsoleUtilities
 		}
 
 		/// <summary>Display a standard log message.</summary>
-		/// <param name="line">line of text to display.</param>
+		/// <param name="line">Line of text to display.</param>
 		public static bool Log( string line )
 		{
 			if( !SuppressLogs )
@@ -92,7 +92,7 @@ namespace Eternal.ConsoleUtilities
 		}
 
 		/// <summary>Display a success message in green.</summary>
-		/// <param name="line">line of warning text to display.</param>
+		/// <param name="line">Line of warning text to display.</param>
 		public static bool Success( string line )
 		{
 			ConsoleColor foreground = Console.ForegroundColor;
@@ -105,7 +105,7 @@ namespace Eternal.ConsoleUtilities
 		}
 
 		/// <summary>Display a warning message in yellow.</summary>
-		/// <param name="line">line of warning text to display.</param>
+		/// <param name="line">Line of warning text to display.</param>
 		public static bool Warning( string line )
 		{
 			if( !SuppressWarnings )
@@ -121,7 +121,7 @@ namespace Eternal.ConsoleUtilities
 		}
 
 		/// <summary>Display an error message in red.</summary>
-		/// <param name="line">line of error text to display.</param>
+		/// <param name="line">Line of error text to display.</param>
 		public static bool Error( string line )
 		{
 			if( !SuppressErrors )
@@ -134,6 +134,76 @@ namespace Eternal.ConsoleUtilities
 
 			Debug.WriteLine( GetISOTimeStamp() + "ERROR: " + line );
 			return !SuppressErrors;
+		}
+
+		/// <summary>
+		/// Converts a length of time into a human readable string
+		/// </summary>
+		/// <param name="timeSpan">A duration of time</param>
+		/// <returns></returns>
+		public static string TimeString( TimeSpan timeSpan )
+		{
+			if( timeSpan.TotalDays > 1 )
+			{
+				string plural_days = ( timeSpan.Days > 1 ) ? "s" : "";
+				string plural_hours = ( timeSpan.Hours > 1 ) ? "s" : "";
+				return $"{timeSpan.Days:n0} day{plural_days} {timeSpan.Hours:n0} hour{plural_hours}";
+			}
+			else if( timeSpan.TotalHours > 1 )
+			{
+				string plural_hours = ( timeSpan.Hours > 1 ) ? "s" : "";
+				string plural_minutes = ( timeSpan.Minutes > 1 ) ? "s" : "";
+				return $"{timeSpan.Hours:n0} hour{plural_hours} {timeSpan.Minutes:n0} minute{plural_minutes}";
+			}
+			else if( timeSpan.TotalMinutes > 1 )
+			{
+				string plural_minutes = ( timeSpan.Minutes > 1 ) ? "s" : "";
+				string plural_seconds = ( timeSpan.Minutes > 1 ) ? "s" : "";
+				return $"{timeSpan.Minutes:n0} minute{plural_minutes} {timeSpan.Seconds:n0} second{plural_seconds}";
+			}
+			else if( timeSpan.TotalSeconds > 1 )
+			{
+				return $"{timeSpan.Seconds:n1} seconds";
+			}
+
+			string plural_milliseconds = ( timeSpan.TotalMilliseconds > 1 ) ? "s" : "";
+			return $"{timeSpan.TotalMilliseconds:n0} millisecond{plural_milliseconds}";
+		}
+
+		/// <summary>
+		/// Converts a number of bytes into a sensible human readable version
+		/// </summary>
+		/// <param name="numberOfBytes">A count of bytes from TB to B.</param>
+		/// <returns></returns>
+		public static string MemoryString( long numberOfBytes )
+		{
+			const double kilo_byte = 1024L;
+			const double mega_byte = 1024L * 1024L;
+			const double giga_byte = 1024L * 1024L * 1024L;
+			const double tera_byte = 1024L * 1024L * 1024L * 1024L;
+
+			if( numberOfBytes > tera_byte )
+			{
+				double tb = numberOfBytes / tera_byte;
+				return $"{tb:n3} TB";
+			}
+			else if( numberOfBytes > giga_byte )
+			{
+				double gb = numberOfBytes / giga_byte;
+				return $"{gb:n3} GB";
+			}
+			else if( numberOfBytes > mega_byte )
+			{
+				double mb = numberOfBytes / mega_byte;
+				return $"{mb:n3} MB";
+			}
+			else if( numberOfBytes > kilo_byte )
+			{
+				double kb = numberOfBytes / kilo_byte;
+				return $"{kb:n3} kB";
+			}
+				
+			return $"{numberOfBytes} B";
 		}
 	}
 }
