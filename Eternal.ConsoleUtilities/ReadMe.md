@@ -12,8 +12,8 @@ MIT
 
 A set of helper functions to log to a command prompt with colors based on the function.
 e.g. warnings are printed in yellow.
-Function to convert a TimeSpan into a human readable string
-Function to convert a number of bytes into a human readable string
+Function to convert a TimeSpan into a human readable string.
+Function to convert a number of bytes into a human readable string.
 
 ## ConsoleProcess
 
@@ -43,4 +43,5 @@ All functions have basic unit tests to avoid simple mistakes.
 I have no intention of maintaining backwards compatability, but will endeavor to
 mention if I make any changes.
 
-
+This utility appeals to the most niche aspects of development, but if you feel like making a donation, 
+please send DOGE to D5iPmmqhT2niGF6Q9BCb4u7RD4FPR1SFPh
