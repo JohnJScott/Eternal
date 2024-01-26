@@ -1,7 +1,7 @@
 # Eternal Perforce Utilities 
 
-## Eternal.PerforceUtilies NuGet library package for Net6.0
-Copyright 2022 Eternal Developments, LLC. All Rights Reserved.
+## Eternal.PerforceUtilies NuGet library package for Net8.0
+Copyright 2024 Eternal Developments, LLC. All Rights Reserved.
 
 ## License
 
