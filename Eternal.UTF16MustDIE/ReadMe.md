@@ -1,7 +1,7 @@
 # Eternal UTF16MustDie 
 
-## Eternal.UTF16MustDie utility for Net6.0
-Copyright 2022 Eternal Developments, LLC. All Rights Reserved.
+## Eternal.UTF16MustDie utility for Net8.0
+Copyright 2024 Eternal Developments, LLC. All Rights Reserved.
 
 ## License
 
