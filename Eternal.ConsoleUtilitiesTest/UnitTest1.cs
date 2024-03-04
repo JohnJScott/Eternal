@@ -126,6 +126,8 @@ namespace Eternal.ConsoleUtilitiesTest
 		{
 			public bool TestBool = false;
 			public int TestInt = 123;
+			public List<string> TestList = new List<string>() { "Alpha", "Beta", "Gamma" };
+			public Dictionary<int, string> TestDictionary = new Dictionary<int, string>() { { 1, "One" }, { 2, "Two" }, { 3, "Three" } };
 		}
 
 		/// <summary>
@@ -144,6 +146,8 @@ namespace Eternal.ConsoleUtilitiesTest
 			Assert.IsNotNull( test_result, "Failed to read json" );
 			Assert.IsTrue( test_result.TestBool, "Failed to read json bool properly" );
 			Assert.AreEqual( 456, test_result.TestInt, "Failed to read json int properly" );
+			Assert.AreEqual( "Beta", test_class.TestList[1], "Failed to read list properly" );
+			Assert.AreEqual( "Two", test_class.TestDictionary[2], "Failed to read list properly" );
 		}
 
 		/// <summary>
@@ -159,6 +163,10 @@ namespace Eternal.ConsoleUtilitiesTest
 			/// A test integer field.
 			/// </summary>
 			public int TestInt = 123;
+			/// <summary>
+			/// A test list container
+			/// </summary>
+			public List<string> TestList = new List<string>() { "Alpha", "Beta", "Gamma" };
 		}
 
 		/// <summary>
@@ -181,6 +189,54 @@ namespace Eternal.ConsoleUtilitiesTest
 			Assert.IsNotNull( result, "Failed to read xml file" );
 			Assert.AreEqual( true, result.TestBool, "Failed to read xml file properly" );
 			Assert.AreEqual( 456, result.TestInt, "Failed to read xml file properly" );
+			Assert.AreEqual( "Beta", test_class.TestList[1], "Failed to read list properly" );
+		}
+
+		/// <summary>
+		/// A test class that is required to be public for the YAML abstraction to function.
+		/// </summary>
+		public class YmlTestClass
+		{
+			/// <summary>
+			/// A test bool field.
+			/// </summary>
+			public bool TestBool = false;
+			/// <summary>
+			/// A test integer field.
+			/// </summary>
+			public int TestInt = 123;
+			/// <summary>
+			/// A test container
+			/// </summary>
+			public List<string> TestList = new List<string>() { "Alpha", "Beta", "Gamma" };
+			/// <summary>
+			/// A Test map container
+			/// </summary>
+			public Dictionary<int, string> TestDictionary = new Dictionary<int, string>() { { 1, "One" }, { 2, "Two" }, { 3, "Three" } };
+		}
+
+		/// <summary>
+		/// A test the writes and reads an XML file.
+		/// </summary>
+		[TestMethod( "Read and verify an YAML file." )]
+		public void YmlHelperTest()
+		{
+			string cwd = Environment.GetEnvironmentVariable( "TEMP" ) ?? string.Empty;
+			Assert.AreNotEqual( string.Empty, cwd, "Failed to get environment variable TEMP" );
+
+			YmlTestClass test_class = new YmlTestClass();
+			test_class.TestBool = true;
+			test_class.TestInt = 456;
+
+			string file_name = Path.Combine( cwd, "test.yaml" );
+			Assert.IsTrue( YamlHelper.WriteYamlFile( file_name, test_class ), "Failed to write yaml file" );
+
+			YmlTestClass? result = YamlHelper.ReadYamlFile<YmlTestClass>( file_name );
+			Assert.IsNotNull( result, "Failed to read yaml file" );
+			Assert.AreEqual( true, result.TestBool, "Failed to read yaml file properly" );
+			Assert.AreEqual( 456, result.TestInt, "Failed to read yaml file properly" );
+			Assert.AreEqual( "Beta", test_class.TestList[1], "Failed to read list properly" );
+			Assert.AreEqual( "Two", test_class.TestDictionary[2], "Failed to read list properly" );
 		}
 	}
 }
