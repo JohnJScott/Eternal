@@ -2,20 +2,33 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0-windows10.0.17763.0</TargetFramework>
+    <TargetFramework>net8.0-windows10.0.17763.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Eternal.PerforceUtilities" Version="1.0.8" />
+    <PackageReference Include="Eternal.PerforceUtilities" Version="1.0.9" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="ReadMe.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
     <PropertyGroup>
-    <VersionPrefix>1.0.1</VersionPrefix>
-    <Copyright>Copyright 2022 Eternal Developments, LLC. All Rights Reserved.</Copyright>
+    <VersionPrefix>1.0.2</VersionPrefix>
+    <Copyright>Copyright 2024 Eternal Developments, LLC. All Rights Reserved.</Copyright>
     <PackageProjectUrl>http://eternaldevelopments.com/docs/index.html</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackAsTool>True</PackAsTool>
+    <PackageReadmeFile>ReadMe.md</PackageReadmeFile>
+    <Description>A net8 tool to source index symbol files for Perforce</Description>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+    <RepositoryUrl>https://github.com/JohnJScott/Eternal</RepositoryUrl>
+    <PackageTags>Perforce;SourceServer</PackageTags>
     </PropertyGroup>
 
 </Project>
