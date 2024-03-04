@@ -138,8 +138,8 @@ namespace Eternal.SourceServerIndexer
 			AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler( GenericExceptionHandler );
 			DateTime start_time = DateTime.UtcNow;
 
-			ConsoleLogger.Title( "SourceServerIndexer - Copyright 2022 Eternal Developments LLC." );
-			ConsoleLogger.Title( "Indexes pdb files to allow source debugging of minidumps." );
+			ConsoleLogger.Title( "SourceServerIndexer - Copyright 2024 Eternal Developments LLC." );
+			ConsoleLogger.Title( "Indexes pdb files to allow source debugging of minidumps without having to sync an entire repo." );
 
 			// Handle any command line arguments
 			if( !ParseArguments( arguments ) )
@@ -193,8 +193,7 @@ namespace Eternal.SourceServerIndexer
 			}
 
 			PerforceUtilities.PerforceUtilities.Disconnect( connection_info );
-			TimeSpan duration = DateTime.UtcNow - start_time;
-			ConsoleLogger.Success( $"{SuccessfulIndexings} symbol files successfully indexed in {duration.TotalSeconds.ToString( "F2" )} seconds." );
+			ConsoleLogger.Success( $"{SuccessfulIndexings} symbol files successfully indexed in {ConsoleLogger.TimeString( DateTime.UtcNow - start_time )}." );
 		}
 	}
 }
