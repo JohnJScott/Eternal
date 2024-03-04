@@ -27,6 +27,15 @@ A set of functions to read and write Json files.
 
 A set of functions to read and write Xml files.
 
+## YamlHelper
+
+A set of functions to read and write Yaml files.
+
+# Changes 4th March 2024
+
+Added basic Yaml support
+Improved unit tests
+
 # Changes 25th January 2024
 
 Updated packages
