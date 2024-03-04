@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Description>Helper functions for logging, launching processes, reading and writing Json and Xml files.</Description>
+    <Description>Helper functions for logging, launching processes, reading and writing Json, Xml, and Yaml files.</Description>
     <Copyright>Copyright 2024 Eternal Developments, LLC. All Rights Reserved.</Copyright>
     <PackageProjectUrl>https://eternaldevelopments.com</PackageProjectUrl>
     <PackageReadmeFile>ReadMe.md</PackageReadmeFile>
@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="YamlDotNet" Version="15.1.2" />
   </ItemGroup>
 
   <ItemGroup>
@@ -29,7 +30,7 @@
   </ItemGroup>
   
     <PropertyGroup>
-    <VersionPrefix>1.0.5</VersionPrefix>
+    <VersionPrefix>1.0.6</VersionPrefix>
     <RepositoryUrl>https://github.com/JohnJScott/Eternal</RepositoryUrl>
     </PropertyGroup>
 	
