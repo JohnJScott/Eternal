@@ -1,7 +1,7 @@
 # Eternal Source Server Indexer
 
 ## Eternal.SourceServerIndexer
-Copyright 2022 Eternal Developments, LLC. All Rights Reserved.
+Copyright 2024 Eternal Developments, LLC. All Rights Reserved.
 
 ## License
 
@@ -10,7 +10,7 @@ MIT
 # Functionality
 ## SourceServerIndexer
 
-This takes the gnarly decades old Perl script and reimplements as C# Net6.0. This allows logging and debugging of the process. It also automatically
+This takes the gnarly decades old Perl script and reimplements as C# Net8.0. This allows logging and debugging of the process. It also automatically
 detects the workspace and Perforce settings based on P4PORT and the working directory. The log will also show the connection information it finds making
 debugging the process much easier.
 
