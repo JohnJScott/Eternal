@@ -11,7 +11,7 @@
     <PackageProjectUrl>https://eternaldevelopments.com</PackageProjectUrl>
     <PackageReadmeFile>ReadMe.md</PackageReadmeFile>
     <RepositoryType>Git</RepositoryType>
-    <PackageTags>json; xml; logging</PackageTags>
+    <PackageTags>json; xml; yaml, logging</PackageTags>
     <NeutralLanguage>en</NeutralLanguage>
     <Company>Eternal Developments, LLC.</Company>
     <Authors>JohnScott</Authors>
@@ -19,7 +19,7 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="YamlDotNet" Version="15.1.2" />
+    <PackageReference Include="YamlDotNet" Version="15.3.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,7 +30,7 @@
   </ItemGroup>
   
     <PropertyGroup>
-    <VersionPrefix>1.0.6</VersionPrefix>
+    <VersionPrefix>1.0.7</VersionPrefix>
     <RepositoryUrl>https://github.com/JohnJScott/Eternal</RepositoryUrl>
     </PropertyGroup>
 	
