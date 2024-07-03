@@ -185,7 +185,7 @@ namespace Eternal.PerforceUtilities
 
 			if( !connectionInfo.FindWorkspace( currentDirectory ) )
 			{
-				ConsoleLogger.Error( $" .. failed to find workspace for '{host_name}' containing '{currentDirectory}'" );
+				ConsoleLogger.Error( $" .. failed to find workspace on '{host_name}' containing '{currentDirectory}'" );
 				return false;
 			}
 
