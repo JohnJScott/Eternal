@@ -8,21 +8,71 @@ Copyright 2024 Eternal Developments, LLC. All Rights Reserved.
 MIT
 
 # Functionality
-## UTF16MustDie
+## UTF16MustDie (and ANSI Must Die now too)
 
-This utility does the following
+* Command line options
+	* -h - displays help information
+	* -v - enables verbose logging
+	* -skipUtf16 - skips processing files of type utf16
+	* -skipANSI - skips processing files of type unicode
+
+### Connects to the Perforce server.
 * Finds the local Perforce workspace based on the local folder and P4PORT
- * P4PORT may need to be set for it to find the correct Perforce server
+   * P4PORT may need to be set for it to find the correct Perforce server
+   
+### Fixes all UTF-16 files
+
 * Iterates only all files that are the filetype UTF-16, syncs to \#head, and checks them out to a named changelist
 * All pending changes (bar the default) are iterated over and any UTF-16 files are moved to another named changelist
 * All files in the above changelists are iterated over
- * If the file is broken, it is fixed
- * The file is converted to UTF-8
- * The file type is changed to UTF-8
-* Nothing is submitted by default
+    * If the file is broken, it is fixed
+    * The file is converted to UTF-8
+    * The file type is changed to UTF-8
+* Nothing is submitted
 
+### Fixes all ANSI files (files of type Unicode)
 
-# Explanation of the problem
+* Iterates only all files that are the filetype Unicode, syncs to \#head, and checks them out to a named changelist
+* All pending changes (bar the default) are iterated over and any Unicode files are moved to another named changelist
+* All files in the above changelists are iterated over
+    * The file is converted to UTF-8
+    * The file type is changed to UTF-8
+* Nothing is submitted
+
+# Perforce filetypes
+
+Based on [Base filetypes](https://www.perforce.com/manuals/cmdref/Content/CmdRef/file.types.synopsis.base.html) and my research.
+
+* text - Text file
+    * This is an arbitrary sequence of bytes. Tested by writing out 4096 random bytes as a string.
+	* Line endings are converted to the local line endings on sync.
+* binary - Non-text file
+    * Used for files that cannot be text merged, such as images or audio files.
+* symlink - Symbolic link
+    * Causes issues on Windows machines - please do not use. 
+* unicode - Unicode file - only available on Unicode enabled servers
+    * The connection has a 'CharacterSetName' property which defines how files of type Unicode are stored on the client.
+		* If this is UTF-8 (which I recommend), then all files of type Unicode are stored as UTF-8.
+			* This means the app doesn't need to detect the encoding, it just needs to change the file type.
+			* All of these files are stored as UTF-8 on the server.
+		* If this is not UTF-8 (such as Windows-1252) then the client will try to process as ASCII plus the 'charsetname' high ASCII character set. 
+			* It is checked against the P4CHARSET for having available characters. 
+			* I would call this ANSI, and it may fail to translate some files (such as Shift-JIS).
+			* I use UTFUnknown to detect the encoding in this case.
+	* Line endings are converted to the local line endings on sync.
+	* I would recommend disabling Unicode on your Perforce server.
+* utf16 - Unicode file
+    * UTF-16 files - either 2 bytes or 4 bytes. Not supporting the 4 byte version of UTF-16 means you are supporting UCS-2.
+	* Line endings are converted to the local line endings on sync.
+* utf8 - Unicode file
+    * The one true encoding to rule them all, which is used to store all text based files on the server. 
+	* Line endings are converted to the local line endings on sync.
+
+I would like an ASCII filetype which would be characters 0x0 to 0x7f. That would be preferred for most code, and only use
+UTF-8 for localized items. ASCII is a subset of UTF-8. Most of the Unicode code files I've found are could easily be ASCII but have smart quotes or use the copyright
+symbol '©' rather than '(c)'.
+
+# Explanation of the UTF-16 problem
 
 Occasionally, you'll see UTF-16 files in Perforce that alternate between the correct English and Chinese (most likely random glyphs).
 This is because when Perforce syncs a text file (such as code) from the server, it converts the line ending from the common server ending (0xa) to the local
@@ -63,11 +113,14 @@ using System.Reflection;
 
 [The solution and best practice](https://utf8everywhere.org/)
 
+[Perforce I18n Notes](https://www.perforce.com/perforce/doc.current/user/i18nnotes.txt)
+
 # FAQ
 
 Q: What if I require UTF-16 files?
 
-A: Don't use this utility or make it so you don't require UTF-16. Also, see the utility name.
+A: Don't use this utility or make it so you don't require
+UTF-16. Also, see the utility name.
 
 Q: What happens if I find a file that does not fix up properly?
 
@@ -82,5 +135,4 @@ should work with East Asian languages.
 
 I have no intention of maintaining backwards compatability, but will endeavor to mention if the code no longer is backwards compatible.
 
-This utility appeals to the most niche aspects of development, but if you feel like making a donation, 
-please send DOGE to D5iPmmqhT2niGF6Q9BCb4u7RD4FPR1SFPh
+This utility appeals to the most niche aspects of development, but if you feel like making a donation, please send DOGE to D5iPmmqhT2niGF6Q9BCb4u7RD4FPR1SFPh or buy a [#programmerlife t-shirt](https://www.bonfire.com/store/programmer-life/)
