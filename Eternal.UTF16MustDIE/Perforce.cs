@@ -4,10 +4,10 @@ using System.Text;
 using Eternal.ConsoleUtilities;
 using Eternal.PerforceUtilities;
 using Perforce.P4;
-
+using UtfUnknown;
 using File = Perforce.P4.File;
 
-namespace Eternal.UTF16MustDIE
+namespace Eternal.Utf16MustDie
 {
 	/// <summary>Class to handle interaction with Perforce.</summary>
 	public class Perforce
@@ -16,20 +16,21 @@ namespace Eternal.UTF16MustDIE
 		/// Syncs all files in the list of FileSpecs to head.
 		/// </summary>
 		/// <param name="connectionInfo">The Perforce connection info.</param>
-		/// <param name="utf16Files">The container of files to sync.</param>
-		public static void SyncUTF16Files( PerforceConnectionInfo connectionInfo, IList<FileSpec> utf16Files )
+		/// <param name="fileSpecList">The container of files to sync.</param>
+		public static void SyncFiles( PerforceConnectionInfo connectionInfo, IList<FileSpec> fileSpecList )
 		{
 			Client client = connectionInfo.GetWorkspace()!;
 
-			IList<FileSpec> unversioned = utf16Files.ToList().Select( x => x.StripVersion() ).ToList();
+			IList<FileSpec> unversioned = fileSpecList.ToList().Select( x => x.StripVersion() ).ToList();
 			client.RevertFiles( unversioned, null );
 			client.SyncFiles( unversioned, null );
 		}
 
-		/// <summary>Find all UTF-16 files in the current workspace.</summary>
+		/// <summary>Find all the files of the file type baseFileType in the current workspace.</summary>
 		/// <param name="connectionInfo">The information about the current Perforce connection.</param>
-		/// <returns>A list of file specifications of all files in the local workspace that have the base type of UTF-16.</returns>
-		public static IList<FileSpec> GetUTF16Files( PerforceConnectionInfo connectionInfo )
+		/// <param name="baseFileType">The Perforce file type we wish to retrieve.</param>
+		/// <returns>A list of file specifications of all files in the local workspace that have the base type of baseFileType.</returns>
+		public static IList<FileSpec> GetFilesOfBaseFileType( PerforceConnectionInfo connectionInfo, BaseFileType baseFileType )
 		{
 			Repository repository = connectionInfo.PerforceRepository!;
 
@@ -37,17 +38,18 @@ namespace Eternal.UTF16MustDIE
 			FileSpec local_file_spec = new FileSpec( new ClientPath( connectionInfo.WorkspaceRoot + "/..." ), null );
 			IList<File> local_files = repository.GetFiles( opts, local_file_spec );
 
-			IList<FileSpec> utf16_file_specs = local_files.Where( x => x.Type.BaseType == BaseFileType.UTF16 ).Select( x => ( FileSpec )x ).ToList();
+			IList<FileSpec> utf16_file_specs = local_files.Where( x => x.Type.BaseType == baseFileType ).Select( x => ( FileSpec )x ).ToList();
 
 			return utf16_file_specs;
 		}
 
 		/// <summary>
-		/// Gets all the UTF16 files in pending changelists belonging to the current workspace.
+		/// Gets all the files in pending changelists of file type baseFileType belonging to the current workspace.
 		/// </summary>
 		/// <param name="connectionInfo">The Perforce connection info.</param>
-		/// <returns></returns>
-		public static IList<FileSpec> GetUTF16PendingFiles( PerforceConnectionInfo connectionInfo )
+		/// <param name="baseFileType">The Perforce file type we wish to retrieve.</param>
+		/// <returns>A list of files in pending changelists of the file type baseFileType. Does not include any in the default changelist.</returns>
+		public static IList<FileSpec> GetPendingFilesOfBaseFileType( PerforceConnectionInfo connectionInfo, BaseFileType baseFileType )
 		{
 			IList<FileSpec> pending_file_specs = new List<FileSpec>();
 
@@ -65,7 +67,7 @@ namespace Eternal.UTF16MustDIE
 					Changelist full_changelist = repository.GetChangelist( changelist.Id, describe_options );
 					foreach( FileMetaData file_meta_data in full_changelist.Files )
 					{
-						if( file_meta_data.Type.BaseType == BaseFileType.UTF16 )
+						if( file_meta_data.Type.BaseType == baseFileType )
 						{
 							pending_file_specs.Add( file_meta_data );
 						}
@@ -118,46 +120,142 @@ namespace Eternal.UTF16MustDIE
 			return character;
 		}
 
+		// private static bool ValidateAsAscii( Repository repository, FileSpec fileSpec )
+		// {
+		// 	FileMetaData file_meta_data = repository.GetFileMetaData( null, fileSpec ).First();
+		// 	string file_name = file_meta_data.ClientPath.Path;
+		//
+		// 	bool result = true;
+		// 	using( System.IO.Stream bad_stream = new FileStream( file_name, FileMode.Open ) )
+		// 	{
+		// 		BinaryReader reader = new BinaryReader( bad_stream );
+		// 		do
+		// 		{
+		// 			byte single_byte = reader.ReadByte();
+		// 			if( single_byte >= 128 )
+		// 			{
+		// 				result = false;
+		// 			}
+		//
+		// 			if( single_byte < 32 )
+		// 			{
+		// 				if( single_byte != 9 && single_byte != 10 && single_byte != 13 )
+		// 				{
+		// 					result = false;
+		// 				}
+		// 			}
+		// 		} while( result && ( reader.BaseStream.Position < reader.BaseStream.Length ) );
+		//
+		// 		bad_stream.Close();
+		// 	}
+		//
+		// 	return result;
+		// }
+
+		private static bool ValidateAsUtf8( Repository repository, FileSpec fileSpec )
+		{
+			FileMetaData file_meta_data = repository.GetFileMetaData( null, fileSpec ).First();
+			string file_name = file_meta_data.ClientPath.Path;
+
+			bool result = true;
+			using( System.IO.Stream bad_stream = new FileStream( file_name, FileMode.Open ) )
+			{
+				BinaryReader reader = new BinaryReader( bad_stream );
+
+				if( reader.BaseStream.Length < 3 )
+				{
+					result = false;
+				}
+
+				if( reader.ReadByte() != 0xef )
+				{ result =  false;
+				}
+
+				if( reader.ReadByte() != 0xbb )
+				{
+					result = false;
+				}
+
+				if( reader.ReadByte() != 0xbf )
+				{
+					result = false;
+				}
+
+				bad_stream.Close();
+			}
+
+			return result;
+		}
+
+		/// <summary>
+		/// Uses to GetFileMetaData to obtain the local file path from the FileSpec and resaves the file as UTF-8.
+		/// </summary>
+		/// <param name="repository">The Perforce repository.</param>
+		/// <param name="fileSpec">The FileSpec of the single file to process.</param>
+		public static void ConvertToUtf8( Repository repository, FileSpec fileSpec )
+		{
+			FileMetaData file_meta_data = repository.GetFileMetaData( null, fileSpec ).First();
+			string file_name = file_meta_data.ClientPath.Path;
+			new FileInfo( file_name ).IsReadOnly = false;
+			
+			// Detect the encoding
+			DetectionResult result = CharsetDetector.DetectFromFile( file_name );
+
+			// Read it all in
+			ConsoleLogger.Verbose( $" .. processing {file_name} with detected encoding {result.Detected.Encoding.EncodingName}" );
+			string text = System.IO.File.ReadAllText( file_name, result.Detected.Encoding );
+
+			// Write it all out as UTF-8
+			System.IO.File.WriteAllText( file_name, text, Encoding.UTF8 );
+		}
+
 		/// <summary>
 		/// Uses to GetFileMetaData to obtain the local file path from the FileSpec. Reads in the file character by character
-		/// and fixes the Perforce text corruption if any is found. Finally, it saves the file as UTF-8.
+		/// and fixes the Perforce UTF-16 text corruption if any is found. Finally, it saves the file as UTF-8.
 		/// </summary>
 		/// <param name="repository">The Perforce repository.</param>
 		/// <param name="fileSpec">The FileSpec of the single file to process.</param>
 		public static void ValidateFixAndUpdate( Repository repository, FileSpec fileSpec )
 		{
+			if( ValidateAsUtf8( repository, fileSpec ) )
+			{
+				ConsoleLogger.Warning( $"File has UTF-8 BOM - is this file already UTF-8? Skipping" );
+				return;
+			}
+
 			StringBuilder result = new StringBuilder();
 
 			FileMetaData file_meta_data = repository.GetFileMetaData( null, fileSpec ).First();
 			string utf16_file = file_meta_data.ClientPath.Path;
+			ConsoleLogger.Verbose( $" .. processing '{utf16_file}'" );
 			new FileInfo( utf16_file ).IsReadOnly = false;
 
-			System.IO.Stream bad_stream = new FileStream( utf16_file, FileMode.Open );
-			BinaryReader reader = new BinaryReader( bad_stream );
+			using( System.IO.Stream bad_stream = new FileStream( utf16_file, FileMode.Open ) )
+			{
+				BinaryReader reader = new BinaryReader( bad_stream );
 
-			UInt16 BOM = reader.ReadUInt16();
-			if( BOM == 0xbbef )
-			{
-				ConsoleLogger.Warning( $"File '{utf16_file}' is has UTF-8 BOM - is this file already UTF-8? Skipping" );
-				return;
-			}
-			else if( BOM != 0xfeff )
-			{
-				ConsoleLogger.Warning( $"File '{utf16_file}' is missing a BOM (0x{BOM.ToString( "X2" )}); adding as regular character" );
-				result.Append( ( char )BOM );
-			}
-
-			do
-			{
-				UInt16 character = CheckCharacter( reader );
-				if( character != 0 )
+				if( reader.BaseStream.Length > 1 )
 				{
-					result.Append( ( char )character );
+					UInt16 BOM = reader.ReadUInt16();
+					if( BOM != 0xfeff )
+					{
+						ConsoleLogger.Warning( $"File '{utf16_file}' is missing a BOM (0x{BOM.ToString( "X2" )}); adding as regular character" );
+						result.Append( ( char )BOM );
+					}
 				}
-			}
-			while( reader.BaseStream.Position != reader.BaseStream.Length );
 
-			reader.Close();
+				do
+				{
+					UInt16 character = CheckCharacter( reader );
+					if( character != 0 )
+					{
+						result.Append( ( char )character );
+					}
+				}
+				while( reader.BaseStream.Length - reader.BaseStream.Position > 1 ) ;
+
+				bad_stream.Close();
+			}
 
 			System.IO.File.WriteAllText( utf16_file, result.ToString(), Encoding.UTF8 );
 		}
@@ -182,14 +280,13 @@ namespace Eternal.UTF16MustDIE
 		}
 
 		/// <summary>
-		/// This Creates a new changelist and checks out all the
-		/// files defined by the FileSpecs. It changes their base file type to UTF-8, but leaves the modifier alone.
+		/// This Creates a new changelist and checks out all the files defined by the FileSpecs.
+		/// It changes their base file type to UTF-8, but leaves any modifiers alone.
 		/// It then iterates over all the files and calls the fixup function. 
 		/// </summary>
 		/// <param name="connectionInfo">The Perforce connection info.</param>
 		/// <param name="utf16Files">The list of FileSpecs to process.</param>
-		/// <returns>The changelist number.</returns>
-		public static int ProcessDepotUTF16Files( PerforceConnectionInfo connectionInfo, IList<FileSpec> utf16Files )
+		public static void ProcessDepotUtf16Files( PerforceConnectionInfo connectionInfo, IList<FileSpec> utf16Files )
 		{
 			int change_id = CreateChangelist( connectionInfo, "UTF16MustDIE - updating and fixing all UTF-16 files in the local workspace and converting to UTF-8" );
 
@@ -205,20 +302,46 @@ namespace Eternal.UTF16MustDIE
 			{
 				ValidateFixAndUpdate( repository, file_spec );
 			}
-
-			return change_id;
+		
+			ConsoleLogger.Log( $"Decorrupted and updated to UTF-8 {utf16Files.Count} files and added to change {change_id}" );
 		}
 
 		/// <summary>
-		/// This Creates a new changelist and checks out all the
-		/// files defined by the FileSpecs. It changes their base file type to UTF-8, but leaves the modifier alone.
+		/// This Creates a new changelist and checks out all the files defined by the FileSpecs.
+		/// It changes their base file type to UTF-8, but leaves any modifiers alone.
+		/// </summary>
+		/// <param name="connectionInfo">The Perforce connection info.</param>
+		/// <param name="unicodeFiles">The list of FileSpecs to process.</param>
+		public static void ProcessDepotAnsiFiles( PerforceConnectionInfo connectionInfo, IList<FileSpec> unicodeFiles )
+		{
+			int change_id = CreateChangelist( connectionInfo, "UTF16MustDIE - updating all ANSI files in the local workspace and converting to UTF-8" );
+
+			Repository repository = connectionInfo.PerforceRepository!;
+			Client client = connectionInfo.GetWorkspace()!;
+
+			ConsoleLogger.Log( $" .. adding all ANSI files to new pending changelist." );
+
+			IEnumerable<FileSpec> unversioned = unicodeFiles.ToList().Select( x => x.StripVersion() );
+			client.EditFiles( unversioned.ToList(), new EditCmdOptions( EditFilesCmdFlags.None, change_id, new FileType( BaseFileType.UTF8, FileTypeModifier.None ) ) );
+
+			foreach( FileSpec file_spec in unicodeFiles )
+			{
+				ConvertToUtf8( repository, file_spec );
+			}
+	
+			ConsoleLogger.Log( $"Updated to UTF-8 {unicodeFiles.Count} files and added to change {change_id}" );
+		}
+
+		/// <summary>
+		/// This Creates a new changelist and checks out all the files defined by the FileSpecs.
+		/// It changes their base file type to UTF-8, but leaves any modifiers alone.
 		/// It then iterates over all the files and calls the fixup function. 
 		/// </summary>
 		/// <param name="connectionInfo">The Perforce connection info.</param>
 		/// <param name="utf16Files">The list of FileSpecs to process.</param>
-		/// <returns>The changelist number.</returns>
-		public static int ProcessPendingUTF16Files( PerforceConnectionInfo connectionInfo, IList<FileSpec> utf16Files )
+		public static void ProcessPendingUtf16Files( PerforceConnectionInfo connectionInfo, IList<FileSpec> utf16Files )
 		{
+			ConsoleLogger.Log( $"... found {utf16Files.Count} UTF-16 files in pending change(s)." );
 			int change_id = CreateChangelist( connectionInfo, "UTF16MustDIE - updating and fixing all UTF-16 files in pending changes and converting to UTF-8" );
 
 			Repository repository = connectionInfo.PerforceRepository!;
@@ -233,8 +356,35 @@ namespace Eternal.UTF16MustDIE
 			{
 				ValidateFixAndUpdate( repository, file_spec );
 			}
+		
+			ConsoleLogger.Log( $"Decorrupted and updated to UTF-8 {utf16Files.Count} files and added to change {change_id}" );
+		}
 
-			return change_id;
+		/// <summary>
+		/// This Creates a new changelist and checks out all the files defined by the FileSpecs.
+		/// It changes their base file type to UTF-8, but leaves the modifier alone.
+		/// </summary>
+		/// <param name="connectionInfo">The Perforce connection info.</param>
+		/// <param name="unicodeFiles">The list of FileSpecs to process.</param>
+		public static void ProcessPendingAnsiFiles( PerforceConnectionInfo connectionInfo, IList<FileSpec> unicodeFiles )
+		{
+			ConsoleLogger.Log( $"... found {unicodeFiles.Count} ANSI files in pending change(s)." );
+			int change_id = CreateChangelist( connectionInfo, "UTF16MustDIE - updating ANSI files in pending changes and converting to UTF-8" );
+
+			Repository repository = connectionInfo.PerforceRepository!;
+			Client client = connectionInfo.GetWorkspace()!;
+
+			ConsoleLogger.Log( $" .. moving all pending ANSI files to new pending changelist." );
+
+			IEnumerable<FileSpec> unversioned = unicodeFiles.ToList().Select( x => x.StripVersion() );
+			client.ReopenFiles( unversioned.ToList(), new EditCmdOptions( EditFilesCmdFlags.None, change_id, new FileType( BaseFileType.UTF8, FileTypeModifier.None ) ) );
+
+			foreach( FileSpec file_spec in unicodeFiles )
+			{
+				ConvertToUtf8( repository, file_spec );
+			}
+	
+			ConsoleLogger.Log( $"Updated to UTF-8 {unicodeFiles.Count} files and added to pending change" );
 		}
 	}
 }
