@@ -216,7 +216,7 @@ namespace Eternal.ConsoleUtilitiesTest
 		}
 
 		/// <summary>
-		/// A test the writes and reads an XML file.
+		/// A test the writes and reads an YAML file.
 		/// </summary>
 		[TestMethod( "Read and verify an YAML file." )]
 		public void YmlHelperTest()
