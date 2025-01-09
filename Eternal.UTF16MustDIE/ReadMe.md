@@ -18,7 +18,7 @@ MIT
 
 ### Connects to the Perforce server.
 * Finds the local Perforce workspace based on the local folder and P4PORT
-   * P4PORT may need to be set for it to find the correct Perforce server
+   * P4PORT and P4USER may need to be set for it to find the correct Perforce server
    
 ### Fixes all UTF-16 files
 
@@ -119,8 +119,7 @@ using System.Reflection;
 
 Q: What if I require UTF-16 files?
 
-A: Don't use this utility or make it so you don't require
-UTF-16. Also, see the utility name.
+A: Don't use this utility or make it so you don't require UTF-16. Also, see the utility name.
 
 Q: What happens if I find a file that does not fix up properly?
 
@@ -133,6 +132,8 @@ Full Doxygen documentation at https://eternaldevelopments.com/docs
 All functions have basic unit tests to avoid simple mistakes. I speak English, so the test cases are English based. Everything
 should work with East Asian languages.
 
+Due to the nature of this tool, the unit tests only work when this is checked into a Perforce server.
+
 I have no intention of maintaining backwards compatability, but will endeavor to mention if the code no longer is backwards compatible.
 
-This utility appeals to the most niche aspects of development, but if you feel like making a donation, please send DOGE to D5iPmmqhT2niGF6Q9BCb4u7RD4FPR1SFPh or buy a [#programmerlife t-shirt](https://www.bonfire.com/store/programmer-life/)
+This utility appeals to the most niche aspects of development, but if you feel like making a donation, please send DOGE to DFbEt36Qg2s2CVAdk5hZgRJfH8p1g6tW9i or buy a [#programmerlife t-shirt](https://www.bonfire.com/store/programmer-life/)
