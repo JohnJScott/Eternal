@@ -57,5 +57,5 @@ All functions have basic unit tests to avoid simple mistakes.
 
 I have no intention of maintaining backwards compatability, but will endeavor to mention if I make any changes.
 
-This utility appeals to the most niche aspects of development, but if you feel like making a donation, please send DOGE to D5iPmmqhT2niGF6Q9BCb4u7RD4FPR1SFPh or buy a [#programmerlife t-shirt](https://www.bonfire.com/store/programmer-life/)
+This utility appeals to the most niche aspects of development, but if you feel like making a donation, please send DOGE to DFbEt36Qg2s2CVAdk5hZgRJfH8p1g6tW9i or buy a [#programmerlife t-shirt](https://www.bonfire.com/store/programmer-life/)
 
