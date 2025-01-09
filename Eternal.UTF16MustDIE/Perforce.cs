@@ -38,9 +38,10 @@ namespace Eternal.Utf16MustDie
 			FileSpec local_file_spec = new FileSpec( new ClientPath( connectionInfo.WorkspaceRoot + "/..." ), null );
 			IList<File> local_files = repository.GetFiles( opts, local_file_spec );
 
-			IList<FileSpec> utf16_file_specs = local_files.Where( x => x.Type.BaseType == baseFileType ).Select( x => ( FileSpec )x ).ToList();
+			IEnumerable<string> utf16_file_specs = local_files.Where( x => x.Type.BaseType == baseFileType ).Select( x => x.DepotPath.Path );
+			IList<FileSpec> unescaped_utf16_file_specs = utf16_file_specs.Select( x => ( FileSpec )( new DepotPath( PathSpec.UnescapePath( x ) ) ) ).ToList();
 
-			return utf16_file_specs;
+			return unescaped_utf16_file_specs;
 		}
 
 		/// <summary>
@@ -154,34 +155,46 @@ namespace Eternal.Utf16MustDie
 
 		private static bool ValidateAsUtf8( Repository repository, FileSpec fileSpec )
 		{
-			FileMetaData file_meta_data = repository.GetFileMetaData( null, fileSpec ).First();
-			string file_name = file_meta_data.ClientPath.Path;
+			string file_name = "";
+			try
+			{
+				FileMetaData file_meta_data = repository.GetFileMetaData( null, fileSpec ).First();
+				file_name = file_meta_data.ClientPath.Path;
+			}
+			catch
+			{
+				ConsoleLogger.Error( $"Exception in GetFileMetaData( null, {fileSpec.DepotPath}) - {repository.Connection.LastResults.ErrorList.First()}" );
+			}
 
 			bool result = true;
-			using( System.IO.Stream bad_stream = new FileStream( file_name, FileMode.Open ) )
+			if( file_name != null )
 			{
-				BinaryReader reader = new BinaryReader( bad_stream );
-
-				if( reader.BaseStream.Length < 3 )
+				using( System.IO.Stream bad_stream = new FileStream( file_name, FileMode.Open ) )
 				{
-					result = false;
-				}
+					BinaryReader reader = new BinaryReader( bad_stream );
 
-				if( reader.ReadByte() != 0xef )
-				{ result =  false;
-				}
+					if( reader.BaseStream.Length < 3 )
+					{
+						result = false;
+					}
 
-				if( reader.ReadByte() != 0xbb )
-				{
-					result = false;
-				}
+					if( reader.ReadByte() != 0xef )
+					{
+						result = false;
+					}
 
-				if( reader.ReadByte() != 0xbf )
-				{
-					result = false;
-				}
+					if( reader.ReadByte() != 0xbb )
+					{
+						result = false;
+					}
 
-				bad_stream.Close();
+					if( reader.ReadByte() != 0xbf )
+					{
+						result = false;
+					}
+
+					bad_stream.Close();
+				}
 			}
 
 			return result;
