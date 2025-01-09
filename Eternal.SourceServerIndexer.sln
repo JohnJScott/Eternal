@@ -5,10 +5,7 @@ VisualStudioVersion = 17.1.32328.378
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Eternal.SourceServerIndexer", "Eternal.SourceServerIndexer\Eternal.SourceServerIndexer.csproj", "{462B63B7-414C-44BD-82CE-BBE639FFD32C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Eternal.SourceServerIndexer.Test", "Eternal.SourceServerIndexer.Test\Eternal.SourceServerIndexer.Test.csproj", "{F4938BF6-04B4-4396-9DFA-813878977412}"
-	ProjectSection(ProjectDependencies) = postProject
-		{462B63B7-414C-44BD-82CE-BBE639FFD32C} = {462B63B7-414C-44BD-82CE-BBE639FFD32C}
-	EndProjectSection
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Eternal.SourceServerIndexerTest", "Eternal.SourceServerIndexerTest\Eternal.SourceServerIndexerTest.csproj", "{C976DAE9-EDC9-4D1E-9689-A00EA559A8E8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -20,10 +17,10 @@ Global
 		{462B63B7-414C-44BD-82CE-BBE639FFD32C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{462B63B7-414C-44BD-82CE-BBE639FFD32C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{462B63B7-414C-44BD-82CE-BBE639FFD32C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F4938BF6-04B4-4396-9DFA-813878977412}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F4938BF6-04B4-4396-9DFA-813878977412}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F4938BF6-04B4-4396-9DFA-813878977412}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F4938BF6-04B4-4396-9DFA-813878977412}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C976DAE9-EDC9-4D1E-9689-A00EA559A8E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C976DAE9-EDC9-4D1E-9689-A00EA559A8E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C976DAE9-EDC9-4D1E-9689-A00EA559A8E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C976DAE9-EDC9-4D1E-9689-A00EA559A8E8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
