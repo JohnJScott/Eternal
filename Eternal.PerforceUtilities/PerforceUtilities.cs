@@ -178,6 +178,12 @@ namespace Eternal.PerforceUtilities
 		    return connectionInfo.IsValid();
 	    }
 
+		/// <summary>
+		/// This finds the local blah
+		/// </summary>
+		/// <param name="connectionInfo">odlkjjfhg</param>
+		/// <param name="currentDirectory">dfgdfgdf</param>
+		/// <returns></returns>
 	    private static bool FindLocalWorkspace( PerforceConnectionInfo connectionInfo, string currentDirectory )
 	    {
 	        string host_name = Environment.GetEnvironmentVariable( "COMPUTERNAME" ) ?? String.Empty;
