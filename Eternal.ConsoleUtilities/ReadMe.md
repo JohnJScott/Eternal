@@ -31,6 +31,10 @@ A set of functions to read and write Xml files.
 
 A set of functions to read and write Yaml files.
 
+# Changes 20th June 2025
+
+Upgraded to .net9
+
 # Changes 22nd June 2024
 
 Updated Nuget packages
