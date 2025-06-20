@@ -1,7 +1,7 @@
 # Eternal Perforce Utilities 
 
-## Eternal.PerforceUtilies NuGet library package for Net8.0
-Copyright 2024 Eternal Developments, LLC. All Rights Reserved.
+## Eternal.PerforceUtilies NuGet library package for Net9.0
+Copyright 2025 Eternal Developments, LLC. All Rights Reserved.
 
 ## License
 
@@ -15,6 +15,10 @@ A set of helper functions to find the default Perforce connection, user, and wor
 ## PerforceConnectionInfo
 
 A container to store the pertinent connection information to a Perforce server.
+
+# Changes 20th June 2025
+
+Updated to .net9. Updated dependencies.
 
 # Notes
 
