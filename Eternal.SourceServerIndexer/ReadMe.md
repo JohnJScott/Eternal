@@ -1,7 +1,7 @@
 # Eternal Source Server Indexer
 
 ## Eternal.SourceServerIndexer
-Copyright 2024 Eternal Developments, LLC. All Rights Reserved.
+Copyright 2025 Eternal Developments, LLC. All Rights Reserved.
 
 ## License
 
@@ -10,7 +10,7 @@ MIT
 # Functionality
 ## SourceServerIndexer
 
-This takes the gnarly decades old Perl script and reimplements as C# Net8.0. This allows logging and debugging of the process. It also automatically
+This takes the gnarly decades old Perl script and reimplements as C# Net9.0. This allows logging and debugging of the process. It also automatically
 detects the workspace and Perforce settings based on P4PORT and the working directory. The log will also show the connection information it finds making
 debugging the process much easier.
 
@@ -32,6 +32,10 @@ To create a symbol store: symstore add /s d:\\SymStore /f D:\\Symbols\\SymbolFil
 To test, enable source server support and diagnostics in Visual Studio in Options -> Debugging -> General. With the above enabled, you should see lines like this:
 
 ``` SRCSRV:  p4.exe -p server:1666 print -o "C:\\Users\\john.scott\\AppData\\Local\\SourceServer\\REPOSITORY\\Folder\\Folder\\FileName.cpp\\3\\FileName.cpp" -q "//stream/tasks/branch/Folder/Folder/FileName.cpp#3" ```
+
+# Changes 20th June 2025
+
+Updated to .net9
 
 # Notes
 
