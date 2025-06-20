@@ -2,13 +2,21 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <VersionPrefix>2.0.2</VersionPrefix>
+    <Copyright>Copyright 2025 Eternal Developments, LLC. All Rights Reserved.</Copyright>
+    <PackageProjectUrl>http://eternaldevelopments.com/docs/index.html</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>ReadMe.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/JohnJScott/Eternal</RepositoryUrl>
+    <PackageTags>Perforce;utf-16;ANSI</PackageTags>
+    <PackAsTool>True</PackAsTool>	
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Eternal.PerforceUtilities" Version="1.0.10" />
+    <PackageReference Include="Eternal.PerforceUtilities" Version="1.0.11" />
     <PackageReference Include="UTF.Unknown" Version="2.5.1" />
   </ItemGroup>
 
@@ -18,16 +26,5 @@
       <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
-
-    <PropertyGroup>
-    <VersionPrefix>2.0.1</VersionPrefix>
-    <Copyright>Copyright 2024 Eternal Developments, LLC. All Rights Reserved.</Copyright>
-    <PackageProjectUrl>http://eternaldevelopments.com/docs/index.html</PackageProjectUrl>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageReadmeFile>ReadMe.md</PackageReadmeFile>
-    <RepositoryUrl>https://github.com/JohnJScott/Eternal</RepositoryUrl>
-    <PackageTags>Perforce;utf-16;ANSI</PackageTags>
-    <PackAsTool>True</PackAsTool>
-    </PropertyGroup>
 
 </Project>
