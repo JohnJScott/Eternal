@@ -1,7 +1,7 @@
 # Eternal Console Utilities 
 
-## Eternal.ConsoleUtilies NuGet library package for Net8.0
-Copyright 2024 Eternal Developments, LLC. All Rights Reserved.
+## Eternal.ConsoleUtilies NuGet library package for Net9.0
+Copyright 2025 Eternal Developments, LLC. All Rights Reserved.
 
 ## License
 
