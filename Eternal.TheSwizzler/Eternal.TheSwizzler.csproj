@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Title>TheSwizzler</Title>
+    <Description>A command line utility to rearrange the color components of a 32 bit PNG image</Description>
+    <Copyright>Eternal Developments LLC. All Rights Reserved.</Copyright>
+    <VersionPrefix>1.0.1</VersionPrefix>
+    <Copyright>Copyright 2025 Eternal Developments, LLC. All Rights Reserved.</Copyright>
+    <PackageProjectUrl>http://eternaldevelopments.com/docs/index.html</PackageProjectUrl>
+    <PackageReadmeFile>ReadMe.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/JohnJScott/Eternal</RepositoryUrl>
+    <PackageTags>ImageProcessing;TextureCompression</PackageTags>
+    <PackAsTool>True</PackAsTool>
+    <Company>Eternal Developments, LLC.</Company>
+    <Authors>JohnScott</Authors>		
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <WarningLevel>8</WarningLevel>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <WarningLevel>8</WarningLevel>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Update="ReadMe.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+	<PackageReference Include="Eternal.ConsoleUtilities" Version="1.0.9" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.10" />
+  </ItemGroup>
+
+</Project>

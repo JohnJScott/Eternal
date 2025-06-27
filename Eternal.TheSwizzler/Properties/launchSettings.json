@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Eternal.TheSwizzler": {
+      "commandName": "Project",
+      "commandLineArgs": "D:\\Eternal\\EternalGit\\Eternal.TheSwizzlerTest\\TestData\\test.png R001"
+    }
+  }
+}
