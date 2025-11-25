@@ -1,6 +1,6 @@
 # Eternal Perforce Utilities 
 
-## Eternal.PerforceUtilies NuGet library package for Net9.0
+## Eternal.PerforceUtilies NuGet library package
 Copyright 2025 Eternal Developments, LLC. All Rights Reserved.
 
 ## License
@@ -34,3 +34,5 @@ I have no intention of maintaining backwards compatability, but will endeavor to
 mention if I do. 
 
 This utility appeals to the most niche aspects of development, but if you feel like making a donation, please send DOGE to DFbEt36Qg2s2CVAdk5hZgRJfH8p1g6tW9i or buy a [#programmerlife t-shirt](https://www.bonfire.com/store/programmer-life/)
+
+
