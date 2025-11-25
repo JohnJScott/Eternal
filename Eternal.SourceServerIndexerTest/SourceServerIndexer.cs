@@ -2,18 +2,17 @@
 
 global using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using System.Diagnostics;
-using Eternal.SourceServerIndexer;
+[assembly: Parallelize( Scope = ExecutionScope.MethodLevel )]
 
-namespace Eternal.SourceServerIndexer.Test
+namespace Eternal.SourceServerIndexerTest
 {
     [TestClass]
     public class SourceServerIndexerTests
     {
-        [TestMethod("Validates the Debugging Tools are installed")]
+        [TestMethod( DisplayName = "Validates the Debugging Tools are installed" )]
         public void ValidateEnvironmentTest()
         {
-	        Assert.IsTrue( SourceServerIndexer.ValidateEnvironment(), "Failed to find Debugging Tools installed." );
+	        Assert.IsTrue( SourceServerIndexer.SourceServerIndexer.ValidateEnvironment(), "Failed to find Debugging Tools installed." );
         }
     }
 }
