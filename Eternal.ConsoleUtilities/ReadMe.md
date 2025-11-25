@@ -1,6 +1,6 @@
 # Eternal Console Utilities 
 
-## Eternal.ConsoleUtilies NuGet library package for Net10.0
+## Eternal.ConsoleUtilies NuGet library package
 Copyright 2025 Eternal Developments, LLC. All Rights Reserved.
 
 ## License
