@@ -5,39 +5,41 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Eternal.PerforceUtilities;
 
-namespace Eternal.PerforceUtilities.Test
+[assembly: Parallelize( Scope = ExecutionScope.MethodLevel )]
+
+namespace Eternal.PerforceUtilitiesTest
 {
 	/// <summary>
 	/// Basic tests for the PerforceUtilities class.
 	/// </summary>
     [TestClass]
-    public class PerforceUtilitiesTest
+    public class PerforceUtilitiesTests
     {
 		/// <summary>
 		/// Finds the local Perforce connection based on the current directory.
 		/// </summary>
-        [TestMethod("Get the local Perforce connection based on the current directory.")]
+		[TestMethod( DisplayName = "Get the local Perforce connection based on the current directory." )]
         public void GetConnectionInfo()
         {
 	        string current_directory = Directory.GetCurrentDirectory();
-	        PerforceConnectionInfo connection_info = PerforceUtilities.GetConnectionInfo( current_directory );
-			Assert.IsTrue( connection_info.Workspace.Length > 0, "Failed to get default connection" );
+	        PerforceConnectionInfo connection_info = PerforceUtilities.PerforceUtilities.GetConnectionInfo( current_directory );
+			Assert.IsGreaterThan( 0, connection_info.Workspace.Length, "Failed to get default connection" );
         }
 
 		/// <summary>
 		/// Syncs the default local connection to head.
 		/// </summary>
-        [TestMethod("Get latest revision for all files in the workspace")]
+        [TestMethod( DisplayName = "Get latest revision for all files in the workspace" )]
         public void SyncWorkspace()
         {
 	        string current_directory = Directory.GetCurrentDirectory();
-	        PerforceConnectionInfo connection_info = PerforceUtilities.GetConnectionInfo( current_directory );
+	        PerforceConnectionInfo connection_info = PerforceUtilities.PerforceUtilities.GetConnectionInfo( current_directory );
 
-			Assert.IsTrue( PerforceUtilities.Connect( connection_info ), "Failed to connect" );
+			Assert.IsTrue( PerforceUtilities.PerforceUtilities.Connect( connection_info ), "Failed to connect" );
 
-	        PerforceUtilities.SyncWorkspace( connection_info );
+			PerforceUtilities.PerforceUtilities.SyncWorkspace( connection_info );
 
-	        Assert.IsTrue( PerforceUtilities.Disconnect( connection_info ), "Failed to disconnect" );
+	        Assert.IsTrue( PerforceUtilities.PerforceUtilities.Disconnect( connection_info ), "Failed to disconnect" );
         }
 	}
 }
