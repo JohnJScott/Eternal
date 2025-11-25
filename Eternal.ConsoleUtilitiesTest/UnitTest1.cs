@@ -7,6 +7,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Eternal.ConsoleUtilities;
 
+[assembly: Parallelize( Scope = ExecutionScope.MethodLevel )]
+
 namespace Eternal.ConsoleUtilitiesTest
 {
 	/// <summary>
@@ -18,7 +20,7 @@ namespace Eternal.ConsoleUtilitiesTest
 		/// <summary>
 		/// A test that calls all the basic logging functions
 		/// </summary>
-		[TestMethod( "Basic logging functionality" )]
+		[TestMethod( DisplayName = "Basic logging functionality" )]
 		public void ConsoleLoggerTest()
 		{
 			ConsoleLogger.VerboseLogs = true;
@@ -45,7 +47,7 @@ namespace Eternal.ConsoleUtilitiesTest
 		/// <summary>
 		/// A test that calls validates the human readable time duration string
 		/// </summary>
-		[TestMethod( "TimeString functionality" )]
+		[TestMethod( DisplayName = "TimeString functionality" )]
 		public void ConsoleLoggerTimeStringTest()
 		{
 			Assert.AreEqual( "3 days 4 hours", ConsoleLogger.TimeString( new TimeSpan( 3, 4, 5, 6 ) ),  "Error for time string days" );
@@ -61,7 +63,7 @@ namespace Eternal.ConsoleUtilitiesTest
 		/// <summary>
 		/// A test that calls validates the human readable time duration string
 		/// </summary>
-		[TestMethod( "TimeString pluralities" )]
+		[TestMethod( DisplayName = "TimeString pluralities" )]
 		public void ConsoleLoggerTimeStringPluralTest()
 		{
 			Assert.AreEqual( "1 day 1 hour", ConsoleLogger.TimeString( new TimeSpan( 1, 1, 5, 6 ) ),  "Error for time string days" );
@@ -74,7 +76,7 @@ namespace Eternal.ConsoleUtilitiesTest
 		/// <summary>
 		/// A test that calls validates the human readable time duration string
 		/// </summary>
-		[TestMethod( "MemoryString functionality" )]
+		[TestMethod( DisplayName = "MemoryString functionality" )]
 		public void ConsoleLoggerMemoryStringTest()
 		{
 			Assert.AreEqual( "1.201 TB", ConsoleLogger.MemoryString( 1230 * 1024L * 1024L * 1024L ), "Error for memory string TB" );
@@ -95,7 +97,7 @@ namespace Eternal.ConsoleUtilitiesTest
 		/// <summary>
 		/// A basic test of process launching and capturing of output
 		/// </summary>
-		[TestMethod( "Basic process functionality" )]
+		[TestMethod( DisplayName = "Basic process functionality" )]
 		public void ConsoleProcessTest()
 		{
 			string cwd = Environment.GetEnvironmentVariable( "TEMP" ) ?? string.Empty;
@@ -118,7 +120,7 @@ namespace Eternal.ConsoleUtilitiesTest
 				CapturedOuput.Clear();
 				ConsoleProcess process = new ConsoleProcess( com_spec, cwd, CaptureOutput, "/c", "dir" );
 				Assert.AreEqual( 0, process.Wait(), "Correctly launched exe" );
-				Assert.IsTrue( CapturedOuput.Count > 0, "Failed to capture output" );
+				Assert.IsNotEmpty( CapturedOuput, "Failed to capture output" );
 			}
 		}
 
@@ -133,7 +135,7 @@ namespace Eternal.ConsoleUtilitiesTest
 		/// <summary>
 		/// A test that writes and reads a json file
 		/// </summary>
-		[TestMethod("Read and verify a json file")]
+		[TestMethod( DisplayName = "Read and verify a json file" )]
 		public void JsonHelperTest()
 		{
 			JsonTestClass test_class = new JsonTestClass();
@@ -172,7 +174,7 @@ namespace Eternal.ConsoleUtilitiesTest
 		/// <summary>
 		/// A test the writes and reads an XML file.
 		/// </summary>
-		[TestMethod("Read and verify an XML file.")]
+		[TestMethod( DisplayName = "Read and verify an XML file." )]
 		public void XmlHelperTest()
 		{
 			string cwd = Environment.GetEnvironmentVariable( "TEMP" ) ?? string.Empty;
@@ -187,7 +189,7 @@ namespace Eternal.ConsoleUtilitiesTest
 
 			XmlTestClass? result = XmlHelper.ReadXmlFile<XmlTestClass>( file_name );
 			Assert.IsNotNull( result, "Failed to read xml file" );
-			Assert.AreEqual( true, result.TestBool, "Failed to read xml file properly" );
+			Assert.IsTrue( result.TestBool, "Failed to read xml file properly" );
 			Assert.AreEqual( 456, result.TestInt, "Failed to read xml file properly" );
 			Assert.AreEqual( "Beta", test_class.TestList[1], "Failed to read list properly" );
 		}
@@ -218,7 +220,7 @@ namespace Eternal.ConsoleUtilitiesTest
 		/// <summary>
 		/// A test the writes and reads an YAML file.
 		/// </summary>
-		[TestMethod( "Read and verify an YAML file." )]
+		[TestMethod( DisplayName = "Read and verify an YAML file." )]
 		public void YmlHelperTest()
 		{
 			string cwd = Environment.GetEnvironmentVariable( "TEMP" ) ?? string.Empty;
@@ -233,7 +235,7 @@ namespace Eternal.ConsoleUtilitiesTest
 
 			YmlTestClass? result = YamlHelper.ReadYamlFile<YmlTestClass>( file_name );
 			Assert.IsNotNull( result, "Failed to read yaml file" );
-			Assert.AreEqual( true, result.TestBool, "Failed to read yaml file properly" );
+			Assert.IsTrue( result.TestBool, "Failed to read yaml file properly" );
 			Assert.AreEqual( 456, result.TestInt, "Failed to read yaml file properly" );
 			Assert.AreEqual( "Beta", test_class.TestList[1], "Failed to read list properly" );
 			Assert.AreEqual( "Two", test_class.TestDictionary[2], "Failed to read list properly" );
