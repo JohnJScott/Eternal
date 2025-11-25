@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Eternal.ConsoleUtilities\Eternal.ConsoleUtilities.csproj" />
+    <ProjectReference Include="..\Eternal.PerforceUtilities\Eternal.PerforceUtilities.csproj" />
   </ItemGroup>
 
 </Project>
