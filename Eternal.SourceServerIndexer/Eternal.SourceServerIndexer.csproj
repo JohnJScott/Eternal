@@ -2,23 +2,32 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net9.0-windows10.0.22000.0</TargetFramework>
+    <TargetFramework>net10.0-windows10.0.22000.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <VersionPrefix>1.0.4</VersionPrefix>
+    <VersionPrefix>1.0.5</VersionPrefix>
     <Copyright>Copyright 2025 Eternal Developments, LLC. All Rights Reserved.</Copyright>
     <PackageProjectUrl>http://eternaldevelopments.com/docs/index.html</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackAsTool>True</PackAsTool>
+    <PackAsTool>False</PackAsTool>
     <PackageReadmeFile>ReadMe.md</PackageReadmeFile>
-    <Description>A net9 tool to source index symbol files for Perforce</Description>
-    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+    <Description></Description>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <RepositoryUrl>https://github.com/JohnJScott/Eternal</RepositoryUrl>
-    <PackageTags>Perforce;SourceServer</PackageTags>	
+    <PackageTags>Perforce;SourceServer</PackageTags>
+    <Title>A tool to source index symbol files for Perforce</Title>	
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <WarningLevel>9999</WarningLevel>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <WarningLevel>9999</WarningLevel>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Eternal.PerforceUtilities" Version="1.0.11" />
+    <PackageReference Include="Eternal.PerforceUtilities" Version="1.0.13" />
   </ItemGroup>
 
   <ItemGroup>
