@@ -10,7 +10,9 @@ using UtfUnknown;
 
 using File = Perforce.P4.File;
 
-namespace Eternal.Utf16MustDieTest.Tests
+[assembly: Parallelize( Scope = ExecutionScope.MethodLevel )]
+
+namespace Eternal.Utf16MustDieTestTest
 {
 	/// <summary>
 	/// A class to test various elements of the UTF16MustDIE utility.
@@ -64,7 +66,7 @@ namespace Eternal.Utf16MustDieTest.Tests
 			BinaryReader reader = new BinaryReader( bad_stream );
 
 			UInt16 BOM = reader.ReadUInt16();
-			Assert.IsTrue( BOM == 0xfeff, "BOM not found" );
+			Assert.AreEqual( 0xfeff, BOM, "BOM not found" );
 
 			// For the test files (based in English) a significant portion of the bytes will be 0
 			int null_char_count = 0;
@@ -78,7 +80,7 @@ namespace Eternal.Utf16MustDieTest.Tests
 			}
 			while( reader.BaseStream.Position != reader.BaseStream.Length );
 
-			Assert.IsTrue( null_char_count > reader.BaseStream.Length / 3, "Not enough null chars; file is not likely UTF-16" );
+			Assert.IsGreaterThan( reader.BaseStream.Length / 3, null_char_count, "Not enough null chars; file is not likely UTF-16" );
 			reader.Close();
 		}
 
@@ -90,9 +92,9 @@ namespace Eternal.Utf16MustDieTest.Tests
 			System.IO.Stream good_stream = new FileStream( utf8_file, FileMode.Open );
 			BinaryReader reader = new BinaryReader( good_stream );
 
-			Assert.IsTrue( reader.ReadByte() == 0xef, "First UTF-8 BOM entry incorrect" );
-			Assert.IsTrue( reader.ReadByte() == 0xbb, "Second UTF-8 BOM entry incorrect" );
-			Assert.IsTrue( reader.ReadByte() == 0xbf, "Third UTF-8 BOM entry incorrect" );
+			Assert.AreEqual( 0xef, reader.ReadByte(), "First UTF-8 BOM entry incorrect" );
+			Assert.AreEqual( 0xbb, reader.ReadByte(), "Second UTF-8 BOM entry incorrect" );
+			Assert.AreEqual( 0xbf, reader.ReadByte(), "Third UTF-8 BOM entry incorrect" );
 
 			int null_char_count = 0;
 			do
@@ -105,11 +107,11 @@ namespace Eternal.Utf16MustDieTest.Tests
 			}
 			while( reader.BaseStream.Position != reader.BaseStream.Length );
 
-			Assert.IsTrue( null_char_count <= 1, "Excess null chars; file is not likely UTF-8" );
+			Assert.IsLessThanOrEqualTo( 1, null_char_count, "Excess null chars; file is not likely UTF-8" );
 			reader.Close();
 		}
 
-		[TestMethod( "Find all UTF-16 files in the local workspace." )]
+		[TestMethod( DisplayName = "Find all UTF-16 files in the local workspace." )]
 		public void GetUtf16Files()
 		{
 			PerforceUtilities.PerforceConnectionInfo connection_info = PerforceUtilities.PerforceUtilities.GetConnectionInfo( Directory.GetCurrentDirectory() );
@@ -120,7 +122,7 @@ namespace Eternal.Utf16MustDieTest.Tests
 			Assert.IsTrue( PerforceUtilities.PerforceUtilities.Disconnect( connection_info ), "Failed to disconnect" );
 		}
 
-		[TestMethod( "Validate and fix corrupted UTF-16 files" )]
+		[TestMethod( DisplayName = "Validate and fix corrupted UTF-16 files" )]
 		public void ValidateFiles()
 		{
 			PerforceUtilities.PerforceConnectionInfo connection_info = PerforceUtilities.PerforceUtilities.GetConnectionInfo( Directory.GetCurrentDirectory() );
@@ -163,7 +165,7 @@ namespace Eternal.Utf16MustDieTest.Tests
 			CollectionAssert.AreEqual( original, updated, $"New file is not the same as original for {friendlyName}.\n '{new_utf8_string}' does not match '{sampleString}'." );
 		}
 
-		[TestMethod( "ValidateEncodings" )]
+		[TestMethod( DisplayName = "ValidateEncodings" )]
 		public void ValidateEncodings()
 		{
 			Encoding.RegisterProvider( CodePagesEncodingProvider.Instance );
