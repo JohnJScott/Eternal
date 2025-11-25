@@ -1,6 +1,6 @@
 # Eternal Console Utilities 
 
-## Eternal.ConsoleUtilies NuGet library package for Net9.0
+## Eternal.ConsoleUtilies NuGet library package for Net10.0
 Copyright 2025 Eternal Developments, LLC. All Rights Reserved.
 
 ## License
@@ -31,15 +31,19 @@ A set of functions to read and write Xml files.
 
 A set of functions to read and write Yaml files.
 
-# Changes 20th June 2025
+# Changes 25th November 2025 - 1.0.10
 
-Upgraded to .net9
+Upgraded to .net10
 
 # Changes 22nd June 2024
 
 Updated Nuget packages
 Added License.txt
 Added link to T-Shirts
+
+# Changes 20th June 2025
+
+Upgraded to .net9
 
 # Changes 4th March 2024
 
