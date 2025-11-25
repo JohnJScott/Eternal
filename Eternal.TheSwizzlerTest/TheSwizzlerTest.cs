@@ -9,9 +9,9 @@ using SixLabors.ImageSharp.PixelFormats;
 namespace Eternal.TheSwizzlerTest
 {
 	[TestClass]
-	public class TheSwizzlerTest
+	public class TheSwizzlerTests
 	{
-		[TestMethod(DisplayName="Validate the swizzle validation")]
+		[TestMethod( DisplayName = "Validate the swizzle validation" )]
 		public void TestSwizzleValidation()
 		{
 			Assert.IsTrue( TheSwizzler.TheSwizzler.ValidateSwizzle( "RGBA" ), "RGBA is a valid swizzle" );
