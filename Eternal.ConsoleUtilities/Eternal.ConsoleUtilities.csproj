@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <VersionPrefix>1.0.10</VersionPrefix>
+    <VersionPrefix>1.0.11</VersionPrefix>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Description>Helper functions for logging, launching processes, reading and writing Json, Xml, and Yaml files.</Description>
     <Copyright>Copyright 2025 Eternal Developments, LLC. All Rights Reserved.</Copyright>
@@ -17,6 +17,14 @@
     <NeutralLanguage>en</NeutralLanguage>
     <Company>Eternal Developments, LLC.</Company>
     <Authors>JohnScott</Authors>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <WarningLevel>9999</WarningLevel>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <WarningLevel>9999</WarningLevel>
   </PropertyGroup>
 
   <ItemGroup>
