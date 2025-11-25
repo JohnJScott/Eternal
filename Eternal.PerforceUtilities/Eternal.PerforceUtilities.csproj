@@ -1,40 +1,24 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Description>Some Perforce helper functions.</Description>
-    <Copyright>Copyright 2025 Eternal Developments, LLC . All rights reserved.</Copyright>
-    <PackageProjectUrl>http://eternaldevelopments.com/docs/</PackageProjectUrl>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Version>$(VersionPrefix)</Version>
-    <PackageTags>Perforce</PackageTags>
-    <VersionPrefix>1.0.11</VersionPrefix>
-    <PackageReadmeFile>ReadMe.md</PackageReadmeFile>
-    <RepositoryUrl>https://github.com/JohnJScott/Eternal</RepositoryUrl>
-    <RepositoryType>Git</RepositoryType>	
-  </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <WarningLevel>5</WarningLevel>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <WarningLevel>5</WarningLevel>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Eternal.ConsoleUtilities" Version="1.0.9" />
-    <PackageReference Include="p4api.net" Version="2025.1.277.3624" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="MSTest.TestAdapter" Version="3.9.3" />
+    <PackageReference Include="MSTest.TestFramework" Version="3.9.3" />
+    <PackageReference Include="coverlet.collector" Version="6.0.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="ReadMe.md">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
+    <ProjectReference Include="..\Eternal.PerforceUtilities\Eternal.PerforceUtilities.csproj" />
   </ItemGroup>
 
 </Project>
