@@ -1,17 +1,11 @@
 # Eternal TheSwizzler
 
-## Eternal.TheSwizzler NuGet library package for Net10.0
+## Eternal.TheSwizzler NuGet library tool
 Copyright 2025 Eternal Developments, LLC. All Rights Reserved.
 
 ## License
 
 MIT
-
-## Direct Dependencies
-
-Eternal.ConsoleUtilities - 1.0.10 - MIT
-
-SixLabors.ImageSharp - 3.1.12 - Apache-2.0
 
 # Functionality
 
