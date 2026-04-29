@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\ThirdParty\7-Zip\lzma2501\C\7z.h" />
+    <ClInclude Include="..\..\ThirdParty\7-Zip\lzma2501\C\7zAlloc.h" />
+    <ClInclude Include="..\..\ThirdParty\7-Zip\lzma2501\C\7zBuf.h" />
+    <ClInclude Include="..\..\ThirdParty\7-Zip\lzma2501\C\7zCrc.h" />
+    <ClInclude Include="..\..\ThirdParty\7-Zip\lzma2501\C\7zFile.h" />
+    <ClInclude Include="..\..\ThirdParty\7-Zip\lzma2501\C\7zTypes.h" />
+    <ClInclude Include="..\..\ThirdParty\7-Zip\lzma2501\C\7zVersion.h" />
+    <ClInclude Include="..\..\ThirdParty\7-Zip\lzma2501\C\7zWindows.h" />
+    <ClInclude Include="..\..\ThirdParty\7-Zip\lzma2501\C\Aes.h" />
+    <ClInclude Include="..\..\ThirdParty\7-Zip\lzma2501\C\Alloc.h" />
+    <ClInclude Include="..\..\ThirdParty\7-Zip\lzma2501\C\Bcj2.h" />
+    <ClInclude Include="..\..\ThirdParty\7-Zip\lzma2501\C\Bra.h" />
+    <ClInclude Include="..\..\ThirdParty\7-Zip\lzma2501\C\Compiler.h" />
+    <ClInclude Include="..\..\ThirdParty\7-Zip\lzma2501\C\CpuArch.h" />
+    <ClInclude Include="..\..\ThirdParty\7-Zip\lzma2501\C\Delta.h" />
+    <ClInclude Include="..\..\ThirdParty\7-Zip\lzma2501\C\DllSecur.h" />
+    <ClInclude Include="..\..\ThirdParty\7-Zip\lzma2501\C\LzFind.h" />
+    <ClInclude Include="..\..\ThirdParty\7-Zip\lzma2501\C\LzFindMt.h" />
+    <ClInclude Include="..\..\ThirdParty\7-Zip\lzma2501\C\LzHash.h" />
+    <ClInclude Include="..\..\ThirdParty\7-Zip\lzma2501\C\Lzma2Dec.h" />
+    <ClInclude Include="..\..\ThirdParty\7-Zip\lzma2501\C\Lzma2DecMt.h" />
+    <ClInclude Include="..\..\ThirdParty\7-Zip\lzma2501\C\Lzma2Enc.h" />
+    <ClInclude Include="..\..\ThirdParty\7-Zip\lzma2501\C\Lzma86.h" />
+    <ClInclude Include="..\..\ThirdParty\7-Zip\lzma2501\C\LzmaDec.h" />
+    <ClInclude Include="..\..\ThirdParty\7-Zip\lzma2501\C\LzmaEnc.h" />
+    <ClInclude Include="..\..\ThirdParty\7-Zip\lzma2501\C\LzmaLib.h" />
+    <ClInclude Include="..\..\ThirdParty\7-Zip\lzma2501\C\MtCoder.h" />
+    <ClInclude Include="..\..\ThirdParty\7-Zip\lzma2501\C\MtDec.h" />
+    <ClInclude Include="..\..\ThirdParty\7-Zip\lzma2501\C\Ppmd.h" />
+    <ClInclude Include="..\..\ThirdParty\7-Zip\lzma2501\C\Ppmd7.h" />
+    <ClInclude Include="..\..\ThirdParty\7-Zip\lzma2501\C\Precomp.h" />
+    <ClInclude Include="..\..\ThirdParty\7-Zip\lzma2501\C\RotateDefs.h" />
+    <ClInclude Include="..\..\ThirdParty\7-Zip\lzma2501\C\Sha256.h" />
+    <ClInclude Include="..\..\ThirdParty\7-Zip\lzma2501\C\Sort.h" />
+    <ClInclude Include="..\..\ThirdParty\7-Zip\lzma2501\C\SwapBytes.h" />
+    <ClInclude Include="..\..\ThirdParty\7-Zip\lzma2501\C\Threads.h" />
+    <ClInclude Include="..\..\ThirdParty\7-Zip\lzma2501\C\Xz.h" />
+    <ClInclude Include="..\..\ThirdParty\7-Zip\lzma2501\C\XzCrc64.h" />
+    <ClInclude Include="..\..\ThirdParty\7-Zip\lzma2501\C\XzEnc.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\7zAlloc.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\7zArcIn.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\7zBuf.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\7zBuf2.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\7zCrc.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\7zCrcOpt.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\7zDec.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\7zFile.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\7zStream.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\Aes.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\AesOpt.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\Alloc.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\Bcj2.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\Bcj2Enc.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\Bra.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\Bra86.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\BraIA64.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\CpuArch.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\Delta.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\DllSecur.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\LzFind.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\LzFindMt.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\LzFindOpt.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\Lzma2Dec.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\Lzma2DecMt.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\Lzma2Enc.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\Lzma86Dec.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\Lzma86Enc.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\LzmaDec.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\LzmaEnc.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\LzmaLib.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\MtCoder.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\MtDec.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\Ppmd7.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\Ppmd7Dec.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\Ppmd7Enc.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\Sha256.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\Sha256Opt.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\Sort.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\SwapBytes.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\Threads.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\Xz.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\XzCrc64.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\XzCrc64Opt.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\XzDec.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\XzEnc.c" />
+    <ClCompile Include="..\..\ThirdParty\7-Zip\lzma2501\C\XzIn.c" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>18.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{a3698e10-6c28-4b3d-bb4a-71921a217b54}</ProjectGuid>
+    <RootNamespace>OriginalSevenZip</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(SolutionDir)\Binaries\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)\Intermediate\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
+    <TargetName>$(MSBuildProjectName)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)\Binaries\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)\Intermediate\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
+    <TargetName>$(MSBuildProjectName)</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+      <CompileAsManaged>false</CompileAsManaged>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>Disabled</Optimization>
+      <OmitFramePointers>false</OmitFramePointers>
+      <StringPooling>false</StringPooling>
+      <ExceptionHandling>false</ExceptionHandling>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <StructMemberAlignment>8Bytes</StructMemberAlignment>
+      <ControlFlowGuard>Guard</ControlFlowGuard>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <EnableParallelCodeGeneration>false</EnableParallelCodeGeneration>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <CreateHotpatchableImage>false</CreateHotpatchableImage>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <OpenMPSupport>false</OpenMPSupport>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+      <CompileAsManaged>false</CompileAsManaged>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <OmitFramePointers>true</OmitFramePointers>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling>false</ExceptionHandling>
+      <StructMemberAlignment>8Bytes</StructMemberAlignment>
+      <ControlFlowGuard>false</ControlFlowGuard>
+      <EnableParallelCodeGeneration>false</EnableParallelCodeGeneration>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <CreateHotpatchableImage>false</CreateHotpatchableImage>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <OpenMPSupport>false</OpenMPSupport>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
