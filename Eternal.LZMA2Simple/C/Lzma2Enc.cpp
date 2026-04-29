@@ -20,12 +20,24 @@ public:
 		Finished = false;
 	}
 
+	/**
+	 * @brief Resets the processed-byte counter and the end-of-stream flag.
+	 */
 	void Reset()
 	{
 		Processed = 0u;
 		Finished = false;
 	}
 
+	/**
+	 * @brief Reads bytes from the underlying stream and accumulates the total bytes processed.
+	 *
+	 * @param bufferBase Destination buffer.
+	 * @param offset     Byte offset into bufferBase to write to.
+	 * @param size       On entry: maximum bytes to read.
+	 *                   On exit:  bytes actually read (0 signals end of stream).
+	 * @return SevenZipOK, or an error code from the underlying stream.
+	 */
 	virtual SevenZipResult Read( uint8* bufferBase, const int64 offset, int64* size ) override
 	{
 		SevenZipResult result = SevenZipResult::SevenZipOK;
@@ -93,6 +105,11 @@ private:
 
 /* ---------- CLzma2EncInt ---------- */
 
+/**
+ * @brief Reads and caches the encoder property byte if it has not already been retrieved.
+ *
+ * @return SevenZipOK on success, or an error code from GetCodedProperties().
+ */
 SevenZipResult Lzma2Enc::InitStream()
 {
 	if( !PropertiesAreSet )
@@ -112,6 +129,9 @@ SevenZipResult Lzma2Enc::InitStream()
 	return SevenZipResult::SevenZipOK;
 }
 
+/**
+ * @brief Resets per-block state, preparing the encoder to start a new LZMA2 block.
+ */
 void Lzma2Enc::InitBlock()
 {
 	SourcePosition = 0u;
@@ -119,6 +139,14 @@ void Lzma2Enc::InitBlock()
 	NeedInitProp = true;
 }
 
+/**
+ * @brief Encodes one LZMA2 sub-block, choosing between LZMA and copy mode automatically.
+ *
+ * @param packSizeRes On entry: maximum allowed compressed size for this sub-block.
+ *                   On exit:  number of compressed bytes written to outStream.
+ * @param outStream  Destination stream to write the encoded sub-block to.
+ * @return SevenZipOK on success, SevenZipErrorOutputEof if the output limit is exceeded.
+ */
 SevenZipResult Lzma2Enc::EncodeSubblock( int64& packSizeRes, OutStreamInterface& outStream )
 {
 	const int64 pack_size_limit = packSizeRes;
@@ -221,6 +249,11 @@ SevenZipResult Lzma2Enc::EncodeSubblock( int64& packSizeRes, OutStreamInterface&
 
 /* ---------- Lzma2 Props ---------- */
 
+/**
+ * @brief Validates and fills in default values for all LZMA2 encoder properties.
+ *
+ * @return SevenZipOK on success, SevenZipErrorParam if the literal-bit combination is invalid.
+ */
 SevenZipResult CLzma2EncoderProperties::Normalize()
 {
 	CLzmaEncoderProperties::Normalize();
@@ -246,6 +279,11 @@ SevenZipResult CLzma2EncoderProperties::Normalize()
 
 /* ---------- Lzma2 ---------- */
 
+/**
+ * @brief Returns the one-byte LZMA2 dictionary-size index used in the stream header.
+ *
+ * @return Encoded dictionary index in the range [0, 40].
+ */
 uint8 Lzma2Enc::GetCodedDictionary() const
 {
 	uint8 dict_index;
@@ -261,6 +299,14 @@ uint8 Lzma2Enc::GetCodedDictionary() const
 	return dict_index;
 }
 
+/**
+ * @brief Encodes an entire input stream into an LZMA2 output stream.
+ *
+ * @param outStream Destination stream to write the compressed LZMA2 data to.
+ * @param inStream  Source stream supplying the uncompressed data.
+ * @param finished  If true, writes the LZMA2 end-of-stream marker after the last block.
+ * @return SevenZipOK on success, or an error code.
+ */
 SevenZipResult Lzma2Enc::EncodeStream( OutStreamInterface& outStream, InStreamInterface& inStream, bool finished )
 {
 	int64 unpack_total = 0u;
@@ -361,6 +407,17 @@ SevenZipResult Lzma2Enc::EncodeStream( OutStreamInterface& outStream, InStreamIn
 	}
 }
 
+/**
+ * @brief Compresses an input stream using LZMA2 and writes the result to an output stream.
+ *
+ * @param outStream         Destination stream to receive the compressed output.
+ * @param inStream          Source stream supplying the uncompressed data.
+ * @param encoderProperties Encoder configuration parameters.
+ * @param propertySummary   Output byte to receive the one-byte LZMA2 property summary.
+ * @param alloc             Memory allocator for internal buffers.
+ * @param progress          Optional progress callback; pass nullptr to disable.
+ * @return SevenZipOK on success, or an error code.
+ */
 SevenZipResult Lzma2Encode( OutStreamInterface& outStream, InStreamInterface& inStream, const CLzma2EncoderProperties* encoderProperties, uint8* propertySummary, MemoryInterface* alloc, ProgressInterface* progress )
 {
 	Lzma2Enc enc2( encoderProperties, alloc, progress );

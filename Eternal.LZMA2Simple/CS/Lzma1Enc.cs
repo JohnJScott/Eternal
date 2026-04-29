@@ -46,6 +46,10 @@ namespace Eternal.LZMA2SimpleCS.CS
 
 	public partial class CLzmaEncoderProperties
 	{
+		/// <summary>
+		/// Returns the effective dictionary size, deriving it from CompressionLevel if DictionarySize is zero.
+		/// </summary>
+		/// <returns>Dictionary size in bytes, clamped to [MinDictionarySize, MaxDictionarySize].</returns>
 		public uint32 GetDictionarySize()
 		{
 			uint32 dictionary_size = DictionarySize;
@@ -87,6 +91,10 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return dictionary_size;
 		}
 
+		/// <summary>
+		/// Validates and fills in default values for all encoder properties.
+		/// </summary>
+		/// <returns>SevenZipOK on success.</returns>
 		public virtual SevenZipResult Normalize()
 		{
 			CompressionLevel = Math.Clamp( CompressionLevel, ( uint8 )0, ( uint8 )9 );
@@ -111,6 +119,10 @@ namespace Eternal.LZMA2SimpleCS.CS
 	public class CLzma1EncoderProperties
 		: CLzmaEncoderProperties
 	{
+		/// <summary>
+		/// Validates and fills in default values for all LZMA1 encoder properties.
+		/// </summary>
+		/// <returns>SevenZipOK on success.</returns>
 		public override SevenZipResult Normalize()
 		{
 			base.Normalize();
@@ -354,6 +366,10 @@ namespace Eternal.LZMA2SimpleCS.CS
 			private CLengthEncoder RepeatLengthProbabilities = new CLengthEncoder();
 
 
+			/// <summary>
+			/// Captures a snapshot of all mutable encoder state into this save-state object.
+			/// </summary>
+			/// <param name="enc1">The encoder whose state is to be saved.</param>
 			public void SaveState( Lzma1Enc enc1 )
 			{
 				State = enc1.State;
@@ -385,6 +401,10 @@ namespace Eternal.LZMA2SimpleCS.CS
 				Array.Copy( enc1.LiteralProbabilities, LiteralProbabilities, prob_size );
 			}
 
+			/// <summary>
+			/// Restores a previously saved encoder state back into the encoder.
+			/// </summary>
+			/// <param name="enc1">The encoder whose state is to be restored.</param>
 			public void RestoreState( Lzma1Enc enc1 )
 			{
 				enc1.State = State;
@@ -771,6 +791,10 @@ namespace Eternal.LZMA2SimpleCS.CS
 			FreeLits();
 		}
 
+		/// <summary>
+		/// Hints the encoder about the total expected input size so the dictionary can be sized accordingly.
+		/// </summary>
+		/// <param name="expectedDataSize">Expected number of bytes to encode; pass Int64.MaxValue if unknown.</param>
 		public void SetDataSize( int64 expectedDataSize )
 		{
 			MatchFinder.ExpectedDataSize = expectedDataSize;
@@ -2754,6 +2778,12 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return SevenZipResult.SevenZipOK;
 		}
 
+		/// <summary>
+		/// Attaches an input stream and initialises the encoder for a new encoding pass.
+		/// </summary>
+		/// <param name="inStreamInterface">Source stream supplying the uncompressed data.</param>
+		/// <param name="keepWindowSize">Number of bytes to keep in the sliding window between calls.</param>
+		/// <returns>SevenZipOK on success, or an error code if initialisation fails.</returns>
 		public SevenZipResult Prepare( InStreamInterface inStreamInterface, uint32 keepWindowSize )
 		{
 			MatchFinder.InStream = inStreamInterface;
@@ -2772,11 +2802,19 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return AllocAndInit( keepWindowSize );
 		}
 
+		/// <summary>
+		/// Returns the base of the match finder's internal input buffer.
+		/// </summary>
+		/// <returns>The byte array used as the match finder's sliding window.</returns>
 		public uint8[] GetBufferBase()
 		{
 			return MatchFinder.BufferBase;
 		}
 
+		/// <summary>
+		/// Returns the current read position within the match finder's input buffer.
+		/// </summary>
+		/// <returns>Byte offset from the start of the buffer base to the current encoding position.</returns>
 		public int64 GetCurrentOffset()
 		{
 			return MatchFinder.BufferOffset - AdditionalOffset;
@@ -2794,6 +2832,12 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return SevenZipResult.SevenZipOK;
 		}
 
+		/// <summary>
+		/// Serialises the encoder configuration into the five-byte LZMA properties array.
+		/// </summary>
+		/// <param name="properties">Output array to receive the encoded properties; must be at least LzmaPropertiesSize (5) bytes.</param>
+		/// <param name="size">On entry: capacity of properties. On exit: LzmaPropertiesSize (5).</param>
+		/// <returns>SevenZipOK on success, or SevenZipErrorParam if the buffer is too small.</returns>
 		public SevenZipResult GetCodedProperties( uint8[] properties, ref int64 size )
 		{
 			if( size < Lzma.LzmaPropertiesSize )
@@ -2838,6 +2882,16 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return SevenZipResult.SevenZipOK;
 		}
 
+		/// <summary>
+		/// Encodes one LZMA block into a caller-supplied memory buffer.
+		/// </summary>
+		/// <param name="reInit">If true, re-initialises encoder state before encoding.</param>
+		/// <param name="baseDest">Base pointer of the destination buffer.</param>
+		/// <param name="offset">Byte offset into baseDest at which to start writing.</param>
+		/// <param name="destLen">On entry: maximum bytes to write. On exit: bytes actually written.</param>
+		/// <param name="desiredPackSize">Maximum number of compressed bytes to produce.</param>
+		/// <param name="unpackSize">On exit: number of uncompressed bytes consumed.</param>
+		/// <returns>SevenZipOK on success, or SevenZipErrorOutputEof if the output buffer is full.</returns>
 		public SevenZipResult CodeOneMemBlock( bool reInit, uint8[] baseDest, int64 offset, ref int64 destLen, uint32 desiredPackSize, ref uint32 unpackSize )
 		{
 			CheckedOutStreamInterface out_stream_interface = new CheckedOutStreamInterface( baseDest, offset, destLen );
@@ -2908,6 +2962,18 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return result;
 		}
 
+		/// <summary>
+		/// Compresses a memory buffer using LZMA1 and writes the result to another buffer.
+		/// </summary>
+		/// <param name="compressed">Output buffer to receive the compressed data.</param>
+		/// <param name="compressedLength">On entry: capacity of compressed. On exit: number of bytes written.</param>
+		/// <param name="decompressed">Input buffer containing the data to compress.</param>
+		/// <param name="decompressedLength">Number of bytes in decompressed to compress.</param>
+		/// <param name="encoderProperties">Encoder configuration parameters.</param>
+		/// <param name="propsEncoded">Output array to receive the five-byte LZMA properties.</param>
+		/// <param name="outPropsSize">On entry: capacity of propsEncoded. On exit: LzmaPropertiesSize (5).</param>
+		/// <param name="progress">Optional progress callback; pass null to disable.</param>
+		/// <returns>SevenZipOK on success, or an error code.</returns>
 		public static SevenZipResult Lzma1Encode( uint8[] compressed, ref int64 compressedLength, uint8[] decompressed, int64 decompressedLength, CLzmaEncoderProperties encoderProperties, ref uint8[] propsEncoded, ref int64 outPropsSize, ProgressInterface? progress )
 		{
 			Lzma1Enc enc1 = new Lzma1Enc( encoderProperties, progress );

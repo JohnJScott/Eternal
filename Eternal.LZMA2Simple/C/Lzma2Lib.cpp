@@ -35,6 +35,11 @@ public:
 		return 0;
 	}
 
+	/**
+	 * @brief Returns the number of bytes written to the output buffer so far.
+	 *
+	 * @return Current write position as a byte offset from the start of the buffer.
+	 */
 	int64 GetOffset() const
 	{
 		return Offset;

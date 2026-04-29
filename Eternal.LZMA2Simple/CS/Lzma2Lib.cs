@@ -24,7 +24,13 @@ namespace Eternal.LZMA2SimpleCS.CS
 		private class FMemoryWriter( uint8[] destinationData, int64 size ) 
 			: OutStreamInterface
 		{
-			/** Returns: result - the number of actually written bytes. (result < size) means error */
+			/// <summary>
+			/// Writes bytes from the provided buffer into the destination memory block.
+			/// </summary>
+			/// <param name="bufferBase">Source buffer to write from.</param>
+			/// <param name="offset">Byte offset within bufferBase to start reading.</param>
+			/// <param name="blockSize">Number of bytes to write.</param>
+			/// <returns>Number of bytes actually written; 0 if the destination buffer would be exceeded.</returns>
 			public override int64 Write( uint8[] bufferBase, int64 offset, int64 blockSize )
 			{
 				if( Offset + blockSize < size )
@@ -37,6 +43,10 @@ namespace Eternal.LZMA2SimpleCS.CS
 				return 0;
 			}
 
+			/// <summary>
+			/// Returns the number of bytes written to the output buffer so far.
+			/// </summary>
+			/// <returns>Current write position as a byte offset from the start of the buffer.</returns>
 			public int64 GetOffset()
 			{
 				return Offset;
@@ -48,7 +58,13 @@ namespace Eternal.LZMA2SimpleCS.CS
 		private class FMemoryReader( uint8[] sourceData, int64 size ) 
 			: InStreamInterface
 		{
-			/** if (input(*size) != 0 && output(*size) == 0) means end_of_stream. (output(*size) < input(*size)) is allowed */
+			/// <summary>
+			/// Reads bytes from the source memory block into the provided buffer.
+			/// </summary>
+			/// <param name="bufferBase">Destination buffer to read into.</param>
+			/// <param name="offset">Byte offset within bufferBase to start writing.</param>
+			/// <param name="size1">On entry: maximum bytes to read. On exit: bytes actually read (0 signals end of stream).</param>
+			/// <returns>SevenZipOK on success.</returns>
 			public override SevenZipResult Read( uint8[] bufferBase, int64 offset, ref int64 size1 ) 
 			{
 				if( Offset == size )
@@ -70,9 +86,14 @@ namespace Eternal.LZMA2SimpleCS.CS
 			private int64 Offset = 0;
 		};
 
-		/**
-		 * The main LZMA2 compress function.
-		 */
+		/// <summary>
+		/// Compresses a block of memory using LZMA2.
+		/// </summary>
+		/// <param name="data">Source and destination buffers with their sizes.</param>
+		/// <param name="encoderProperties">Encoder configuration parameters.</param>
+		/// <param name="result">Receives the compression result, property summary byte, and output length.</param>
+		/// <param name="progress">Optional progress callback; pass null to disable.</param>
+		/// <returns>SevenZipOK on success, or an error code.</returns>
 		public static SevenZipResult Lzma2Compress( CLzmaData data, CLzma2EncoderProperties encoderProperties, out CLzma2Result result, ProgressInterface? progress )
 		{
 			result = new CLzma2Result();
@@ -91,9 +112,12 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return result.Result;
 		}
 
-		/**
-		 * The main LZMA2 decompress function.
-		 */
+		/// <summary>
+		/// Decompresses a block of LZMA2-compressed memory.
+		/// </summary>
+		/// <param name="data">Source and destination buffers with their sizes.</param>
+		/// <param name="result">On entry: must contain the PropertySummary byte from compression. On exit: receives the decompressed length and result code.</param>
+		/// <returns>SevenZipOK on success, or an error code.</returns>
 		public static SevenZipResult Lzma2Decompress( CLzmaData data, ref CLzma2Result result )
 		{
 			ELzmaStatus status = ELzmaStatus.LzmaStatusNotSpecified;

@@ -501,6 +501,12 @@ Lzma1Enc::~Lzma1Enc()
 	}
 }
 
+/**
+ * @brief Snapshots the current encoder probability state into SavedState.
+ *
+ * Used by the LZMA2 encoder to allow fallback to copy-block mode when
+ * LZMA compression does not achieve sufficient size reduction.
+ */
 void Lzma1Enc::SaveState()
 {
 	CSaveState* dest = &SavedState;
@@ -525,6 +531,9 @@ void Lzma1Enc::SaveState()
 	memcpy( dest->LiteralProbabilities, LiteralProbabilities, prob_size );
 }
 
+/**
+ * @brief Restores the encoder probability state from the previously saved SavedState.
+ */
 void Lzma1Enc::RestoreState()
 {
 	const CSaveState* src = &SavedState;
@@ -549,6 +558,11 @@ void Lzma1Enc::RestoreState()
 	memcpy( LiteralProbabilities, src->LiteralProbabilities, prob_size );
 }
 
+/**
+ * @brief Informs the match finder of the total expected input size.
+ *
+ * @param expectedDataSize Total number of bytes to be encoded, or INT64_MAX if unknown.
+ */
 void Lzma1Enc::SetDataSize( int64 expectedDataSize ) const
 {
 	MatchFinder->ExpectedDataSize = expectedDataSize;
@@ -2571,6 +2585,13 @@ SevenZipResult Lzma1Enc::AllocAndInit( uint32 keepWindowSize )
 	return SevenZipResult::SevenZipOK;
 }
 
+/**
+ * @brief Prepares the encoder to read uncompressed data from the given stream.
+ *
+ * @param inStream       Input stream to encode from.
+ * @param keepWindowSize Number of bytes at the start of the window to preserve across Init calls.
+ * @return SevenZipOK on success, or a memory-allocation error code.
+ */
 SevenZipResult Lzma1Enc::Prepare( InStreamInterface* inStream, uint32 keepWindowSize )
 {
 	MatchFinder->InStream = inStream;
@@ -2589,11 +2610,21 @@ SevenZipResult Lzma1Enc::MemPrepare( const uint8* src, int64 srcLen, uint32 keep
 	return AllocAndInit( keepWindowSize );
 }
 
+/**
+ * @brief Returns a pointer to the base of the match-finder input buffer.
+ *
+ * @return Pointer to the first byte of the internal buffer held by the match finder.
+ */
 const uint8* Lzma1Enc::GetBufferBase() const
 {
 	return MatchFinder->BufferBase;
 }
 
+/**
+ * @brief Returns the current read offset within the match-finder input buffer.
+ *
+ * @return Number of bytes consumed from the buffer so far.
+ */
 int64 Lzma1Enc::GetCurrentOffset() const
 {
 	return MatchFinder->BufferOffset - AdditionalOffset;
@@ -2611,6 +2642,14 @@ SevenZipResult Lzma1Enc::ReportProgress() const
 	return SevenZipResult::SevenZipOK;
 }
 
+/**
+ * @brief Encodes the encoder settings as the standard 5-byte LZMA properties block.
+ *
+ * @param properties Output buffer to receive the encoded properties.
+ * @param size       On entry: capacity of properties (must be >= 5).
+ *                   On exit:  number of bytes written (always 5 on success).
+ * @return SevenZipOK on success, SevenZipErrorParam if the buffer is too small.
+ */
 SevenZipResult Lzma1Enc::GetCodedProperties( uint8* properties, uint64& size ) const
 {
 	if( size < Lzma::LzmaPropertiesSize )
@@ -2655,6 +2694,18 @@ SevenZipResult Lzma1Enc::GetCodedProperties( uint8* properties, uint64& size ) c
 	return SevenZipResult::SevenZipOK;
 }
 
+/**
+ * @brief Encodes one LZMA block into a caller-supplied memory buffer.
+ *
+ * @param reInit          If true, re-initialises encoder state before encoding.
+ * @param baseDest        Base pointer of the destination buffer.
+ * @param offset          Byte offset into baseDest at which to start writing.
+ * @param destLen         On entry: maximum bytes to write.
+ *                        On exit:  bytes actually written.
+ * @param desiredPackSize Maximum number of compressed bytes to produce.
+ * @param unpackSize      On exit: number of uncompressed bytes consumed.
+ * @return SevenZipOK on success, or SevenZipErrorOutputEof if the output buffer is full.
+ */
 SevenZipResult Lzma1Enc::CodeOneMemBlock( bool reInit, uint8* baseDest, int64 offset, int64& destLen, uint32 desiredPackSize, uint32& unpackSize )
 {
 	CheckedSeqOutStream out_stream( baseDest, offset, destLen );
@@ -2691,6 +2742,16 @@ SevenZipResult Lzma1Enc::CodeOneMemBlock( bool reInit, uint8* baseDest, int64 of
 	return result;
 }
 
+/**
+ * @brief Compresses an in-memory buffer, writing the output to another in-memory buffer.
+ *
+ * @param compressed         Output buffer to receive the compressed data.
+ * @param compressedLength   On entry: capacity of the output buffer.
+ *                           On exit:  number of compressed bytes written.
+ * @param decompressed       Pointer to the uncompressed input data.
+ * @param decompressedLength Number of uncompressed bytes to encode.
+ * @return SevenZipOK on success, or an error code.
+ */
 SevenZipResult Lzma1Enc::MemEncode( uint8* compressed, int64& compressedLength, const uint8* decompressed, int64 decompressedLength )
 {
 	CheckedSeqOutStream out_stream( compressed, 0, compressedLength );
@@ -2725,6 +2786,22 @@ SevenZipResult Lzma1Enc::MemEncode( uint8* compressed, int64& compressedLength, 
 	return result;
 }
 
+/**
+ * @brief Compresses a buffer using LZMA1 in a single call.
+ *
+ * @param compressed         Output buffer to receive the compressed data.
+ * @param compressedLength   On entry: capacity of compressed.
+ *                           On exit:  number of bytes written.
+ * @param decompressed       Pointer to the uncompressed input data.
+ * @param decompressedLength Number of uncompressed bytes to encode.
+ * @param encoderProperties  Encoder configuration parameters.
+ * @param propsEncoded       Output buffer to receive the 5-byte LZMA properties block.
+ * @param outPropsSize       On entry: capacity of propsEncoded.
+ *                           On exit:  number of bytes written (always 5 on success).
+ * @param alloc              Memory allocator; pass nullptr to use the default allocator.
+ * @param progress           Optional progress callback; pass nullptr to disable.
+ * @return SevenZipOK on success, or an error code.
+ */
 SevenZipResult Lzma1Encode( uint8* compressed, int64& compressedLength, const uint8* decompressed, int64 decompressedLength, const CLzmaEncoderProperties* encoderProperties, uint8* propsEncoded, uint64& outPropsSize, MemoryInterface* alloc, ProgressInterface* progress )
 {
 	Lzma1Enc enc1( encoderProperties, alloc, progress );

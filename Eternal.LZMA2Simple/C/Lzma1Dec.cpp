@@ -26,7 +26,7 @@ namespace LzmaDecoder
 	static constexpr uint32 IsMatchBase = Lzma::NumFullDistancesSize + NumStatePositionProbabilities + ( NumLengthProbabilities << 1 );
 	static constexpr uint32 IsRepeat = IsMatchBase + NumStatePositionProbabilities + Lzma::AlignmentTableSize;
 
-	static_assert( ( ( IsRepeat + (Lzma::NumStates * 4u ) + ( Lzma::NumLengthToPositionStates << Lzma::NumPositionSlotBits ) ) == 1984u ), "Stop_Compiling_Bad_LZMA_PROBS" );
+	static_assert( ( ( IsRepeat + ( Lzma::NumStates * 4u ) + ( Lzma::NumLengthToPositionStates << Lzma::NumPositionSlotBits ) ) == 1984u ), "Stop_Compiling_Bad_LZMA_PROBS" );
 
 	static constexpr uint32 MaxBound = ( ( UINT32_MAX >> Lzma::NumBitModelTotalBits ) << ( Lzma::NumBitModelTotalBits - 1 ) );
 	static constexpr uint32 BadRepeatCode = ( MaxBound + ( ( ( UINT32_MAX - MaxBound ) >> Lzma::NumBitModelTotalBits ) << ( Lzma::NumBitModelTotalBits - 1 ) ) );
@@ -84,9 +84,16 @@ Out:
 	  p->RepeatDistances[*]    : undefined
 */
 
+/**
+ * @brief Copies decompressed bytes into the dictionary and advances tracked positions.
+ *
+ * @param src    Source buffer containing decompressed data.
+ * @param offset Byte offset into src to copy from.
+ * @param size   Number of bytes to copy.
+ */
 void Lzma1Dec::UpdateWithDecompressed( const uint8* src, const int64 offset, const int64 size )
 {
-	memcpy( Dictionary + DictionaryPosition, src + offset, static_cast<uint64>( size ) );
+	memcpy( Dictionary + DictionaryPosition, src + offset, static_cast< uint64 >( size ) );
 	DictionaryPosition += size;
 	if( ( CheckDictionarySize == 0u ) && ( DecoderProperties.DictionarySize - ProcessedPosition <= size ) )
 	{
@@ -132,7 +139,7 @@ bool Lzma1Dec::SimpleIterate( CParameters& parameters, CProbability& probability
 	{
 		/* Bit = 0 path */
 		parameters.Range = bound;
-		probability = static_cast<CProbability>( probability + ( ( Lzma::BitModelTableSize - probability ) >> Lzma::NumMoveBits ) );
+		probability = static_cast< CProbability >( probability + ( ( Lzma::BitModelTableSize - probability ) >> Lzma::NumMoveBits ) );
 		return true;
 	}
 	else
@@ -140,7 +147,7 @@ bool Lzma1Dec::SimpleIterate( CParameters& parameters, CProbability& probability
 		/* Bit = 1 path */
 		parameters.Range -= bound;
 		parameters.Code -= bound;
-		probability = static_cast<CProbability>( probability - ( probability >> Lzma::NumMoveBits ) );
+		probability = static_cast< CProbability >( probability - ( probability >> Lzma::NumMoveBits ) );
 		return false;
 	}
 }
@@ -166,166 +173,150 @@ bool Lzma1Dec::DummySimpleIterate( CParameters& parameters, const CProbability& 
 	}
 }
 
-	/// <summary>
-	/// Identical to LzmaDec_Iterate, but does not write any data.
-	/// </summary>
-	/// <returns></returns>
-	LzmaDummy Lzma1Dec::DummyDecodeTreeBit( CParameters& parameters, const CProbability& probability, const int64 bufLimitOffset )
+LzmaDummy Lzma1Dec::DummyDecodeTreeBit( CParameters& parameters, const CProbability& probability, const int64 bufLimitOffset )
+{
+	if( UpdateRangeDummy( parameters, bufLimitOffset ) == LzmaDummy::DummyInputEof )
 	{
-		if( UpdateRangeDummy( parameters, bufLimitOffset ) == LzmaDummy::DummyInputEof )
-		{
-			return LzmaDummy::DummyInputEof;
-		}
-
-		if( DummySimpleIterate( parameters, probability ) )
-		{
-			parameters.Symbol <<= 1;
-		}
-		else
-		{
-			parameters.Symbol <<= 1;
-			parameters.Symbol++;
-		}
-
-		return LzmaDummy::DummyOk;
+		return LzmaDummy::DummyInputEof;
 	}
 
-	/// <summary>
-	/// Identical to LzmaDec_Iterate, but does not write any data.
-	/// </summary>
-	/// <returns></returns>
-	LzmaDummy Lzma1Dec::DummyDecodeMatchedLiteralBit( CParameters& parameters, const CProbability& probability, const int64 bufLimitOffset )
+	if( DummySimpleIterate( parameters, probability ) )
 	{
-		if( UpdateRangeDummy( parameters, bufLimitOffset ) == LzmaDummy::DummyInputEof )
-		{
-			return LzmaDummy::DummyInputEof;
-		}
-
-		if( DummySimpleIterate( parameters, probability ) )
-		{
-			parameters.Symbol <<= 1;
-			parameters.Offset ^= parameters.Bit;
-		}
-		else
-		{
-			parameters.Symbol <<= 1;
-			parameters.Symbol++;
-		}
-
-		return LzmaDummy::DummyOk;
+		parameters.Symbol <<= 1;
+	}
+	else
+	{
+		parameters.Symbol <<= 1;
+		parameters.Symbol++;
 	}
 
-	/// <summary>
-	/// Identical to LzmaDec_Iterate, but does not write any data.
-	/// </summary>
-	/// <returns></returns>
-	LzmaDummy Lzma1Dec::DummyDecodePositionModelBit( CParameters& parameters, const CProbability& probability, const int64 bufLimitOffset )
+	return LzmaDummy::DummyOk;
+}
+
+LzmaDummy Lzma1Dec::DummyDecodeMatchedLiteralBit( CParameters& parameters, const CProbability& probability, const int64 bufLimitOffset )
+{
+	if( UpdateRangeDummy( parameters, bufLimitOffset ) == LzmaDummy::DummyInputEof )
 	{
-		if( UpdateRangeDummy( parameters, bufLimitOffset ) == LzmaDummy::DummyInputEof )
-		{
-			return LzmaDummy::DummyInputEof;
-		}
-
-		if( DummySimpleIterate( parameters, probability ) )
-		{
-			parameters.Symbol += parameters.Offset;
-			parameters.Offset <<= 1;
-		}
-		else
-		{
-			parameters.Offset <<= 1;
-			parameters.Symbol += parameters.Offset;
-		}
-
-		return LzmaDummy::DummyOk;
+		return LzmaDummy::DummyInputEof;
 	}
 
-	/// <summary>
-	/// Identical to LzmaDec_Iterate, but does not write any data.
-	/// </summary>
-	/// <returns></returns>
-	LzmaDummy Lzma1Dec::DummyConsumeBit( CParameters& parameters, const CProbability& probability, const int64 bufLimitOffset )
+	if( DummySimpleIterate( parameters, probability ) )
 	{
-		if( UpdateRangeDummy( parameters, bufLimitOffset ) == LzmaDummy::DummyInputEof )
-		{
-			return LzmaDummy::DummyInputEof;
-		}
-
-		DummySimpleIterate( parameters, probability );
-
-		return LzmaDummy::DummyOk;
+		parameters.Symbol <<= 1;
+		parameters.Offset ^= parameters.Bit;
+	}
+	else
+	{
+		parameters.Symbol <<= 1;
+		parameters.Symbol++;
 	}
 
-	void Lzma1Dec::DecodeTreeBit( CParameters& parameters, CProbability& prob )
-	{
-		UpdateRange( parameters );
+	return LzmaDummy::DummyOk;
+}
 
-		if( SimpleIterate( parameters, prob ) )
-		{
-			parameters.Symbol <<= 1;
-		}
-		else
-		{
-			parameters.Symbol <<= 1;
-			parameters.Symbol++;
-		}
+LzmaDummy Lzma1Dec::DummyDecodePositionModelBit( CParameters& parameters, const CProbability& probability, const int64 bufLimitOffset )
+{
+	if( UpdateRangeDummy( parameters, bufLimitOffset ) == LzmaDummy::DummyInputEof )
+	{
+		return LzmaDummy::DummyInputEof;
 	}
 
-	void Lzma1Dec::DecodeMatchedLiteralBit( CParameters& parameters, CProbability& prob )
+	if( DummySimpleIterate( parameters, probability ) )
 	{
-		UpdateRange( parameters );
-
-		if( SimpleIterate( parameters, prob ) )
-		{
-			parameters.Symbol <<= 1;
-			parameters.Offset ^= parameters.Bit;
-		}
-		else
-		{
-			parameters.Symbol <<= 1;
-			parameters.Symbol++;
-		}
+		parameters.Symbol += parameters.Offset;
+		parameters.Offset <<= 1;
+	}
+	else
+	{
+		parameters.Offset <<= 1;
+		parameters.Symbol += parameters.Offset;
 	}
 
-	void Lzma1Dec::DecodeReverseBit( CParameters& parameters, CProbability& prob )
-	{
-		UpdateRange( parameters );
+	return LzmaDummy::DummyOk;
+}
 
-		if( SimpleIterate( parameters, prob ) )
-		{
-			parameters.Symbol += parameters.Offset;
-		}
-		else
-		{
-			parameters.Symbol += ( parameters.Offset << 1 );
-		}
+LzmaDummy Lzma1Dec::DummyConsumeBit( CParameters& parameters, const CProbability& probability, const int64 bufLimitOffset )
+{
+	if( UpdateRangeDummy( parameters, bufLimitOffset ) == LzmaDummy::DummyInputEof )
+	{
+		return LzmaDummy::DummyInputEof;
 	}
 
-	void Lzma1Dec::DecodeReverseBitLast( CParameters& parameters, CProbability& prob )
+	DummySimpleIterate( parameters, probability );
+
+	return LzmaDummy::DummyOk;
+}
+
+void Lzma1Dec::DecodeTreeBit( CParameters& parameters, CProbability& prob )
+{
+	UpdateRange( parameters );
+
+	if( SimpleIterate( parameters, prob ) )
 	{
-		UpdateRange( parameters );
-
-		if( SimpleIterate( parameters, prob ) )
-		{
-			parameters.Symbol -= 8;
-		}
+		parameters.Symbol <<= 1;
 	}
-
-	void Lzma1Dec::DecodePositionModelBit( CParameters& parameters, CProbability& prob )
+	else
 	{
-		UpdateRange( parameters );
-
-		if( SimpleIterate( parameters, prob ) )
-		{
-			parameters.Symbol += parameters.Offset;
-			parameters.Offset <<= 1;
-		}
-		else
-		{
-			parameters.Offset <<= 1;
-			parameters.Symbol += parameters.Offset;
-		}
+		parameters.Symbol <<= 1;
+		parameters.Symbol++;
 	}
+}
+
+void Lzma1Dec::DecodeMatchedLiteralBit( CParameters& parameters, CProbability& prob )
+{
+	UpdateRange( parameters );
+
+	if( SimpleIterate( parameters, prob ) )
+	{
+		parameters.Symbol <<= 1;
+		parameters.Offset ^= parameters.Bit;
+	}
+	else
+	{
+		parameters.Symbol <<= 1;
+		parameters.Symbol++;
+	}
+}
+
+void Lzma1Dec::DecodeReverseBit( CParameters& parameters, CProbability& prob )
+{
+	UpdateRange( parameters );
+
+	if( SimpleIterate( parameters, prob ) )
+	{
+		parameters.Symbol += parameters.Offset;
+	}
+	else
+	{
+		parameters.Symbol += ( parameters.Offset << 1 );
+	}
+}
+
+void Lzma1Dec::DecodeReverseBitLast( CParameters& parameters, CProbability& prob )
+{
+	UpdateRange( parameters );
+
+	if( SimpleIterate( parameters, prob ) )
+	{
+		parameters.Symbol -= 8;
+	}
+}
+
+void Lzma1Dec::DecodePositionModelBit( CParameters& parameters, CProbability& prob )
+{
+	UpdateRange( parameters );
+
+	if( SimpleIterate( parameters, prob ) )
+	{
+		parameters.Symbol += parameters.Offset;
+		parameters.Offset <<= 1;
+	}
+	else
+	{
+		parameters.Offset <<= 1;
+		parameters.Symbol += parameters.Offset;
+	}
+}
 
 void Lzma1Dec::UpdateDistance( CParameters& parameters )
 {
@@ -395,7 +386,7 @@ void Lzma1Dec::UpdateSymbol( CParameters& parameters )
 		}
 	}
 
-	Dictionary[DictionaryPosition++] = static_cast<uint8>( parameters.Symbol & 0xff );
+	Dictionary[DictionaryPosition++] = static_cast< uint8 >( parameters.Symbol & 0xff );
 }
 
 uint32 Lzma1Dec::UpdateLength( CParameters& parameters, uint32 probabilityOffset, const uint32 positionState ) const
@@ -453,7 +444,7 @@ bool Lzma1Dec::UpdateRepeatLength( CParameters& parameters, uint32& length )
 	{
 		// Decode distance footer
 		const uint32 pos_slot = distance;
-		int8 num_direct_bits = static_cast<int8>( ( distance >> 1 ) - 1 );
+		int8 num_direct_bits = static_cast< int8 >( ( distance >> 1 ) - 1 );
 		distance = 2u | ( distance & 1u );
 
 		if( pos_slot < Lzma::EndPositionModelIndex )
@@ -542,7 +533,7 @@ bool Lzma1Dec::UpdateRepeatLength( CParameters& parameters, uint32& length )
 uint32 Lzma1Dec::FinishBlock( const uint32 length, const int64 remaining )
 {
 	// Clamp length to available space
-	const uint32 copy_length = ( remaining > UINT32_MAX ) ? length : std::min( static_cast<uint32>( remaining ), length );
+	const uint32 copy_length = ( remaining > UINT32_MAX ) ? length : std::min( static_cast< uint32 >( remaining ), length );
 
 	// Calculate source position with wraparound
 	const int64 src_pos = DictionaryPosition - RepeatDistances[0] + ( DictionaryPosition < RepeatDistances[0] ? DictionaryBufferSize : 0u );
@@ -623,7 +614,7 @@ bool Lzma1Dec::DecodeShortRepeat( CParameters& parameters, const uint32 position
 
 	parameters.Range -= bound;
 	parameters.Code -= bound;
-	Probabilities[probability_offset] = static_cast<CProbability>( probability - ( probability >> Lzma::NumMoveBits ) );
+	Probabilities[probability_offset] = static_cast< CProbability >( probability - ( probability >> Lzma::NumMoveBits ) );
 	return false;
 }
 
@@ -648,7 +639,7 @@ uint32 Lzma1Dec::DecodeMatchType( CParameters& parameters, const uint32 position
 		if( DecodeShortRepeat( parameters, positionState ) )
 		{
 			// Signal: short repeat handled, continue main loop
-			return 0u; 
+			return 0u;
 		}
 	}
 	else
@@ -694,7 +685,7 @@ SevenZipResult Lzma1Dec::DecodeRealInternal( int64 limit, const int64 bufLimitOf
 		{
 			// LITERAL path
 			Parameters.Range = bound;
-			Probabilities[probability_offset] = static_cast< CProbability >( probability + ( (Lzma::BitModelTableSize - probability ) >> Lzma::NumMoveBits ) );
+			Probabilities[probability_offset] = static_cast< CProbability >( probability + ( ( Lzma::BitModelTableSize - probability ) >> Lzma::NumMoveBits ) );
 
 			// Decode literal
 			UpdateSymbol( Parameters );
@@ -783,7 +774,7 @@ void Lzma1Dec::WriteRemaining( const int64 limit )
 	const int64 remaining = limit - dic_pos;
 	if( remaining < length )
 	{
-		length = static_cast<uint32>( remaining );
+		length = static_cast< uint32 >( remaining );
 		if( length == 0u )
 		{
 			return;
@@ -951,7 +942,7 @@ LzmaDummy Lzma1Dec::TryDummyDistance( CParameters& parameters, const int64 bufOu
 		const uint32 pos_slot = parameters.Symbol - ( 1u << Lzma::NumPositionSlotBits );
 		if( pos_slot >= Lzma::StartPositionModelIndex )
 		{
-			int8 num_direct_bits = static_cast<int8>( ( pos_slot >> 1 ) - 1 );
+			int8 num_direct_bits = static_cast< int8 >( ( pos_slot >> 1 ) - 1 );
 
 			if( pos_slot < Lzma::EndPositionModelIndex )
 			{
@@ -1114,6 +1105,12 @@ LzmaDummy Lzma1Dec::TryDummy( const uint8* buffer, int64 bufferOffset, int64& bu
 	return result;
 }
 
+/**
+ * @brief Resets dictionary and/or range-coder state in preparation for decoding.
+ *
+ * @param initDict  If true, clears dictionary-tracking and processed-position counters.
+ * @param initState If true, forces a full range-coder re-initialisation on the next decode call.
+ */
 void Lzma1Dec::InitDictAndState( const bool initDict, const bool initState )
 {
 	RemainingLength = LzmaDecoder::MaxNormalMatchLength + 1u;
@@ -1148,6 +1145,19 @@ When the decoder lookahead, and the lookahead Symbol is not end_marker, we have 
 	 LzmaStatusFinishedWithMark or LzmaStatusMaybeFinishedWithoutMark.
 */
 
+/**
+ * @brief Decodes compressed LZMA data into the internal dictionary buffer.
+ *
+ * @param dicLimit           Target dictionary position; decoding stops when DictionaryPosition reaches this value.
+ * @param compressed         Pointer to the compressed input buffer.
+ * @param compressedOffset   Byte offset within compressed to start reading from.
+ * @param compressedLength   On entry: number of available input bytes.
+ *                           On exit:  number of bytes actually consumed.
+ * @param finishMode         LzmaFinishModeAny to stop at dicLimit;
+ *                           LzmaFinishModeEnd to require an end-of-stream marker.
+ * @param status             Receives the decoder status on return.
+ * @return SevenZipOK, SevenZipErrorData, or SevenZipErrorFail.
+ */
 SevenZipResult Lzma1Dec::DecodeToDict( int64 dicLimit, const uint8* compressed, int64 compressedOffset, int64& compressedLength, const LzmaFinishMode finishMode, LzmaStatus& status )
 {
 	SevenZipResult result;
@@ -1197,7 +1207,7 @@ SevenZipResult Lzma1Dec::DecodeToDict( int64 dicLimit, const uint8* compressed, 
 		if( RemainingLength > LzmaDecoder::MaxNormalMatchLength + 1u )
 		{
 			const uint32 num_probs = LzmaDecoder::IsRepeat + ( Lzma::NumStates * 4u ) + ( Lzma::NumLengthToPositionStates << Lzma::NumPositionSlotBits )
-									 + ( Lzma::LiteralSize << ( DecoderProperties.LiteralContextBits + DecoderProperties.LiteralPositionBits ) );
+				+ ( Lzma::LiteralSize << ( DecoderProperties.LiteralContextBits + DecoderProperties.LiteralPositionBits ) );
 			std::fill_n( Probabilities, num_probs, static_cast< CProbability >( Lzma::BitModelTableSize >> 1 ) );
 
 			RepeatDistances[0] = 1u;
@@ -1213,7 +1223,7 @@ SevenZipResult Lzma1Dec::DecodeToDict( int64 dicLimit, const uint8* compressed, 
 	while( true )
 	{
 		int64 processed;
-			
+
 		if( RemainingLength == LzmaDecoder::MaxNormalMatchLength )
 		{
 			if( Parameters.Code != 0u )
@@ -1275,7 +1285,7 @@ SevenZipResult Lzma1Dec::DecodeToDict( int64 dicLimit, const uint8* compressed, 
 					compressedLength += in_size;
 					TempBufferSize = static_cast< uint32 >( in_size );
 
-					memcpy( temporary_buffer, compressed + compressedOffset, static_cast<uint64>( in_size ) );
+					memcpy( temporary_buffer, compressed + compressedOffset, static_cast< uint64 >( in_size ) );
 
 					status = LzmaStatus::LzmaStatusNeedsMoreInput;
 					return SevenZipResult::SevenZipOK;
@@ -1463,6 +1473,9 @@ SevenZipResult Lzma1Dec::DecodeProperties( const uint8* decoderProperties, const
 	return SevenZipResult::SevenZipOK;
 }
 
+/**
+ * @brief Frees the probability table memory allocated by AllocateProbabilities().
+ */
 void Lzma1Dec::FreeProbabilities()
 {
 	if( Probabilities != nullptr )
@@ -1472,15 +1485,23 @@ void Lzma1Dec::FreeProbabilities()
 	}
 }
 
+/**
+ * @brief Allocates (or reuses) the probability table required for LZMA decoding.
+ *
+ * The required size is derived from the current DecoderProperties.
+ * If the existing table already has the correct size it is reused without reallocation.
+ *
+ * @return SevenZipOK on success, SevenZipErrorMemory if allocation fails.
+ */
 SevenZipResult Lzma1Dec::AllocateProbabilities()
 {
 	const uint32 num_probabilities = LzmaDecoder::IsRepeat + ( Lzma::NumStates * 4u ) + ( Lzma::NumLengthToPositionStates << Lzma::NumPositionSlotBits )
-									 + ( Lzma::LiteralSize << ( DecoderProperties.LiteralContextBits + DecoderProperties.LiteralPositionBits ) );
+		+ ( Lzma::LiteralSize << ( DecoderProperties.LiteralContextBits + DecoderProperties.LiteralPositionBits ) );
 	if( ( Probabilities == nullptr ) || ( num_probabilities != NumProbabilities ) )
 	{
 		FreeProbabilities();
 
-		Probabilities = static_cast<CProbability*>( Alloc->Alloc( num_probabilities * sizeof( CProbability ), "Lzma1Dec::Probabilities" ) );
+		Probabilities = static_cast< CProbability* >( Alloc->Alloc( num_probabilities * sizeof( CProbability ), "Lzma1Dec::Probabilities" ) );
 		if( Probabilities == nullptr )
 		{
 			return SevenZipResult::SevenZipErrorMemory;
@@ -1492,6 +1513,22 @@ SevenZipResult Lzma1Dec::AllocateProbabilities()
 	return SevenZipResult::SevenZipOK;
 }
 
+/**
+ * @brief Decompresses a complete LZMA1 stream in a single call.
+ *
+ * @param decompressed       Output buffer to receive the decompressed data.
+ * @param decompressedLength On entry: capacity of decompressed.
+ *                           On exit:  number of bytes written.
+ * @param compressed         Pointer to the compressed input data.
+ * @param compressedLength   On entry: number of compressed bytes available.
+ *                           On exit:  number of bytes consumed.
+ * @param propData           Pointer to the 5-byte LZMA properties block.
+ * @param propSize           Size of propData in bytes (must be >= 5).
+ * @param finishMode         LzmaFinishModeAny or LzmaFinishModeEnd.
+ * @param status             Receives the decoder status on return.
+ * @param alloc              Memory allocator; pass nullptr to use the default allocator.
+ * @return SevenZipOK on success, or an error code.
+ */
 SevenZipResult Lzma1Decode( uint8* decompressed, int64& decompressedLength, const uint8* compressed, int64& compressedLength, const uint8* propData, const uint32 propSize, const LzmaFinishMode finishMode, LzmaStatus& status, MemoryInterface* alloc )
 {
 	Lzma1Dec dec1( decompressed, alloc );

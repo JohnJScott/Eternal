@@ -79,15 +79,25 @@ namespace Eternal.LZMA2SimpleCS.CS
 
 	public class Lzma1Lib
 	{
+		/// <summary>
+		/// Returns the maximum compressed size for the given uncompressed input size.
+		/// </summary>
+		/// <param name="size">Uncompressed input size in bytes.</param>
+		/// <returns>Upper bound on compressed output size in bytes.</returns>
 		public static int64 LzmaWorstCompression( int64 size )
 		{
 			/** LZMA documentations states worst case compression is ( size * 0.001 ) + 32 */
 			return ( size + ( ( size + 511 ) >> 9 ) ) + 32;
 		}
 
-		/**
-		 * The main LZMA1 compress function.
-		 */
+		/// <summary>
+		/// Compresses a block of memory using LZMA1.
+		/// </summary>
+		/// <param name="data">Source and destination buffers with their sizes.</param>
+		/// <param name="encoderProperties">Encoder configuration parameters.</param>
+		/// <param name="result">Receives the compression result, encoded properties, and output length.</param>
+		/// <param name="progress">Optional progress callback; pass null to disable.</param>
+		/// <returns>SevenZipOK on success, or an error code.</returns>
 		public static SevenZipResult Lzma1Compress( CLzmaData data, CLzmaEncoderProperties encoderProperties, out CLzma1Result result, ProgressInterface? progress )
 		{
 			result = new CLzma1Result();
@@ -105,9 +115,12 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return result.Result;
 		}
 
-		/**
-		 * The main LZMA1 decompress function.
-		 */
+		/// <summary>
+		/// Decompresses a block of LZMA1-compressed memory.
+		/// </summary>
+		/// <param name="data">Source and destination buffers with their sizes.</param>
+		/// <param name="result">On entry: must contain the Properties array from compression. On exit: receives the decompressed length and result code.</param>
+		/// <returns>SevenZipOK on success, or an error code.</returns>
 		public static SevenZipResult Lzma1Decompress( CLzmaData data, ref CLzma1Result result )
 		{
 			result.OutputLength = data.DestinationLength;

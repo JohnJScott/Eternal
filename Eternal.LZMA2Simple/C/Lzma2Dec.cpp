@@ -173,6 +173,18 @@ Lzma2State Lzma2Dec::UpdateState( uint8 stateByte )
 	return Lzma2State::Lzma2StateError;
 }
 
+/**
+ * @brief Decodes a complete LZMA2 stream into the internal dictionary buffer.
+ *
+ * @param dictLimit        Target dictionary position; decoding stops when DictionaryPosition reaches this value.
+ * @param compressed       Pointer to the compressed input data.
+ * @param compressedLength On entry: number of available compressed bytes.
+ *                         On exit:  number of bytes consumed.
+ * @param finishMode       LzmaFinishModeAny to stop at dictLimit;
+ *                         LzmaFinishModeEnd to require an end-of-stream marker.
+ * @param status           Receives the decoder status on return.
+ * @return SevenZipOK on success, or SevenZipErrorData on a malformed stream.
+ */
 SevenZipResult Lzma2Dec::DecodeToDictionary( const int64 dictLimit, const uint8* compressed, int64& compressedLength, const LzmaFinishMode finishMode, LzmaStatus& status )
 {
 	int64 in_size = compressedLength;
@@ -306,6 +318,21 @@ SevenZipResult Lzma2Dec::DecodeToDictionary( const int64 dictLimit, const uint8*
 	return SevenZipResult::SevenZipErrorData;
 }
 
+/**
+ * @brief Decompresses a complete LZMA2 stream in a single call.
+ *
+ * @param decompressed       Output buffer to receive the decompressed data.
+ * @param decompressedLength On entry: capacity of decompressed.
+ *                           On exit:  number of bytes written.
+ * @param compressed         Pointer to the compressed input data.
+ * @param compressedLength   On entry: number of compressed bytes available.
+ *                           On exit:  number of bytes consumed.
+ * @param prop               One-byte LZMA2 property summary encoding the dictionary size.
+ * @param finishMode         LzmaFinishModeAny or LzmaFinishModeEnd.
+ * @param status             Receives the decoder status on return.
+ * @param alloc              Memory allocator; pass nullptr to use the default allocator.
+ * @return SevenZipOK on success, or an error code.
+ */
 SevenZipResult Lzma2Decode( uint8* decompressed, int64& decompressedLength, const uint8* compressed, int64& compressedLength, const uint8 prop, LzmaFinishMode finishMode, LzmaStatus& status, MemoryInterface* alloc )
 {
 	Lzma2Dec dec2( decompressed, alloc );

@@ -179,6 +179,12 @@ namespace Eternal.LZMA2SimpleCS.CS
 			Dictionary = decompressed;
 		}
 
+		/// <summary>
+		/// Copies decompressed bytes into the dictionary and updates internal position counters.
+		/// </summary>
+		/// <param name="src">Source array containing the decompressed bytes.</param>
+		/// <param name="offset">Byte offset within src to start copying from.</param>
+		/// <param name="size">Number of bytes to copy.</param>
 		public void UpdateWithDecompressed( uint8[] src, int64 offset, int64 size )
 		{
 			Array.Copy( src, offset, Dictionary, DictionaryPosition, size );
@@ -1202,6 +1208,11 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return result;
 		}
 
+		/// <summary>
+		/// Resets the dictionary, range coder state, or both in preparation for decoding.
+		/// </summary>
+		/// <param name="initDict">If true, resets the dictionary position and processed-position counters.</param>
+		/// <param name="initState">If true, resets the range coder and probability tables.</param>
 		public void InitDictAndState( bool initDict, bool initState )
 		{
 			RemainingLength = LzmaDecoder.MaxNormalMatchLength + 1u;
@@ -1236,6 +1247,16 @@ namespace Eternal.LZMA2SimpleCS.CS
 			 LzmaStatusFinishedWithMark or LzmaStatusMaybeFinishedWithoutMark.
 		*/
 
+		/// <summary>
+		/// Decodes compressed LZMA data into the internal dictionary buffer.
+		/// </summary>
+		/// <param name="dicLimit">Target dictionary position; decoding stops when DictionaryPosition reaches this value.</param>
+		/// <param name="compressed">Array containing the compressed input data.</param>
+		/// <param name="compressedOffset">Byte offset within compressed to start reading from.</param>
+		/// <param name="compressedLength">On entry: number of available input bytes. On exit: number of bytes actually consumed.</param>
+		/// <param name="finishMode">LzmaFinishModeAny to stop at dicLimit; LzmaFinishModeEnd to require an end-of-stream marker.</param>
+		/// <param name="status">Receives the decoder status on return.</param>
+		/// <returns>SevenZipOK, SevenZipErrorData, or SevenZipErrorFail.</returns>
 		public SevenZipResult DecodeToDict( int64 dicLimit, uint8[] compressed, int64 compressedOffset, ref int64 compressedLength, ELzmaFinishMode finishMode, ref ELzmaStatus status )
 		{
 			SevenZipResult result;
@@ -1522,7 +1543,12 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return SevenZipResult.SevenZipErrorFail;
 		}
 
-		/** Decode the Lzma 5 byte array to dictionary size and decompression parameters. */
+		/// <summary>
+		/// Decodes the five-byte LZMA properties array into dictionary size and decoder configuration.
+		/// </summary>
+		/// <param name="decoderProperties">Five-byte properties array produced by the encoder.</param>
+		/// <param name="propsSize">Size of decoderProperties; must be at least LzmaPropertiesSize (5).</param>
+		/// <returns>SevenZipOK on success, or SevenZipErrorUnsupported if the properties are invalid.</returns>
 		public SevenZipResult DecodeProperties( uint8[] decoderProperties, uint32 propsSize )
 		{
 			if( propsSize < Lzma.LzmaPropertiesSize )
@@ -1554,11 +1580,18 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return SevenZipResult.SevenZipOK;
 		}
 
+		/// <summary>
+		/// Releases the probability table array.
+		/// </summary>
 		public void FreeProbabilities()
 		{
 			Probabilities = [];
 		}
 
+		/// <summary>
+		/// Allocates the probability table sized to the current decoder properties.
+		/// </summary>
+		/// <returns>SevenZipOK on success.</returns>
 		public SevenZipResult AllocateProbabilities()
 		{
 			uint32 num_probabilities = LzmaDecoder.IsRepeat + ( Lzma.NumStates * 4u ) + ( Lzma.NumLengthToPositionStates << Lzma.NumPositionSlotBits )
@@ -1574,6 +1607,18 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return SevenZipResult.SevenZipOK;
 		}
 
+		/// <summary>
+		/// Decompresses a complete LZMA1 stream in a single call.
+		/// </summary>
+		/// <param name="decompressed">Output buffer to receive the decompressed data.</param>
+		/// <param name="decompressedLength">On entry: capacity of decompressed. On exit: number of bytes written.</param>
+		/// <param name="compressed">Array containing the compressed input data.</param>
+		/// <param name="compressedLength">On entry: number of compressed bytes available. On exit: number of bytes consumed.</param>
+		/// <param name="propData">Five-byte LZMA properties array produced by the encoder.</param>
+		/// <param name="propSize">Size of propData; must be at least LzmaPropertiesSize (5).</param>
+		/// <param name="finishMode">LzmaFinishModeAny or LzmaFinishModeEnd.</param>
+		/// <param name="status">Receives the decoder status on return.</param>
+		/// <returns>SevenZipOK on success, or an error code.</returns>
 		public static SevenZipResult Lzma1Decode( uint8[] decompressed, ref int64 decompressedLength, uint8[] compressed, ref int64 compressedLength, uint8[] propData, uint32 propSize, ELzmaFinishMode finishMode, out ELzmaStatus status )
 		{
 			Lzma1Dec dec1 = new Lzma1Dec( decompressed );

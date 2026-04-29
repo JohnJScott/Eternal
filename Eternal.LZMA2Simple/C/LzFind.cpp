@@ -116,6 +116,9 @@ bool CMatchFinder::AllocHashes( const int64 num )
 	return Hash != nullptr;
 }
 
+/**
+ * @brief Releases all allocated memory for hashes and the input buffer.
+ */
 void CMatchFinder::Free()
 {
 	FreeHashes();
@@ -243,6 +246,15 @@ uint32 CMatchFinder::GetBlockSize( const uint32 inHistorySize ) const
 }
 
 
+/**
+ * @brief Allocates and configures the match finder for the given stream parameters.
+ *
+ * @param inHistorySize       Size of the history (dictionary) in bytes.
+ * @param keepAddBufferBefore Extra bytes to keep before the current position.
+ * @param inMatchMaxLen       Maximum match length to search for.
+ * @param keepAddBufferAfter  Extra bytes to keep after the current position.
+ * @return true on success, false if allocation failed.
+ */
 bool CMatchFinder::Create( const uint32 inHistorySize, const uint32 keepAddBufferBefore, const uint32 inMatchMaxLen, uint32 keepAddBufferAfter )
 {
 	/* we need one additional byte in (mf->KeepSizeBefore),
@@ -374,6 +386,9 @@ void CMatchFinder::SetLimits()
 	PositionLimit = Position + length;
 }
 
+/**
+ * @brief Initialises the match finder state ready to process a new stream.
+ */
 void CMatchFinder::Init()
 {
 	// MatchFinder_Init_LowHash( mf );
@@ -576,7 +591,12 @@ public:
 		return false;
 	}
 
-	// Hash Chain implementation
+	/**
+	 * @brief Finds matches at the current position using a hash chain and advances the position.
+	 *
+	 * @param baseDistances Output array receiving (length, distance-1) pairs.
+	 * @param pairCount     Number of elements written to baseDistances (incremented in-place).
+	 */
 	virtual void GetMatches( uint32* baseDistances, uint32& pairCount ) override
 	{
 		if( LengthLimit < 4u )
@@ -612,6 +632,11 @@ public:
 		MovePos();
 	}
 
+	/**
+	 * @brief Skips the given number of positions, updating the hash chain without collecting matches.
+	 *
+	 * @param length Number of positions to skip.
+	 */
 	virtual void Skip( uint32 length ) override
 	{
 		while( length > 0u )
@@ -720,7 +745,12 @@ public:
 		return true;
 	}
 
-	// Binary Tree implementation
+	/**
+	 * @brief Finds matches at the current position using a binary tree and advances the position.
+	 *
+	 * @param baseDistances Output array receiving (length, distance-1) pairs.
+	 * @param pairCount     Number of elements written to baseDistances (incremented in-place).
+	 */
 	virtual void GetMatches( uint32* baseDistances, uint32& pairCount ) override
 	{
 		if( LengthLimit < 4u )
@@ -756,6 +786,11 @@ public:
 		MovePos();
 	}
 
+	/**
+	 * @brief Skips the given number of positions, updating the binary tree without collecting matches.
+	 *
+	 * @param length Number of positions to skip.
+	 */
 	virtual void Skip( uint32 length ) override
 	{
 		do
@@ -870,6 +905,14 @@ private:
 };
 
 
+/**
+ * @brief Factory function that constructs and returns a CMatchFinder instance.
+ *
+ * @param useBinaryTree If true, creates a binary-tree match finder;
+ *                      otherwise creates a hash-chain match finder.
+ * @param alloc         Memory allocator used for all internal allocations.
+ * @return Pointer to the newly constructed CMatchFinder, or nullptr on allocation failure.
+ */
 CMatchFinder* CreateMatchFinder( const bool useBinaryTree, MemoryInterface* alloc )
 {
 	CMatchFinder* match_finder = nullptr;

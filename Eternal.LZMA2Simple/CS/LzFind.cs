@@ -120,16 +120,39 @@ namespace Eternal.LZMA2SimpleCS.CS
 		{
 		}
 
+		/// <summary>
+		/// Returns true if this match finder uses a binary tree structure; false for hash chain.
+		/// </summary>
+		/// <returns>true for binary tree mode, false for hash chain mode.</returns>
 		public abstract bool IsBinaryTreeMode();
+
+		/// <summary>
+		/// Finds all matches at the current stream position and advances one position.
+		/// </summary>
+		/// <param name="distances">Output array to receive alternating (length, distance-1) match pairs.</param>
+		/// <param name="pairCount">On exit: number of values written to distances (two per match).</param>
 		public abstract void GetMatches( uint32[] distances, ref uint32 pairCount );
+
+		/// <summary>
+		/// Advances the match finder by the given number of positions without recording matches.
+		/// </summary>
+		/// <param name="length">Number of positions to skip.</param>
 		public abstract void Skip( uint32 length );
 
+		/// <summary>
+		/// Releases all hash and buffer memory allocated by this match finder.
+		/// </summary>
 		public void Free()
 		{
 			FreeHashes();
 			FreeBuffer();
 		}
 
+		/// <summary>
+		/// Creates and returns either a binary-tree or hash-chain match finder.
+		/// </summary>
+		/// <param name="useBinaryTree">true to create a CMatchFinderBinaryTree; false to create a CMatchFinderHashChain.</param>
+		/// <returns>A new CMatchFinder instance of the requested type.</returns>
 		public static CMatchFinder CreateMatchFinder( bool useBinaryTree )
 		{
 			if( useBinaryTree )
@@ -142,6 +165,14 @@ namespace Eternal.LZMA2SimpleCS.CS
 			}
 		}
 
+		/// <summary>
+		/// Allocates and configures the match finder for the given stream parameters.
+		/// </summary>
+		/// <param name="inHistorySize">Size of the history (dictionary) in bytes.</param>
+		/// <param name="keepAddBufferBefore">Extra bytes to keep before the current position.</param>
+		/// <param name="inMatchMaxLen">Maximum match length to search for.</param>
+		/// <param name="keepAddBufferAfter">Extra bytes to keep after the current position.</param>
+		/// <returns>true on success, false if allocation failed.</returns>
 		public bool Create( uint32 inHistorySize, uint32 keepAddBufferBefore, uint32 inMatchMaxLen, uint32 keepAddBufferAfter )
 		{
 			/* we need one additional byte in (mf->KeepSizeBefore),
@@ -230,6 +261,9 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return false;
 		}
 
+		/// <summary>
+		/// Resets all internal state and reads the first block of input data, preparing the match finder for use.
+		/// </summary>
 		public void Init()
 		{
 			// MatchFinder_Init_LowHash( mf );
@@ -626,11 +660,13 @@ namespace Eternal.LZMA2SimpleCS.CS
 		{
 		}
 
-		public override bool IsBinaryTreeMode() 
+		/// <inheritdoc/>
+		public override bool IsBinaryTreeMode()
 		{
 			return false;
 		}
 
+		/// <inheritdoc/>
 		public override void GetMatches( uint32[] distances, ref uint32 pairCount )
 		{
 			if( LengthLimit < 4u )
@@ -664,6 +700,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 			MovePos();
 		}
 
+		/// <inheritdoc/>
 		public override void Skip( uint32 length )
 		{
 			while( length > 0u )
@@ -764,11 +801,13 @@ namespace Eternal.LZMA2SimpleCS.CS
 		{
 		}
 
+		/// <inheritdoc/>
 		public override bool IsBinaryTreeMode()
 		{
 			return true;
 		}
 
+		/// <inheritdoc/>
 		public override void GetMatches( uint32[] distances, ref uint32 pairCount )
 		{
 			if( LengthLimit < 4u )
@@ -802,6 +841,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 			MovePos();
 		}
 
+		/// <inheritdoc/>
 		public override void Skip( uint32 length )
 		{
 			do

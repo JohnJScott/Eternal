@@ -53,7 +53,12 @@ namespace Eternal.LZMA2SimpleCS.CS
 		private uint32 PackSize = 0;
 		private uint32 UnpackSize = 0u;
 
-		/** Decode Lzma2 byte summary to 5 byte array of Lzma1 properties */
+		/// <summary>
+		/// Decodes the one-byte LZMA2 property summary into a five-byte LZMA1 properties array.
+		/// </summary>
+		/// <param name="prop">One-byte LZMA2 property summary encoding the dictionary size (0–40).</param>
+		/// <param name="decoderProperties">Output array of at least 5 bytes to receive the LZMA1 properties.</param>
+		/// <returns>SevenZipOK on success, or SevenZipErrorUnsupported if prop is out of range.</returns>
 		public SevenZipResult DecodeLegacyProperties( uint8 prop, uint8[] decoderProperties )
 		{
 			if( prop > 40 )
@@ -163,6 +168,15 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return ELzma2State.Lzma2StateError;
 		}
 
+		/// <summary>
+		/// Decodes a complete LZMA2 stream into the internal dictionary buffer.
+		/// </summary>
+		/// <param name="dictLimit">Target dictionary position; decoding stops when DictionaryPosition reaches this value.</param>
+		/// <param name="compressed">Pointer to the compressed input data.</param>
+		/// <param name="compressedLength">On entry: number of available compressed bytes. On exit: number of bytes consumed.</param>
+		/// <param name="finishMode">LzmaFinishModeAny to stop at dictLimit; LzmaFinishModeEnd to require an end-of-stream marker.</param>
+		/// <param name="status">Receives the decoder status on return.</param>
+		/// <returns>SevenZipOK on success, or SevenZipErrorData on a malformed stream.</returns>
 		public SevenZipResult DecodeToDictionary(  int64 dictLimit, uint8[] compressed, ref int64 compressedLength, ELzmaFinishMode finishMode, ref ELzmaStatus status )
 		{
 			int64 in_size = compressedLength;
@@ -296,6 +310,17 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return SevenZipResult.SevenZipErrorData;
 		}
 
+		/// <summary>
+		/// Decompresses a complete LZMA2 stream in a single call.
+		/// </summary>
+		/// <param name="decompressed">Output buffer to receive the decompressed data.</param>
+		/// <param name="decompressedLength">On entry: capacity of decompressed. On exit: number of bytes written.</param>
+		/// <param name="compressed">Pointer to the compressed input data.</param>
+		/// <param name="compressedLength">On entry: number of compressed bytes available. On exit: number of bytes consumed.</param>
+		/// <param name="prop">One-byte LZMA2 property summary encoding the dictionary size.</param>
+		/// <param name="finishMode">LzmaFinishModeAny or LzmaFinishModeEnd.</param>
+		/// <param name="status">Receives the decoder status on return.</param>
+		/// <returns>SevenZipOK on success, or an error code.</returns>
 		public static SevenZipResult Lzma2Decode( uint8[] decompressed, ref int64 decompressedLength, uint8[] compressed, ref int64 compressedLength, uint8 prop, ELzmaFinishMode finishMode, ref ELzmaStatus status )
 		{
 			Lzma2Dec dec2 = new Lzma2Dec( decompressed );

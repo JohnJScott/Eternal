@@ -11,6 +11,10 @@ namespace Eternal.LZMA2SimpleCS.CS
 	public class CLzma2EncoderProperties
 		: CLzmaEncoderProperties
 	{
+		/// <summary>
+		/// Validates and fills in default values for all LZMA2 encoder properties.
+		/// </summary>
+		/// <returns>SevenZipOK on success, or SevenZipErrorParam if the literal-bit combination is invalid.</returns>
 		public override SevenZipResult Normalize()
 		{
 			base.Normalize();
@@ -102,6 +106,10 @@ namespace Eternal.LZMA2SimpleCS.CS
 		{
 		}
 
+		/// <summary>
+		/// Reads and caches the encoder property byte if it has not already been retrieved.
+		/// </summary>
+		/// <returns>SevenZipOK on success, or an error code from GetCodedProperties().</returns>
 		public SevenZipResult InitStream()
 		{
 			if( !PropertiesAreSet )
@@ -121,6 +129,9 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return SevenZipResult.SevenZipOK;
 		}
 
+		/// <summary>
+		/// Resets per-block state, preparing the encoder to start a new LZMA2 block.
+		/// </summary>
 		public void InitBlock()
 		{
 			SourcePosition = 0u;
@@ -128,6 +139,12 @@ namespace Eternal.LZMA2SimpleCS.CS
 			NeedInitProp = true;
 		}
 
+		/// <summary>
+		/// Encodes one LZMA2 sub-block, choosing between LZMA and copy mode automatically.
+		/// </summary>
+		/// <param name="packSizeRes">On entry: maximum allowed compressed size for this sub-block. On exit: number of compressed bytes written to outStreamInterface.</param>
+		/// <param name="outStreamInterface">Destination stream to write the encoded sub-block to.</param>
+		/// <returns>SevenZipOK on success, or SevenZipErrorOutputEof if the output limit is exceeded.</returns>
 		public SevenZipResult EncodeSubblock( ref int64 packSizeRes, OutStreamInterface outStreamInterface )
 		{
 			int64 pack_size_limit = packSizeRes;
@@ -229,6 +246,10 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return SevenZipResult.SevenZipOK;
 		}
 
+		/// <summary>
+		/// Returns the one-byte LZMA2 dictionary-size index used in the stream header.
+		/// </summary>
+		/// <returns>Encoded dictionary index in the range [0, 40].</returns>
 		public uint8 GetCodedDictionary()
 		{
 			uint8 dict_index;
@@ -244,6 +265,13 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return dict_index;
 		}
 
+		/// <summary>
+		/// Encodes an entire input stream into an LZMA2 output stream.
+		/// </summary>
+		/// <param name="outStreamInterface">Destination stream to write the compressed LZMA2 data to.</param>
+		/// <param name="inStreamInterface">Source stream supplying the uncompressed data.</param>
+		/// <param name="finished">If true, writes the LZMA2 end-of-stream marker after the last block.</param>
+		/// <returns>SevenZipOK on success, or an error code.</returns>
 		public SevenZipResult EncodeStream( OutStreamInterface outStreamInterface, InStreamInterface inStreamInterface, bool finished )
 		{
 			int64 unpack_total = 0u;
@@ -344,6 +372,15 @@ namespace Eternal.LZMA2SimpleCS.CS
 			}
 		}
 
+		/// <summary>
+		/// Compresses an input stream using LZMA2 and writes the result to an output stream.
+		/// </summary>
+		/// <param name="outStreamInterface">Destination stream to receive the compressed output.</param>
+		/// <param name="inStreamInterface">Source stream supplying the uncompressed data.</param>
+		/// <param name="encoderProperties">Encoder configuration parameters.</param>
+		/// <param name="propertySummary">Receives the one-byte LZMA2 property summary (dictionary size index) needed for decompression.</param>
+		/// <param name="progress">Optional progress callback; pass null to disable.</param>
+		/// <returns>SevenZipOK on success, or an error code.</returns>
 		public static SevenZipResult Lzma2Encode( OutStreamInterface outStreamInterface, InStreamInterface inStreamInterface, CLzma2EncoderProperties encoderProperties, ref uint8 propertySummary, ProgressInterface? progress )
 		{
 			Lzma2Enc enc2 = new Lzma2Enc( encoderProperties, progress );

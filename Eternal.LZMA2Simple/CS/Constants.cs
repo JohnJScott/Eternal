@@ -47,10 +47,14 @@ namespace Eternal.LZMA2SimpleCS.CS
 		{
 		}
 
-		/**
-		 * if ( input( size ) != 0 && output( size ) == 0 ) means end_of_stream.
-		 * ( output( size ) < input( size ) ) is allowed
-		 */
+		/// <summary>
+		/// Reads bytes from the stream into the provided buffer.
+		/// </summary>
+		/// <remarks>If input size is non-zero and output size is zero, the stream has ended. Output size less than input size is allowed.</remarks>
+		/// <param name="bufferBase">Destination buffer to read into.</param>
+		/// <param name="offset">Byte offset within bufferBase to start writing.</param>
+		/// <param name="size">On entry: maximum bytes to read. On exit: bytes actually read (0 signals end of stream).</param>
+		/// <returns>SevenZipOK on success, or an error code.</returns>
 		public abstract SevenZipResult Read( uint8[] bufferBase, int64 offset, ref int64 size );
 	};
 
@@ -67,9 +71,13 @@ namespace Eternal.LZMA2SimpleCS.CS
 		{
 		}
 
-		/**
-		 * Returns the number of actually written bytes. ( result < size ) means error.
-		 */
+		/// <summary>
+		/// Writes bytes from the provided buffer to the stream.
+		/// </summary>
+		/// <param name="bufferBase">Source buffer to write from.</param>
+		/// <param name="offset">Byte offset within bufferBase to start reading.</param>
+		/// <param name="blockSize">Number of bytes to write.</param>
+		/// <returns>Number of bytes actually written; a value less than blockSize indicates an error.</returns>
 		public abstract int64 Write( uint8[] bufferBase, int64 offset, int64 blockSize );
 	};
 
@@ -86,10 +94,12 @@ namespace Eternal.LZMA2SimpleCS.CS
 		{
 		}
 
-		/**
-		 * Returns: SZ_RESULT. (result != SZ_OK) means break.
-		 * Value UINT64_MAX for size means unknown value.
-		 */
+		/// <summary>
+		/// Reports compression progress.
+		/// </summary>
+		/// <param name="inSize">Number of uncompressed bytes processed so far; INT64_MAX means unknown.</param>
+		/// <param name="outSize">Number of compressed bytes produced so far; INT64_MAX means unknown.</param>
+		/// <returns>SevenZipOK to continue; any other value aborts the operation.</returns>
 		public abstract SevenZipResult Progress( int64 inSize, int64 outSize );
 	};
 
