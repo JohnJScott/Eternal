@@ -1,0 +1,97 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 18
+VisualStudioVersion = 18.1.11312.151
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Eternal.LZMA2Simple", "Eternal.LZMA2Simple\Eternal.LZMA2Simple.vcxproj", "{39B9BCC7-F7A8-4BCC-B11F-9949B6EDD71C}"
+	GlobalSection(PerforceSourceControlProviderSolutionProperties) = preSolution
+		SolutionIsControlled = True
+	EndGlobalSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Eternal.LZMA2SimpleTest", "Eternal.LZMA2SimpleTest\Eternal.LZMA2SimpleTest.vcxproj", "{26206451-DA85-3EF4-259E-AAA90DE75629}"
+	ProjectSection(ProjectDependencies) = postProject
+		{39B9BCC7-F7A8-4BCC-B11F-9949B6EDD71C} = {39B9BCC7-F7A8-4BCC-B11F-9949B6EDD71C}
+	EndProjectSection
+	GlobalSection(PerforceSourceControlProviderSolutionProperties) = preSolution
+		SolutionIsControlled = True
+	EndGlobalSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Eternal.LZMA2SimpleCS", "Eternal.LZMA2Simple\Eternal.LZMA2SimpleCS.csproj", "{C844659B-7980-E389-AD25-5412DC2155B2}"
+	GlobalSection(PerforceSourceControlProviderSolutionProperties) = preSolution
+		SolutionIsControlled = True
+	EndGlobalSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Eternal.LZMA2SimpleLinux", "Eternal.LZMA2Simple\Eternal.LZMA2SimpleLinux.vcxproj", "{9C5568DF-8546-4EE7-A304-1F7B5EF4D052}"
+	GlobalSection(PerforceSourceControlProviderSolutionProperties) = preSolution
+		SolutionIsControlled = True
+	EndGlobalSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Eternal.LZMA2SimpleCSTest", "Eternal.LZMA2SimpleCSTest\Eternal.LZMA2SimpleCSTest.csproj", "{5D19E305-F3BE-4375-87A3-C834F4539819}"
+	GlobalSection(PerforceSourceControlProviderSolutionProperties) = preSolution
+		SolutionIsControlled = True
+	EndGlobalSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OriginalSevenZip", "OriginalSevenZip\OriginalSevenZip.vcxproj", "{A3698E10-6C28-4B3D-BB4A-71921A217B54}"
+	GlobalSection(PerforceSourceControlProviderSolutionProperties) = preSolution
+		SolutionIsControlled = True
+	EndGlobalSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{39B9BCC7-F7A8-4BCC-B11F-9949B6EDD71C}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{39B9BCC7-F7A8-4BCC-B11F-9949B6EDD71C}.Debug|x64.ActiveCfg = Debug|x64
+		{39B9BCC7-F7A8-4BCC-B11F-9949B6EDD71C}.Debug|x64.Build.0 = Debug|x64
+		{39B9BCC7-F7A8-4BCC-B11F-9949B6EDD71C}.Release|Any CPU.ActiveCfg = Release|x64
+		{39B9BCC7-F7A8-4BCC-B11F-9949B6EDD71C}.Release|x64.ActiveCfg = Release|x64
+		{39B9BCC7-F7A8-4BCC-B11F-9949B6EDD71C}.Release|x64.Build.0 = Release|x64
+		{26206451-DA85-3EF4-259E-AAA90DE75629}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{26206451-DA85-3EF4-259E-AAA90DE75629}.Debug|x64.ActiveCfg = Debug|x64
+		{26206451-DA85-3EF4-259E-AAA90DE75629}.Debug|x64.Build.0 = Debug|x64
+		{26206451-DA85-3EF4-259E-AAA90DE75629}.Release|Any CPU.ActiveCfg = Release|x64
+		{26206451-DA85-3EF4-259E-AAA90DE75629}.Release|x64.ActiveCfg = Release|x64
+		{26206451-DA85-3EF4-259E-AAA90DE75629}.Release|x64.Build.0 = Release|x64
+		{C844659B-7980-E389-AD25-5412DC2155B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C844659B-7980-E389-AD25-5412DC2155B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C844659B-7980-E389-AD25-5412DC2155B2}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C844659B-7980-E389-AD25-5412DC2155B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C844659B-7980-E389-AD25-5412DC2155B2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C844659B-7980-E389-AD25-5412DC2155B2}.Release|x64.ActiveCfg = Release|Any CPU
+		{9C5568DF-8546-4EE7-A304-1F7B5EF4D052}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{9C5568DF-8546-4EE7-A304-1F7B5EF4D052}.Debug|x64.ActiveCfg = Debug|x64
+		{9C5568DF-8546-4EE7-A304-1F7B5EF4D052}.Debug|x64.Build.0 = Debug|x64
+		{9C5568DF-8546-4EE7-A304-1F7B5EF4D052}.Debug|x64.Deploy.0 = Debug|x64
+		{9C5568DF-8546-4EE7-A304-1F7B5EF4D052}.Release|Any CPU.ActiveCfg = Release|x64
+		{9C5568DF-8546-4EE7-A304-1F7B5EF4D052}.Release|x64.ActiveCfg = Release|x64
+		{9C5568DF-8546-4EE7-A304-1F7B5EF4D052}.Release|x64.Build.0 = Release|x64
+		{9C5568DF-8546-4EE7-A304-1F7B5EF4D052}.Release|x64.Deploy.0 = Release|x64
+		{5D19E305-F3BE-4375-87A3-C834F4539819}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D19E305-F3BE-4375-87A3-C834F4539819}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D19E305-F3BE-4375-87A3-C834F4539819}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5D19E305-F3BE-4375-87A3-C834F4539819}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D19E305-F3BE-4375-87A3-C834F4539819}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D19E305-F3BE-4375-87A3-C834F4539819}.Release|x64.ActiveCfg = Release|Any CPU
+		{A3698E10-6C28-4B3D-BB4A-71921A217B54}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{A3698E10-6C28-4B3D-BB4A-71921A217B54}.Debug|Any CPU.Build.0 = Debug|x64
+		{A3698E10-6C28-4B3D-BB4A-71921A217B54}.Debug|x64.ActiveCfg = Debug|x64
+		{A3698E10-6C28-4B3D-BB4A-71921A217B54}.Debug|x64.Build.0 = Debug|x64
+		{A3698E10-6C28-4B3D-BB4A-71921A217B54}.Release|Any CPU.ActiveCfg = Release|x64
+		{A3698E10-6C28-4B3D-BB4A-71921A217B54}.Release|Any CPU.Build.0 = Release|x64
+		{A3698E10-6C28-4B3D-BB4A-71921A217B54}.Release|x64.ActiveCfg = Release|x64
+		{A3698E10-6C28-4B3D-BB4A-71921A217B54}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B43765E6-2964-44A7-ABFA-7AC296DB02AC}
+	EndGlobalSection
+	GlobalSection(PerforceSourceControlProviderSolutionProperties) = preSolution
+		SolutionIsControlled = True
+	EndGlobalSection
+EndGlobal

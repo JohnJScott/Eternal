@@ -1,0 +1,45 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <BaseOutputPath>$(SolutionDir)\Binaries\$(Platform)\</BaseOutputPath>
+    <Description>A cut down LZMA2 implementation for C#</Description>
+    <Copyright>Copyright 2026 Eternal Developments, LLC. All Rights Reserved.</Copyright>
+    <AssemblyVersion>2.5.0.1</AssemblyVersion>
+    <FileVersion>2.5.0.1</FileVersion>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Title>A simplified  implementation of the 7-Zip SDK for C#</Title>
+    <AssemblyTitle>Lzam2Simple</AssemblyTitle>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Company>Eternal Developments, LLC</Company>
+    <Authors />
+    <PackageProjectUrl>https://eternaldevelopments.com/</PackageProjectUrl>
+    <PackageReadmeFile>ReadMe.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/JohnJScott/Eternal</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>Lzma2;7-Zip;C#;C++;Linux</PackageTags>
+    <PackageReleaseNotes>This is the initial beta release</PackageReleaseNotes>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <WarningLevel>9999</WarningLevel>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <WarningLevel>9999</WarningLevel>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Eternal.ConsoleUtilities" Version="1.0.11" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="ReadMe.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>

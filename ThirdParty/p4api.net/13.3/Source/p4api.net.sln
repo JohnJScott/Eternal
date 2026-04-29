@@ -1,0 +1,56 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9B8EE1E9-59A0-4824-8F15-B99C46FEC252}"
+	ProjectSection(SolutionItems) = preProject
+		p4api.net.vsmdi = p4api.net.vsmdi
+		TestSettings.testsettings = TestSettings.testsettings
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "p4api.net", "p4api.net\p4api.net.csproj", "{1305ABF0-EEA0-464F-99D5-7FD5BE5E4956}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3C4F5F69-5D0A-4266-8500-AB63BC660985} = {3C4F5F69-5D0A-4266-8500-AB63BC660985}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "p4bridge", "p4bridge\p4bridge.vcxproj", "{3C4F5F69-5D0A-4266-8500-AB63BC660985}"
+EndProject
+Global
+	GlobalSection(TestCaseManagementSettings) = postSolution
+		CategoryFile = p4api.net.vsmdi
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Debug|x64 = Debug|x64
+		LocalRelease|Win32 = LocalRelease|Win32
+		LocalRelease|x64 = LocalRelease|x64
+		Release|Win32 = Release|Win32
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1305ABF0-EEA0-464F-99D5-7FD5BE5E4956}.Debug|Win32.ActiveCfg = Debug|x86
+		{1305ABF0-EEA0-464F-99D5-7FD5BE5E4956}.Debug|Win32.Build.0 = Debug|x86
+		{1305ABF0-EEA0-464F-99D5-7FD5BE5E4956}.Debug|x64.ActiveCfg = Debug|x64
+		{1305ABF0-EEA0-464F-99D5-7FD5BE5E4956}.Debug|x64.Build.0 = Debug|x64
+		{1305ABF0-EEA0-464F-99D5-7FD5BE5E4956}.LocalRelease|Win32.ActiveCfg = LocalRelease|x86
+		{1305ABF0-EEA0-464F-99D5-7FD5BE5E4956}.LocalRelease|x64.ActiveCfg = LocalRelease|x64
+		{1305ABF0-EEA0-464F-99D5-7FD5BE5E4956}.LocalRelease|x64.Build.0 = LocalRelease|x64
+		{1305ABF0-EEA0-464F-99D5-7FD5BE5E4956}.Release|Win32.ActiveCfg = Release|x86
+		{1305ABF0-EEA0-464F-99D5-7FD5BE5E4956}.Release|Win32.Build.0 = Release|x86
+		{1305ABF0-EEA0-464F-99D5-7FD5BE5E4956}.Release|x64.ActiveCfg = Release|x64
+		{1305ABF0-EEA0-464F-99D5-7FD5BE5E4956}.Release|x64.Build.0 = Release|x64
+		{3C4F5F69-5D0A-4266-8500-AB63BC660985}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3C4F5F69-5D0A-4266-8500-AB63BC660985}.Debug|Win32.Build.0 = Debug|Win32
+		{3C4F5F69-5D0A-4266-8500-AB63BC660985}.Debug|x64.ActiveCfg = Debug|x64
+		{3C4F5F69-5D0A-4266-8500-AB63BC660985}.Debug|x64.Build.0 = Debug|x64
+		{3C4F5F69-5D0A-4266-8500-AB63BC660985}.LocalRelease|Win32.ActiveCfg = LocalRelease|Win32
+		{3C4F5F69-5D0A-4266-8500-AB63BC660985}.LocalRelease|Win32.Build.0 = Release|Win32
+		{3C4F5F69-5D0A-4266-8500-AB63BC660985}.LocalRelease|x64.ActiveCfg = LocalRelease|x64
+		{3C4F5F69-5D0A-4266-8500-AB63BC660985}.LocalRelease|x64.Build.0 = Release|x64
+		{3C4F5F69-5D0A-4266-8500-AB63BC660985}.Release|Win32.ActiveCfg = Release|Win32
+		{3C4F5F69-5D0A-4266-8500-AB63BC660985}.Release|Win32.Build.0 = Release|Win32
+		{3C4F5F69-5D0A-4266-8500-AB63BC660985}.Release|x64.ActiveCfg = Release|x64
+		{3C4F5F69-5D0A-4266-8500-AB63BC660985}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

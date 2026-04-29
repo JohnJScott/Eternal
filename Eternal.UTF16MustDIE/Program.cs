@@ -10,7 +10,7 @@ namespace Eternal.Utf16MustDie
     public class Program
 	{
 		private static bool ProcessUtf16 = true;
-		private static bool ProcessAnsi= true;
+		private static bool ProcessAnsi = true;
 
 		/// <summary>A generic catch all for all unhandled exceptions.</summary>
 		/// <param name="sender">The object that created the exception.</param>

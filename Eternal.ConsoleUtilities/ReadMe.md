@@ -31,7 +31,7 @@ A set of functions to read and write Xml files.
 
 A set of functions to read and write Yaml files.
 
-# Changes 25th November 2025 - 1.0.10
+# Changes 25th November 2025
 
 Upgraded to .net10
 
