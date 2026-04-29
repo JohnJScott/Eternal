@@ -109,6 +109,7 @@ $RECYCLE.BIN/
 *.user
 
 # Build results
+[Ii]ntermediate/
 [Dd]ebug/
 [Rr]elease/
 x64/
