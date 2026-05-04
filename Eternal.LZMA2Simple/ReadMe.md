@@ -43,13 +43,13 @@ CLzma2Result has only a single byte for the properties, not 5.
 Look at the function CreateLzma2Props() in https://github.com/JohnJScott/Eternal/blob/master/Eternal.LZMA2SimpleTest/OriginalComparisonTests.cpp to see the removed encoder settings.
 
 # Unit test priorities:
-0 - Generate various lookup tables
-11 - Various C++ Lzma1 compress/decompress validation
-12 - Various C++ Lzma2 compress/decompress validation
-21 - Various C# Lzma1 compress/decompress validation
-22 - Various C# Lzma2 compress/decompress validation
-50 - Ensures the refactored C++ compressed data matches the compressed data from the vanilla 7-Zip SDK
-60 - Ensures the C# compressed data matches the C++ compressed data.
+* 0 - Generate various lookup tables
+* 11 - Various C++ Lzma1 compress/decompress validation
+* 12 - Various C++ Lzma2 compress/decompress validation
+* 21 - Various C# Lzma1 compress/decompress validation
+* 22 - Various C# Lzma2 compress/decompress validation
+* 50 - Ensures the refactored C++ compressed data matches the compressed data from the vanilla 7-Zip SDK
+* 60 - Ensures the C# compressed data matches the C++ compressed data.
 
 The OriginalSevenZip project references the original SDK; it's just a compile wrapper.
 Given this readme resides at ~/Eternal/Eternal.LZMA2Simple/
