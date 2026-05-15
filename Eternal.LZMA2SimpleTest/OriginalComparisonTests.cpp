@@ -1,14 +1,26 @@
 // Copyright Eternal Developments, LLC. All rights reserved.
 
-#include "Common.h"
+#include <chrono>
+#include <cstdarg>
+
+#include "CppUnitTest.h"
+using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+
+#include "../Eternal.LZMA2Simple/C/7zTypes.h"
+
+#include "../Eternal.LZMA2Simple/C/Lzma1Lib.h"
+#include "../Eternal.LZMA2Simple/C/Lzma2Lib.h"
 
 #include "../../ThirdParty/7-Zip/lzma2501/C/Lzma2Enc.h"
 #include "../../ThirdParty/7-Zip/lzma2501/C/Lzma2Dec.h"
+#include "../Eternal.LZMA2Utilities/Utilities.h"
 
 #pragma comment( lib, "OriginalSevenZip.lib" )
 
 namespace EternalLZMA2SimpleTest
 {
+	void Log( const char* format, ... );
+
 #define TEST_METHOD_CATEGORY( test_name, category_name ) \
 	BEGIN_TEST_METHOD_ATTRIBUTE( test_name ) \
 		TEST_METHOD_ATTRIBUTE( L"Category", L#category_name ) \
@@ -238,8 +250,6 @@ namespace EternalLZMA2SimpleTest
 	{
 		static void TestCompression( CLzmaData& compress, CLzmaData& compressOriginal, CLzma2EncoderProperties* encoderProperties, const std::string outputName )
 		{
-			Allocator compress_allocator;
-			Allocator decompress_allocator;
 			CLzma2Result compress_result;
 			CLzma2Result compress_original_result;
 			CLzma2Result decompress_result;
@@ -256,6 +266,7 @@ namespace EternalLZMA2SimpleTest
 			const std::chrono::duration<double> compress_original_s = std::chrono::steady_clock::now() - start_original_compress;
 
 			WriteBinaryFile( "Intermediate\\TestData\\refactored\\" + outputName + ".compressed", compress.DestinationData, compress_result.OutputLength );
+			WriteProperties( "Intermediate\\TestData\\refactored\\" + outputName + ".meta", compress_result.PropertySummary );
 			WriteBinaryFile( "Intermediate\\TestData\\original\\" + outputName + ".compressed", compressOriginal.DestinationData, compress_original_result.OutputLength );
 
 			Assert::AreEqual( compress_result.OutputLength, compress_original_result.OutputLength, L"Compression should be identical" );

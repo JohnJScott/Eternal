@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="PerformanceHarness.cpp" />
+    <ClCompile Include="..\Eternal.LZMA2Simple\C\LzFind.cpp">
+      <Filter>C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Eternal.LZMA2Simple\C\Lzma1Dec.cpp">
+      <Filter>C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Eternal.LZMA2Simple\C\Lzma1Enc.cpp">
+      <Filter>C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Eternal.LZMA2Simple\C\Lzma1Lib.cpp">
+      <Filter>C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Eternal.LZMA2Simple\C\Lzma2Dec.cpp">
+      <Filter>C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Eternal.LZMA2Simple\C\Lzma2Enc.cpp">
+      <Filter>C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Eternal.LZMA2Simple\C\Lzma2Lib.cpp">
+      <Filter>C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Eternal.LZMA2Simple\C\SlotLookupTable.cpp">
+      <Filter>C</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="C">
+      <UniqueIdentifier>{6c4265d7-1365-4270-81a9-2dba5e4476d6}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Eternal.LZMA2Simple\C\7zTypes.h">
+      <Filter>C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Eternal.LZMA2Simple\C\LzFind.h">
+      <Filter>C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Eternal.LZMA2Simple\C\Lzma1Dec.h">
+      <Filter>C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Eternal.LZMA2Simple\C\Lzma1Enc.h">
+      <Filter>C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Eternal.LZMA2Simple\C\Lzma1Lib.h">
+      <Filter>C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Eternal.LZMA2Simple\C\Lzma2Dec.h">
+      <Filter>C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Eternal.LZMA2Simple\C\Lzma2Enc.h">
+      <Filter>C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Eternal.LZMA2Simple\C\Lzma2Lib.h">
+      <Filter>C</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

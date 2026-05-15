@@ -9,11 +9,7 @@
   <ItemGroup>
     <ClCompile Include="Eternal.LZMA2SimpleTest.cpp" />
     <ClCompile Include="Eternal.LZMA1SimpleTest.cpp" />
-    <ClCompile Include="Common.cpp" />
     <ClCompile Include="Utilities.cpp" />
     <ClCompile Include="OriginalComparisonTests.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Common.h" />
   </ItemGroup>
 </Project>

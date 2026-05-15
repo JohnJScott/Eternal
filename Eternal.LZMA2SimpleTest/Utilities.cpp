@@ -1,9 +1,29 @@
 // Copyright Eternal Developments, LLC. All rights reserved.
 
-#include "Common.h"
+#include <cstdarg>
+
+#include "CppUnitTest.h"
+using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+
+#include "../Eternal.LZMA2Simple/C/7zTypes.h"
+#include "../Eternal.LZMA2Simple/C/Lzma1Enc.h"
+
+#pragma comment( lib, "Eternal.LZMA2Utilities.lib" )
 
 namespace EternalLZMA2SimpleTest
 {
+	void Log( const char* format, ... )
+	{
+		char buffer[4096];
+
+		va_list arguments;
+		va_start( arguments, format );
+		( void )vsnprintf_s( buffer, 4096, _TRUNCATE, format, arguments );
+		va_end( arguments );
+
+		Logger::WriteMessage( buffer );
+	}
+
 #define TEST_METHOD_CATEGORY( test_name, category_name ) \
 	BEGIN_TEST_METHOD_ATTRIBUTE( test_name ) \
 		TEST_METHOD_ATTRIBUTE( L"Category", L#category_name ) \

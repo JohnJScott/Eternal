@@ -1,9 +1,19 @@
 // Copyright Eternal Developments, LLC. All rights reserved.
 
-#include "Common.h"
+#include <chrono>
+#include <cstdarg>
+
+#include "CppUnitTest.h"
+using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+
+#include "../Eternal.LZMA2Simple/C/7zTypes.h"
+#include "../Eternal.LZMA2Simple/C/Lzma1Lib.h"
+#include "../Eternal.LZMA2Utilities/Utilities.h"
 
 namespace EternalLZMA2SimpleTest
 {
+	void Log( const char* format, ... );
+
 #define TEST_METHOD_CATEGORY( test_name, category_name ) \
 	BEGIN_TEST_METHOD_ATTRIBUTE( test_name ) \
 		TEST_METHOD_ATTRIBUTE( L"Category", L#category_name ) \

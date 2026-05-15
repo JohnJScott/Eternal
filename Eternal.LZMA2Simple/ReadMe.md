@@ -13,7 +13,9 @@ MIT
 A simplified library to compress and decompress using the 7-Zip libary. It has targets for Windows x64, Linux x64, and C# and is based on the 25.01 version of 7-Zip.
 
 I am working on another project that uses 7-Zip extensively; basically, I compress many smaller blocks in C++ and then visualize in PaintDotNET. This meant I needed a solid C# implementation of the decompressor. As the reference
-implementation uses macros extensively, a direct port of the C code to C# was not practical. What I did was convert the C code to C++, remove a lot of the dead code, and removed several of the unused options.
+implementation uses macros extensively, a direct port of the C code to C# was not practical. What I did was convert the C code to C++, removed a lot of the dead code, and removed several of the unused options.
+
+I also simplified the usage interface significantly.
 
 The biggest limitation is that C# does not support arrays greater than 2GB. This means files greater than 2GB can't be compressed or decompressed with the C# library. The Array helpers (such as Fill and Copy) all
 take 64 bit indices, so maybe future versions will.
@@ -55,7 +57,10 @@ The OriginalSevenZip project references the original SDK; it's just a compile wr
 Given this readme resides at ~/Eternal/Eternal.LZMA2Simple/
 Put the 7-Zip SDK at ~/ThirdParty/7-Zip/lzma2501/ to make everything work seamlessly.
 
-Performance: The refactored C++ decompress seems to be about 50% slower than the reference version. This is unacceptable and I'm working on it. Run the test TestCompareExhaustiveBC3 to get test output in a CSV format.
+Performance: The refactored C++ decompress seems to be about 50% slower than the reference version. This is unacceptable and I'm working on it, but I found that 60% of the time is in malloc or free and 
+I need to rethink my testing.
+
+Run the test TestCompareExhaustiveBC3 to get test output in a CSV format.
 
 # Changes 21st April 2026
 

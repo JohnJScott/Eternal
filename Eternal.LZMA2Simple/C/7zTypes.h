@@ -187,7 +187,6 @@ public:
 		if( size != 0 )
 		{
 			void* address = malloc( static_cast<uint64>( size ) );
-			memset( address, 0, static_cast< uint64 >( size ) );
 			return address;
 		}
 
