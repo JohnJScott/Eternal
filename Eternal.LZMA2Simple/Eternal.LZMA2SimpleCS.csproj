@@ -7,6 +7,7 @@
     <BaseOutputPath>$(SolutionDir)\Binaries\$(Platform)\</BaseOutputPath>
     <Description>A cut down LZMA2 implementation for C#</Description>
     <Copyright>Copyright 2026 Eternal Developments, LLC. All Rights Reserved.</Copyright>
+	<VersionPrefix>1.0.1</VersionPrefix>
     <AssemblyVersion>2.5.0.1</AssemblyVersion>
     <FileVersion>2.5.0.1</FileVersion>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -30,10 +31,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <WarningLevel>9999</WarningLevel>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Eternal.ConsoleUtilities" Version="1.0.11" />
-  </ItemGroup>
 
   <ItemGroup>
     <None Update="ReadMe.md">
