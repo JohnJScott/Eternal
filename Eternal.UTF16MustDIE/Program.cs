@@ -1,4 +1,4 @@
-// Copyright 2022 Eternal Developments LLC. All Rights Reserved.
+// Copyright Eternal Developments LLC. All Rights Reserved.
 
 using Eternal.ConsoleUtilities;
 using Eternal.PerforceUtilities;
@@ -128,7 +128,7 @@ namespace Eternal.Utf16MustDie
 	        AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler( GenericExceptionHandler );
 	        DateTime start_time = DateTime.UtcNow;
 
-	        ConsoleLogger.Title( "UTF16MustDie - Copyright 2024 Eternal Developments, LLC." );
+	        ConsoleLogger.Title( "UTF16MustDie - Copyright Eternal Developments, LLC." );
 	        ConsoleLogger.Title( "Hunts down UTF-16 and ANSI files in the local Perforce workspace, fixes them if necessary, then converts and resaves as UTF-8." );
 
 	        if( ParseArguments( arguments ) )

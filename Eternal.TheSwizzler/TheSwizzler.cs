@@ -1,4 +1,4 @@
-// Copyright Eternal Developments LLC. All Rights Reserved.
+﻿// Copyright Eternal Developments LLC. All Rights Reserved.
 
 using Eternal.ConsoleUtilities;
 using SixLabors.ImageSharp;

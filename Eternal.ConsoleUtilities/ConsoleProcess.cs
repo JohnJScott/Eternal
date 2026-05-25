@@ -1,4 +1,4 @@
-// Copyright Eternal Developments LLC. All Rights Reserved.
+﻿// Copyright Eternal Developments LLC. All Rights Reserved.
 
 using System.Diagnostics;
 

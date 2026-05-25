@@ -1,4 +1,4 @@
-// Copyright Eternal Developments LLC. All Rights Reserved.
+﻿// Copyright Eternal Developments LLC. All Rights Reserved.
 
 global using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SixLabors.ImageSharp;

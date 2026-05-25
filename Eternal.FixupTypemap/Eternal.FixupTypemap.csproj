@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Eternal.ConsoleUtilities" Version="1.0.11" />
+    <PackageReference Include="Eternal.PerforceUtilities" Version="1.0.13" />
+    <PackageReference Include="p4api.net" Version="2025.2.287.2434" />
+  </ItemGroup>
+
+</Project>

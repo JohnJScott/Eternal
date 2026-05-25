@@ -1,4 +1,4 @@
-// Copyright 2022 Eternal Developments LLC. All Rights Reserved.
+// Copyright Eternal Developments LLC. All Rights Reserved.
 
 using Eternal.ConsoleUtilities;
 using Eternal.PerforceUtilities;
@@ -138,7 +138,7 @@ namespace Eternal.SourceServerIndexer
 			AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler( GenericExceptionHandler );
 			DateTime start_time = DateTime.UtcNow;
 
-			ConsoleLogger.Title( "SourceServerIndexer - Copyright 2024 Eternal Developments LLC." );
+			ConsoleLogger.Title( "SourceServerIndexer - Copyright Eternal Developments LLC." );
 			ConsoleLogger.Title( "Indexes pdb files to allow source debugging of minidumps without having to sync an entire repo." );
 
 			// Handle any command line arguments

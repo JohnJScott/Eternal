@@ -1,4 +1,4 @@
-// Copyright 2022 Eternal Developments LLC. All Rights Reserved.
+﻿// Copyright 2022 Eternal Developments LLC. All Rights Reserved.
 
 using Eternal.ConsoleUtilities;
 using Eternal.PerforceUtilities;
