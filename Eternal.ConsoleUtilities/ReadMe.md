@@ -31,6 +31,14 @@ A set of functions to read and write Xml files.
 
 A set of functions to read and write Yaml files.
 
+# Changes 5th June 2026
+
+The only functional change is the text encoding of Json and Yaml files is now UTF-8 and not UTF-16. Not sure how that slipped through! 
+Fixed a couple of code analysis warnings.
+Some naming convention updates.
+Updated Yaml package.
+Fixed some bad comments for the Yaml writer.
+
 # Changes 25th November 2025
 
 Upgraded to .net10

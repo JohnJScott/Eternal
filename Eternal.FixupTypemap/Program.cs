@@ -99,6 +99,7 @@ namespace Eternal.FixupTypemap
 			IEnumerable<FileSpec> exclude_paths = typeMap.Select( x => new FileSpec( new DepotPath( "-" + x.Path ) ) );
 			depot_paths.AddRange( exclude_paths );
 
+			// This call doesn't seem to respect the exclude patterns.
 			IList <FileMetaData> filtered_files = connectionInfo.PerforceRepository!.GetFileMetaData( opts, depot_paths.ToArray() );
 			ConsoleLogger.Log( $" .. found {filtered_files.Count} files in the depot." );
 

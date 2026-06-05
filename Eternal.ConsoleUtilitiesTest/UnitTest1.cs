@@ -45,7 +45,7 @@ namespace Eternal.ConsoleUtilitiesTest
 		}
 
 		/// <summary>
-		/// A test that calls validates the human readable time duration string
+		/// A test that calls validates the human-readable time duration string
 		/// </summary>
 		[TestMethod( DisplayName = "TimeString functionality" )]
 		public void ConsoleLoggerTimeStringTest()
@@ -61,7 +61,7 @@ namespace Eternal.ConsoleUtilitiesTest
 		}
 
 		/// <summary>
-		/// A test that calls validates the human readable time duration string
+		/// A test that calls validates the human-readable time duration string
 		/// </summary>
 		[TestMethod( DisplayName = "TimeString pluralities" )]
 		public void ConsoleLoggerTimeStringPluralTest()
@@ -74,7 +74,7 @@ namespace Eternal.ConsoleUtilitiesTest
 		}
 
 		/// <summary>
-		/// A test that calls validates the human readable time duration string
+		/// A test that calls validates the human-readable memory size string
 		/// </summary>
 		[TestMethod( DisplayName = "MemoryString functionality" )]
 		public void ConsoleLoggerMemoryStringTest()
@@ -86,11 +86,11 @@ namespace Eternal.ConsoleUtilitiesTest
 			Assert.AreEqual( "123 B", ConsoleLogger.MemoryString( 123 ), "Error for memory string B" );
 		}
 
-		private List<string> CapturedOuput = new List<string>();
+		private readonly List<string> CapturedOutput = new List<string>();
 
 		private void CaptureOutput( string line )
 		{
-			CapturedOuput.Add( line );
+			CapturedOutput.Add( line );
 			ConsoleLogger.Log( line );
 		}
 
@@ -117,10 +117,10 @@ namespace Eternal.ConsoleUtilitiesTest
 			}
 
 			{
-				CapturedOuput.Clear();
+				CapturedOutput.Clear();
 				ConsoleProcess process = new ConsoleProcess( com_spec, cwd, CaptureOutput, "/c", "dir" );
 				Assert.AreEqual( 0, process.Wait(), "Correctly launched exe" );
-				Assert.IsNotEmpty( CapturedOuput, "Failed to capture output" );
+				Assert.IsNotEmpty( CapturedOutput, "Failed to capture output" );
 			}
 		}
 
@@ -128,8 +128,8 @@ namespace Eternal.ConsoleUtilitiesTest
 		{
 			public bool TestBool = false;
 			public int TestInt = 123;
-			public List<string> TestList = new List<string>() { "Alpha", "Beta", "Gamma" };
-			public Dictionary<int, string> TestDictionary = new Dictionary<int, string>() { { 1, "One" }, { 2, "Two" }, { 3, "Three" } };
+			public readonly List<string> TestList = new List<string>() { "Alpha", "Beta", "Gamma" };
+			public readonly Dictionary<int, string> TestDictionary = new Dictionary<int, string>() { { 1, "One" }, { 2, "Two" }, { 3, "Three" } };
 		}
 
 		/// <summary>
@@ -138,9 +138,12 @@ namespace Eternal.ConsoleUtilitiesTest
 		[TestMethod( DisplayName = "Read and verify a json file" )]
 		public void JsonHelperTest()
 		{
-			JsonTestClass test_class = new JsonTestClass();
-			test_class.TestBool = true;
-			test_class.TestInt = 456;
+			JsonTestClass test_class = new JsonTestClass
+			{
+				TestBool = true,
+				TestInt = 456
+			};
+
 			string json_string = JsonHelper.WriteJson( test_class );
 
 			JsonTestClass? test_result = JsonHelper.ReadJson<JsonTestClass>( json_string );
@@ -168,7 +171,7 @@ namespace Eternal.ConsoleUtilitiesTest
 			/// <summary>
 			/// A test list container
 			/// </summary>
-			public List<string> TestList = new List<string>() { "Alpha", "Beta", "Gamma" };
+			public readonly List<string> TestList = new List<string>() { "Alpha", "Beta", "Gamma" };
 		}
 
 		/// <summary>
@@ -210,11 +213,11 @@ namespace Eternal.ConsoleUtilitiesTest
 			/// <summary>
 			/// A test container
 			/// </summary>
-			public List<string> TestList = new List<string>() { "Alpha", "Beta", "Gamma" };
+			public List<string> TestList = new List<string>() {};
 			/// <summary>
 			/// A Test map container
 			/// </summary>
-			public Dictionary<int, string> TestDictionary = new Dictionary<int, string>() { { 1, "One" }, { 2, "Two" }, { 3, "Three" } };
+			public Dictionary<int, string> TestDictionary = new Dictionary<int, string>() {};
 		}
 
 		/// <summary>
@@ -226,9 +229,13 @@ namespace Eternal.ConsoleUtilitiesTest
 			string cwd = Environment.GetEnvironmentVariable( "TEMP" ) ?? string.Empty;
 			Assert.AreNotEqual( string.Empty, cwd, "Failed to get environment variable TEMP" );
 
-			YmlTestClass test_class = new YmlTestClass();
-			test_class.TestBool = true;
-			test_class.TestInt = 456;
+			YmlTestClass test_class = new YmlTestClass
+			{
+				TestBool = true,
+				TestInt = 456,
+				TestList = new List<string>() { "Alpha", "Beta", "Gamma" },
+				TestDictionary = new Dictionary<int, string>() { { 1, "One" }, { 2, "Two" }, { 3, "Three" } }
+			};
 
 			string file_name = Path.Combine( cwd, "test.yaml" );
 			Assert.IsTrue( YamlHelper.WriteYamlFile( file_name, test_class ), "Failed to write yaml file" );

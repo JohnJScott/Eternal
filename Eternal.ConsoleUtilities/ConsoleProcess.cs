@@ -50,7 +50,7 @@ namespace Eternal.ConsoleUtilities
 			{
 				SpawnedProcess.StartInfo.FileName = executable_info.FullName;
 				SpawnedProcess.StartInfo.WorkingDirectory = working_directory_info.FullName;
-				SpawnedProcess.StartInfo.Arguments = String.Join( " ", arguments );
+				SpawnedProcess.StartInfo.Arguments = string.Join( " ", arguments );
 #if !DEBUG
 				SpawnedProcess.StartInfo.CreateNoWindow = true;
 #endif
@@ -102,7 +102,7 @@ namespace Eternal.ConsoleUtilities
 
 		/// <summary>Implementing Dispose as recommended by code analysis.</summary>
 		/// <param name="isDisposing"></param>
-		protected virtual void Dispose( bool isDisposing )
+		protected void Dispose( bool isDisposing )
 		{
 			SpawnedProcess?.Dispose();
 		}

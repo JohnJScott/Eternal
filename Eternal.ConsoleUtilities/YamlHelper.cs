@@ -97,7 +97,7 @@ namespace Eternal.ConsoleUtilities
 		/// <summary>Write an instance of a class to a Yaml file.</summary>
 		/// <param name="yamlFileName">Name of Xml file to write the class to.</param>
 		/// <param name="instance">The instance of the class to write to disk.</param>
-		/// <typeparam name="TClass">Type of the class to write as Xml.</typeparam>
+		/// <param name="customSettings">Custom writer settings.</param>
 		/// <returns>True if the Yaml file was successfully written.</returns>
 		/// <remarks>An error is printed if any exception is encountered.</remarks>
 		public static bool WriteYamlFile<TClass>( string yamlFileName, TClass instance, YamlWriterSettings? customSettings = null )
@@ -107,7 +107,7 @@ namespace Eternal.ConsoleUtilities
 			FileInfo yaml_file_info = new FileInfo( yamlFileName );
 			try
 			{
-				if( yaml_file_info.Exists && yaml_file_info.IsReadOnly )
+				if( yaml_file_info is { Exists: true, IsReadOnly: true } )
 				{
 					yaml_file_info.IsReadOnly = false;
 				}
@@ -118,7 +118,7 @@ namespace Eternal.ConsoleUtilities
 					yaml_file_info.Refresh();
 				}
 
-				using( StreamWriter writer = new StreamWriter( yaml_file_info.FullName, false, Encoding.Unicode ) )
+				using( StreamWriter writer = new StreamWriter( yaml_file_info.FullName, false, Encoding.UTF8 ) )
 				{
 					ISerializer serializer = GetDefaultYamlWriterSettings( customSettings );
 					writer.WriteLine( serializer.Serialize( instance ) );
@@ -135,12 +135,11 @@ namespace Eternal.ConsoleUtilities
 		}
 
 		/// <summary>
-		/// 
+		/// Creates a Yaml string from an instance of a class.
 		/// </summary>
-		/// <typeparam name="TClass"></typeparam>
-		/// <param name="instance"></param>
-		/// <param name="customSettings"></param>
-		/// <returns></returns>
+		/// <param name="instance">The instance of the class to write to disk.</param>
+		/// <param name="customSettings">Custom writer settings.</param>
+		/// <returns>A Yaml string representing the instance of the class. An empty string is returned if an error occurs.</returns>
 		public static string WriteYaml<TClass>( TClass instance, YamlWriterSettings? customSettings = null )
 		{
 			string yaml_output = "";

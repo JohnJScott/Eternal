@@ -20,8 +20,11 @@ namespace Eternal.ConsoleUtilities
 		/// <returns> writer settings to use.</returns>
 		private static JsonSerializerSettings GetDefaultJsonWriterSettings()
 		{
-			JsonSerializerSettings default_writer_settings = new JsonSerializerSettings();
-			default_writer_settings.Formatting = Formatting.Indented;
+			JsonSerializerSettings default_writer_settings = new JsonSerializerSettings
+			{
+				Formatting = Formatting.Indented
+			};
+
 			return default_writer_settings;
 		}
 
@@ -102,7 +105,7 @@ namespace Eternal.ConsoleUtilities
 			FileInfo json_file_info = new FileInfo( jsonFileName );
 			try
 			{
-				if( json_file_info.Exists && json_file_info.IsReadOnly )
+				if( json_file_info is { Exists: true, IsReadOnly: true } )
 				{
 					json_file_info.IsReadOnly = false;
 				}
@@ -114,7 +117,7 @@ namespace Eternal.ConsoleUtilities
 				}
 
 				JsonSerializer serializer = new JsonSerializer();
-				using( StreamWriter writer = new StreamWriter( json_file_info.FullName, false, Encoding.Unicode ) )
+				using( StreamWriter writer = new StreamWriter( json_file_info.FullName, false, Encoding.UTF8 ) )
 				{
 					JsonTextWriter json = new JsonTextWriter( writer );
 					json.Formatting = Formatting.Indented;

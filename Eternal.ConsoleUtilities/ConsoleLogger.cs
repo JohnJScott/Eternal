@@ -47,7 +47,7 @@ namespace Eternal.ConsoleUtilities
 
 		/// <summary>Returns a timestamp string consistent for all messaging.</summary>
 		/// <returns>Returns a timestamp string in local time.</returns>
-		private static string GetISOTimeStamp()
+		private static string GetIsoTimeStamp()
 		{
 			return DateTime.Now.ToString( "HH:mm:ss", CultureInfo.InvariantCulture ) + ": ";
 		}
@@ -58,10 +58,10 @@ namespace Eternal.ConsoleUtilities
 		{
 			ConsoleColor foreground = Console.ForegroundColor;
 			Console.ForegroundColor = ConsoleColor.Cyan;
-			Console.WriteLine( GetISOTimeStamp() + line );
+			Console.WriteLine( GetIsoTimeStamp() + line );
 			Console.ForegroundColor = foreground;
 
-			Debug.WriteLine( GetISOTimeStamp() + line );
+			Debug.WriteLine( GetIsoTimeStamp() + line );
 			return true;
 		}
 
@@ -71,8 +71,8 @@ namespace Eternal.ConsoleUtilities
 		{
 			if( VerboseLogs )
 			{
-				Console.WriteLine( GetISOTimeStamp() + line );
-				Debug.WriteLine( GetISOTimeStamp() + line );
+				Console.WriteLine( GetIsoTimeStamp() + line );
+				Debug.WriteLine( GetIsoTimeStamp() + line );
 			}
 
 			return VerboseLogs;
@@ -84,10 +84,10 @@ namespace Eternal.ConsoleUtilities
 		{
 			if( !SuppressLogs )
 			{
-				Console.WriteLine( GetISOTimeStamp() + line );
+				Console.WriteLine( GetIsoTimeStamp() + line );
 			}
 
-			Debug.WriteLine( GetISOTimeStamp() + line );
+			Debug.WriteLine( GetIsoTimeStamp() + line );
 			return !SuppressLogs;
 		}
 
@@ -97,10 +97,10 @@ namespace Eternal.ConsoleUtilities
 		{
 			ConsoleColor foreground = Console.ForegroundColor;
 			Console.ForegroundColor = ConsoleColor.Green;
-			Console.WriteLine( GetISOTimeStamp() + "SUCCESS: " + line );
+			Console.WriteLine( GetIsoTimeStamp() + "SUCCESS: " + line );
 			Console.ForegroundColor = foreground;
 
-			Debug.WriteLine( GetISOTimeStamp() + "SUCCESS: " + line );
+			Debug.WriteLine( GetIsoTimeStamp() + "SUCCESS: " + line );
 			return true;
 		}
 
@@ -112,11 +112,11 @@ namespace Eternal.ConsoleUtilities
 			{
 				ConsoleColor foreground = Console.ForegroundColor;
 				Console.ForegroundColor = ConsoleColor.Yellow;
-				Console.WriteLine( GetISOTimeStamp() + "WARNING: " + line );
+				Console.WriteLine( GetIsoTimeStamp() + "WARNING: " + line );
 				Console.ForegroundColor = foreground;
 			}
 
-			Debug.WriteLine( GetISOTimeStamp() + "WARNING: " + line );
+			Debug.WriteLine( GetIsoTimeStamp() + "WARNING: " + line );
 			return !SuppressWarnings;
 		}
 
@@ -128,16 +128,16 @@ namespace Eternal.ConsoleUtilities
 			{
 				ConsoleColor foreground = Console.ForegroundColor;
 				Console.ForegroundColor = ConsoleColor.Red;
-				Console.WriteLine( GetISOTimeStamp() + "ERROR: " + line );
+				Console.WriteLine( GetIsoTimeStamp() + "ERROR: " + line );
 				Console.ForegroundColor = foreground;
 			}
 
-			Debug.WriteLine( GetISOTimeStamp() + "ERROR: " + line );
+			Debug.WriteLine( GetIsoTimeStamp() + "ERROR: " + line );
 			return !SuppressErrors;
 		}
 
 		/// <summary>
-		/// Converts a length of time into a human readable string
+		/// Converts a length of time into a human-readable string
 		/// </summary>
 		/// <param name="timeSpan">A duration of time</param>
 		/// <returns></returns>
@@ -171,7 +171,7 @@ namespace Eternal.ConsoleUtilities
 		}
 
 		/// <summary>
-		/// Converts a number of bytes into a sensible human readable version
+		/// Converts a number of bytes into a sensible human-readable version
 		/// </summary>
 		/// <param name="numberOfBytes">A count of bytes from TB to B.</param>
 		/// <returns></returns>

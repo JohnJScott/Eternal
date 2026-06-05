@@ -12,10 +12,11 @@ namespace Eternal.ConsoleUtilities
 		/// <returns>Xml reader settings to use.</returns>
 		private static XmlReaderSettings GetDefaultXmlReaderSettings()
 		{
-			XmlReaderSettings default_reader_settings = new XmlReaderSettings();
-
-			default_reader_settings.CloseInput = true;
-			default_reader_settings.IgnoreComments = true;
+			XmlReaderSettings default_reader_settings = new XmlReaderSettings
+			{
+				CloseInput = true,
+				IgnoreComments = true
+			};
 
 			return default_reader_settings;
 		}
@@ -24,13 +25,14 @@ namespace Eternal.ConsoleUtilities
 		/// <returns>Xml writer settings to use.</returns>
 		private static XmlWriterSettings GetDefaultXmlWriterSettings()
 		{
-			XmlWriterSettings default_writer_settings = new XmlWriterSettings();
-
-			default_writer_settings.CloseOutput = true;
-			default_writer_settings.Indent = true;
-			default_writer_settings.IndentChars = "\t";
-			default_writer_settings.NewLineChars = Environment.NewLine;
-			default_writer_settings.OmitXmlDeclaration = true;
+			XmlWriterSettings default_writer_settings = new XmlWriterSettings
+			{
+				CloseOutput = true,
+				Indent = true,
+				IndentChars = "\t",
+				NewLineChars = Environment.NewLine,
+				OmitXmlDeclaration = true
+			};
 
 			return default_writer_settings;
 		}
@@ -83,16 +85,14 @@ namespace Eternal.ConsoleUtilities
 						customSettings = GetDefaultXmlReaderSettings();
 					}
 
-					using( XmlReader Reader = XmlReader.Create( xml_file_info.FullName, customSettings ) )
-					{
-						XmlSerializer Serializer = new XmlSerializer( typeof( TClass ) );
+					using XmlReader reader = XmlReader.Create( xml_file_info.FullName, customSettings );
+					
+					XmlSerializer serializer = new XmlSerializer( typeof( TClass ) );
+					serializer.UnknownAttribute += UnknownXmlAttribute;
+					serializer.UnknownElement += UnknownXmlElement;
+					serializer.UnknownNode += UnknownXmlNode;
 
-						Serializer.UnknownAttribute += UnknownXmlAttribute;
-						Serializer.UnknownElement += UnknownXmlElement;
-						Serializer.UnknownNode += UnknownXmlNode;
-
-						instance = ( TClass? )Serializer.Deserialize( Reader );
-					}
+					instance = ( TClass? )serializer.Deserialize( reader );
 				}
 			}
 			catch( Exception exception )
@@ -122,17 +122,15 @@ namespace Eternal.ConsoleUtilities
 					customSettings = GetDefaultXmlWriterSettings();
 				}
 
-				using( XmlWriter Writer = XmlWriter.Create( xml_file_info.FullName, customSettings ) )
-				{
-					XmlSerializer Serializer = new XmlSerializer( typeof( TClass ) );
+				using XmlWriter writer = XmlWriter.Create( xml_file_info.FullName, customSettings );
 
-					Serializer.UnknownAttribute += UnknownXmlAttribute;
-					Serializer.UnknownElement += UnknownXmlElement;
-					Serializer.UnknownNode += UnknownXmlNode;
+				XmlSerializer serializer = new XmlSerializer( typeof( TClass ) );
+				serializer.UnknownAttribute += UnknownXmlAttribute;
+				serializer.UnknownElement += UnknownXmlElement;
+				serializer.UnknownNode += UnknownXmlNode;
 
-					Serializer.Serialize( Writer, instance );
-					write_successful = true;
-				}
+				serializer.Serialize( writer, instance );
+				write_successful = true;
 			}
 			catch( Exception exception )
 			{
