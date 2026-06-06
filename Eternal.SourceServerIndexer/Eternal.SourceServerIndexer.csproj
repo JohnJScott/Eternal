@@ -5,8 +5,8 @@
     <TargetFramework>net10.0-windows10.0.22000.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <VersionPrefix>1.0.5</VersionPrefix>
-    <Copyright>Copyright 2025 Eternal Developments, LLC. All Rights Reserved.</Copyright>
+    <VersionPrefix>1.0.6</VersionPrefix>
+    <Copyright>Copyright Eternal Developments, LLC. All Rights Reserved.</Copyright>
     <PackageProjectUrl>http://eternaldevelopments.com/docs/index.html</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackAsTool>False</PackAsTool>
@@ -27,7 +27,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Eternal.PerforceUtilities" Version="1.0.13" />
+    <PackageReference Include="Eternal.PerforceUtilities" Version="1.0.14" />
   </ItemGroup>
 
   <ItemGroup>

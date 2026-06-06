@@ -7,7 +7,7 @@ using Perforce.P4;
 namespace Eternal.SourceServerIndexer
 {
 	/// <summary>Class to handle interaction with symbol files.</summary>
-	public class Pdb
+	public static class Pdb
 	{
 		/// <summary>A list of source files returned from the SrcTool process.</summary>
 		private static List<string> SourceFiles = new List<string>();
@@ -101,14 +101,14 @@ namespace Eternal.SourceServerIndexer
 			source_server_stream.WriteLine( "SRCSRVCMD=p4.exe -p %fnvar%(%VAR2%) print -o %SRCSRVTRG% -q \"//%VAR3%#%VAR4%\"" );
 			source_server_stream.WriteLine( "SRCSRV: source files ---------------------------------------" );
 
-			foreach( FileSpec SourceFile in sourceFiles )
+			foreach( FileSpec source_file in sourceFiles )
 			{
 				// Create an * delimited list of arguments
 				// VAR1 = local file path
 				// VAR2 = server name
 				// VAR3 = depot path (without the leading /)
 				// VAR4 = revision number (without the #)
-				source_server_stream.WriteLine( $"{SourceFile.LocalPath}*REPOSITORY*{SourceFile.DepotPath.Path.TrimStart( '/' )}*{SourceFile.Version.ToString().TrimStart( '#' )}" );
+				source_server_stream.WriteLine( $"{source_file.LocalPath}*REPOSITORY*{source_file.DepotPath.Path.TrimStart( '/' )}*{source_file.Version.ToString().TrimStart( '#' )}" );
 			}
 
 			source_server_stream.WriteLine( "SRCSRV: end ------------------------------------------------" );

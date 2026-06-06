@@ -9,7 +9,7 @@ using File = Perforce.P4.File;
 namespace Eternal.SourceServerIndexer
 {
 	/// <summary>Class to handle interaction with Perforce.</summary>
-	public class Perforce
+	public static class Perforce
 	{
 		/// <summary>Get the actual have revisions for a list of source files.</summary>
 		/// <param name="connectionInfo">The Perforce connection details.</param>
@@ -23,7 +23,7 @@ namespace Eternal.SourceServerIndexer
 			Repository repository = connectionInfo.PerforceRepository!;
 			Connection connection = repository.Connection;
 
-			// Number of files to send to send to the Perforce interface at once.
+			// Number of files to send to the Perforce interface at once.
 			const int chunk_size = 100;
 
 			// Set the version to #have for all files

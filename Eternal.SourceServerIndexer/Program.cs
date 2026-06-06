@@ -29,7 +29,7 @@ namespace Eternal.SourceServerIndexer
 	/// <item>Repeat for all symbol files.</item>
 	/// </list>
 	/// </remarks>
-	public class SourceServerIndexer
+	public static class SourceServerIndexer
 	{
 		/// <summary>Full validated path of SrcTool.exe</summary>
 		public static string SrcToolLocation = "";
@@ -122,7 +122,7 @@ namespace Eternal.SourceServerIndexer
 			return true;
 		}
 
-		/// <summary>A generic catch all for all unhandled exceptions.</summary>
+		/// <summary>A generic catchall for all unhandled exceptions.</summary>
 		/// <param name="sender">The object that created the exception.</param>
 		/// <param name="arguments">Details about the exception.</param>
 		private static void GenericExceptionHandler( object sender, UnhandledExceptionEventArgs arguments )
@@ -132,7 +132,7 @@ namespace Eternal.SourceServerIndexer
 		}
 
 		/// <summary>Indexes symbol files with source server information.</summary>
-		/// <param name="arguments">The comment line arguments.</param>
+		/// <param name="arguments">The command line arguments.</param>
 		private static void Main( string[] arguments )
 		{
 			AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler( GenericExceptionHandler );
