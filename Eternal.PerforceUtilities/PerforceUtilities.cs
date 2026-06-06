@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Eternal Developments LLC. All Rights Reserved.
+﻿// Copyright Eternal Developments LLC. All Rights Reserved.
 
 using Eternal.ConsoleUtilities;
 using Perforce.P4;
@@ -73,17 +73,17 @@ namespace Eternal.PerforceUtilities
 			{
 				ConsoleLogger.Verbose( $" .... checking workspace: '{client.Name}' on host: '{client.Host}' with owner: '{client.OwnerName}' and root: '{client.Root}'" );
 
-				if( !currentDirectory.ToLower().StartsWith( client.Root.ToLower() ) )
+				if( !currentDirectory.StartsWith( client.Root, StringComparison.OrdinalIgnoreCase ) )
 				{
 					continue;
 				}
 
-				if( client.OwnerName.ToLower() != User.ToLower() )
+				if( !string.Equals( client.OwnerName, User, StringComparison.OrdinalIgnoreCase ) )
 				{
 					continue;
 				}
 
-				if( client.Host.ToLower() != host_name.ToLower() )
+				if( !string.Equals( client.Host, host_name, StringComparison.OrdinalIgnoreCase ) )
 				{
 					continue;
 				}
@@ -132,9 +132,9 @@ namespace Eternal.PerforceUtilities
 		}
 
 		/// <summary>
-		/// Gets a human readable version of the current connection.
+		/// Gets a human-readable version of the current connection.
 		/// </summary>
-		/// <returns>A human readable string of the current connection.</returns>
+		/// <returns>A human-readable string of the current connection.</returns>
 		public override string? ToString()
 		{
 			return $"Port: '{Port}' User: '{User}' Workspace: '{Workspace}'";
@@ -179,14 +179,14 @@ namespace Eternal.PerforceUtilities
 	    }
 
 		/// <summary>
-		/// This finds the local blah
+		/// This finds the local Perforce workspace based on the current directory.
 		/// </summary>
-		/// <param name="connectionInfo">odlkjjfhg</param>
-		/// <param name="currentDirectory">dfgdfgdf</param>
-		/// <returns></returns>
+		/// <param name="connectionInfo">The Perforce connection info.</param>
+		/// <param name="currentDirectory">The current directory to find the workspace for.</param>
+		/// <returns>True if the local workspace was found.</returns>
 	    private static bool FindLocalWorkspace( PerforceConnectionInfo connectionInfo, string currentDirectory )
 	    {
-	        string host_name = Environment.GetEnvironmentVariable( "COMPUTERNAME" ) ?? String.Empty;
+	        string host_name = Environment.GetEnvironmentVariable( "COMPUTERNAME" ) ?? string.Empty;
 			ConsoleLogger.Log( $" .. looking for workspace on '{host_name}' owned by '{connectionInfo.User}' which contains the folder '{currentDirectory}'" );
 
 			if( !connectionInfo.FindWorkspace( currentDirectory ) )
@@ -232,7 +232,7 @@ namespace Eternal.PerforceUtilities
 		/// <summary>
 		/// Connect to a Perforce repository given the connection info.
 		/// </summary>
-		/// <param name="connectionInfo">The Perforce repository, user name, workspace, and port.</param>
+		/// <param name="connectionInfo">The Perforce repository, username, workspace, and port.</param>
 		/// <returns>True if the connection was successful.</returns>
 	    public static bool Connect( PerforceConnectionInfo connectionInfo )
 	    {
@@ -260,7 +260,7 @@ namespace Eternal.PerforceUtilities
 		/// <summary>
 		/// Sync all the files for the current workspace to head.
 		/// </summary>
-		/// <param name="connectionInfo">The Perforce repository, user name, workspace, and port.</param>
+		/// <param name="connectionInfo">The Perforce repository, username, workspace, and port.</param>
 		/// <returns>True if the sync was successful.</returns>
 		public static bool SyncWorkspace( PerforceConnectionInfo connectionInfo )
 		{

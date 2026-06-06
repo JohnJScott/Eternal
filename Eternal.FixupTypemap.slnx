@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="Eternal.FixupTypemap/Eternal.FixupTypemap.csproj" />
+  <Properties Name="PerforceSourceControlProviderSolutionProperties">
+    <Property Name="SolutionIsControlled" Value="True" />
+  </Properties>
+</Solution>

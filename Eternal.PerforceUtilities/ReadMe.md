@@ -16,6 +16,11 @@ A set of helper functions to find the default Perforce connection, user, and wor
 
 A container to store the pertinent connection information to a Perforce server.
 
+# Changes 26th June 2026
+
+Updated dependencies.
+Updated some comments.
+
 # Changes 25th November 2025
 
 Updated to .net10. Updated dependencies.

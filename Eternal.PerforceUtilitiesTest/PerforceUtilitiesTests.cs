@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Eternal Developments LLC. All Rights Reserved.
+﻿// Copyright Eternal Developments LLC. All Rights Reserved.
 
 using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
