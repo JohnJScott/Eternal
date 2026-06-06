@@ -10,7 +10,7 @@ using File = Perforce.P4.File;
 namespace Eternal.Utf16MustDie
 {
 	/// <summary>Class to handle interaction with Perforce.</summary>
-	public class Perforce
+	public static class Perforce
 	{
 		/// <summary>
 		/// Syncs all files in the list of FileSpecs to head.
@@ -169,32 +169,30 @@ namespace Eternal.Utf16MustDie
 			bool result = true;
 			if( file_name != null )
 			{
-				using( System.IO.Stream bad_stream = new FileStream( file_name, FileMode.Open ) )
+				using System.IO.Stream bad_stream = new FileStream( file_name, FileMode.Open );
+				BinaryReader reader = new BinaryReader( bad_stream );
+
+				if( reader.BaseStream.Length < 3 )
 				{
-					BinaryReader reader = new BinaryReader( bad_stream );
-
-					if( reader.BaseStream.Length < 3 )
-					{
-						result = false;
-					}
-
-					if( reader.ReadByte() != 0xef )
-					{
-						result = false;
-					}
-
-					if( reader.ReadByte() != 0xbb )
-					{
-						result = false;
-					}
-
-					if( reader.ReadByte() != 0xbf )
-					{
-						result = false;
-					}
-
-					bad_stream.Close();
+					result = false;
 				}
+
+				if( reader.ReadByte() != 0xef )
+				{
+					result = false;
+				}
+
+				if( reader.ReadByte() != 0xbb )
+				{
+					result = false;
+				}
+
+				if( reader.ReadByte() != 0xbf )
+				{
+					result = false;
+				}
+
+				bad_stream.Close();
 			}
 
 			return result;
@@ -205,7 +203,7 @@ namespace Eternal.Utf16MustDie
 		/// </summary>
 		/// <param name="repository">The Perforce repository.</param>
 		/// <param name="fileSpec">The FileSpec of the single file to process.</param>
-		public static void ConvertToUtf8( Repository repository, FileSpec fileSpec )
+		private static void ConvertToUtf8( Repository repository, FileSpec fileSpec )
 		{
 			FileMetaData file_meta_data = repository.GetFileMetaData( null, fileSpec ).First();
 			string file_name = file_meta_data.ClientPath.Path;
@@ -243,32 +241,30 @@ namespace Eternal.Utf16MustDie
 			ConsoleLogger.Verbose( $" .. processing '{utf16_file}'" );
 			new FileInfo( utf16_file ).IsReadOnly = false;
 
-			using( System.IO.Stream bad_stream = new FileStream( utf16_file, FileMode.Open ) )
+			using System.IO.Stream bad_stream = new FileStream( utf16_file, FileMode.Open );
+			BinaryReader reader = new BinaryReader( bad_stream );
+
+			if( reader.BaseStream.Length > 1 )
 			{
-				BinaryReader reader = new BinaryReader( bad_stream );
-
-				if( reader.BaseStream.Length > 1 )
+				UInt16 BOM = reader.ReadUInt16();
+				if( BOM != 0xfeff )
 				{
-					UInt16 BOM = reader.ReadUInt16();
-					if( BOM != 0xfeff )
-					{
-						ConsoleLogger.Warning( $"File '{utf16_file}' is missing a BOM (0x{BOM.ToString( "X2" )}); adding as regular character" );
-						result.Append( ( char )BOM );
-					}
+					ConsoleLogger.Warning( $"File '{utf16_file}' is missing a BOM (0x{BOM:X2}); adding as regular character" );
+					result.Append( ( char )BOM );
 				}
-
-				do
-				{
-					UInt16 character = CheckCharacter( reader );
-					if( character != 0 )
-					{
-						result.Append( ( char )character );
-					}
-				}
-				while( reader.BaseStream.Length - reader.BaseStream.Position > 1 ) ;
-
-				bad_stream.Close();
 			}
+
+			do
+			{
+				UInt16 character = CheckCharacter( reader );
+				if( character != 0 )
+				{
+					result.Append( ( char )character );
+				}
+			}
+			while( reader.BaseStream.Length - reader.BaseStream.Position > 1 ) ;
+
+			bad_stream.Close();
 
 			System.IO.File.WriteAllText( utf16_file, result.ToString(), Encoding.UTF8 );
 		}

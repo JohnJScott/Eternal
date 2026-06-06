@@ -27,7 +27,7 @@ namespace Eternal.Utf16MustDieTestTest
 			Client client = connectionInfo.GetWorkspace()!;
 
 			GetDepotFilesCmdOptions opts = new GetDepotFilesCmdOptions( GetDepotFilesCmdFlags.NotDeleted, 0 );
-			FileSpec local_file_spec = new FileSpec( new ClientPath( client_root + "/EternalGit/Eternal.UTF16MustDIETest/TestFiles/..." ), null );
+			FileSpec local_file_spec = new FileSpec( new ClientPath( client_root + "/Eternal/Eternal.UTF16MustDIETest/TestFiles/..." ), null );
 			IList<File> local_files = repository.GetFiles( opts, local_file_spec );
 
 			IEnumerable<string> binary_file_specs = local_files.Where( x => x.Type.BaseType == BaseFileType.Binary ).Select( x => x.DepotPath.Path );
@@ -47,11 +47,7 @@ namespace Eternal.Utf16MustDieTestTest
 			Client client = connectionInfo.GetWorkspace()!;
 			Changelist change = repository.GetChangelist( changeId, null );
 
-			List<FileSpec> files = new List<FileSpec>();
-			foreach( FileMetaData file_meta_data in change.Files )
-			{
-				files.Add( file_meta_data );
-			}
+			List<FileSpec> files = change.Files.Select( x => ( FileSpec )x ).ToList();
 
 			client.RevertFiles( files, null );
 			repository.DeleteChangelist( change, null );

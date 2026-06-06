@@ -7,12 +7,12 @@ using Perforce.P4;
 namespace Eternal.Utf16MustDie
 {
 	/// <summary>The main flow control.</summary>
-    public class Program
+    public static class Program
 	{
 		private static bool ProcessUtf16 = true;
 		private static bool ProcessAnsi = true;
 
-		/// <summary>A generic catch all for all unhandled exceptions.</summary>
+		/// <summary>A generic catchall for all unhandled exceptions.</summary>
 		/// <param name="sender">The object that created the exception.</param>
 		/// <param name="arguments">Details about the exception.</param>
 		private static void GenericExceptionHandler( object sender, UnhandledExceptionEventArgs arguments )
@@ -131,43 +131,45 @@ namespace Eternal.Utf16MustDie
 	        ConsoleLogger.Title( "UTF16MustDie - Copyright Eternal Developments, LLC." );
 	        ConsoleLogger.Title( "Hunts down UTF-16 and ANSI files in the local Perforce workspace, fixes them if necessary, then converts and resaves as UTF-8." );
 
-	        if( ParseArguments( arguments ) )
+	        if( !ParseArguments( arguments ) )
 	        {
-		        PerforceConnectionInfo connection_info = PerforceUtilities.PerforceUtilities.GetConnectionInfo( Directory.GetCurrentDirectory() );
-		        if( !PerforceUtilities.PerforceUtilities.Connect( connection_info ) )
-		        {
-			        ConsoleLogger.Error( $"... failed to connect to Perforce server {connection_info}." );
-			        return;
-		        }
-
-		        ConsoleLogger.Log( $"... running from: {Directory.GetCurrentDirectory()} with Perforce connection info: {connection_info}" );
-
-				string character_set_name = connection_info.PerforceRepository!.Connection.CharacterSetName;
-				if( character_set_name != "utf8" )
-		        {
-			        ConsoleLogger.Warning( $"Connection character set name is not UTF8; the character encoding is '{character_set_name}' and this may not be able to translate all characters." );
-		        }
-
-		        bool unicode_enabled = connection_info.PerforceRepository!.Server.Metadata.UnicodeEnabled;
-		        if( unicode_enabled )
-		        {
-			        ConsoleLogger.Log( "... server is unicode enabled; ANSI files will be processed." );
-		        }
-
-		        if( ProcessUtf16 )
-		        {
-			        FixUtf16Files( connection_info );
-		        }
-
-		        if( ProcessAnsi && unicode_enabled )
-		        {
-			        FixAnsiFiles( connection_info );
-		        }
-
-		        PerforceUtilities.PerforceUtilities.Disconnect( connection_info );
-
-		        ConsoleLogger.Success( $"Completed conversion in {ConsoleLogger.TimeString( DateTime.UtcNow - start_time )}" );
+		        return;
 	        }
+
+	        PerforceConnectionInfo connection_info = PerforceUtilities.PerforceUtilities.GetConnectionInfo( Directory.GetCurrentDirectory() );
+	        if( !PerforceUtilities.PerforceUtilities.Connect( connection_info ) )
+	        {
+		        ConsoleLogger.Error( $"... failed to connect to Perforce server {connection_info}." );
+		        return;
+	        }
+
+	        ConsoleLogger.Log( $"... running from: {Directory.GetCurrentDirectory()} with Perforce connection info: {connection_info}" );
+
+	        string character_set_name = connection_info.PerforceRepository!.Connection.CharacterSetName;
+	        if( character_set_name != "utf8" )
+	        {
+		        ConsoleLogger.Warning( $"Connection character set name is not UTF8; the character encoding is '{character_set_name}' and this may not be able to translate all characters." );
+	        }
+
+	        bool unicode_enabled = connection_info.PerforceRepository!.Server.Metadata.UnicodeEnabled;
+	        if( unicode_enabled )
+	        {
+		        ConsoleLogger.Log( "... server is unicode enabled; ANSI files will be processed." );
+	        }
+
+	        if( ProcessUtf16 )
+	        {
+		        FixUtf16Files( connection_info );
+	        }
+
+	        if( ProcessAnsi && unicode_enabled )
+	        {
+		        FixAnsiFiles( connection_info );
+	        }
+
+	        PerforceUtilities.PerforceUtilities.Disconnect( connection_info );
+
+	        ConsoleLogger.Success( $"Completed conversion in {ConsoleLogger.TimeString( DateTime.UtcNow - start_time )}" );
         }
 	}
 }

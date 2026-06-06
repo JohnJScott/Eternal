@@ -97,6 +97,11 @@ using System.Reflection;
 ਍嬀愀猀猀攀洀戀氀礀㨀 䄀猀猀攀洀戀氀礀䌀漀渀昀椀最甀爀愀琀椀漀渀⠀∀∀⤀崀ഀഀ
 ```
 
+# Changes 6th June 2026
+
+Updated packages.
+Followed some recommendations by the code analyzer.
+
 # Changes 25th November 2025
 
 Updated to .net10. Updated dependencies.
