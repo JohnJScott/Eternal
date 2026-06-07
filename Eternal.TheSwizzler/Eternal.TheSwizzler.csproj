@@ -10,15 +10,15 @@
     <Title>TheSwizzler</Title>
     <Description>A command line utility to rearrange the color components of a 32 bit PNG image</Description>
     <Copyright>Eternal Developments LLC. All Rights Reserved.</Copyright>
-    <VersionPrefix>1.0.3</VersionPrefix>
-    <Copyright>Copyright 2025 Eternal Developments, LLC. All Rights Reserved.</Copyright>
+    <VersionPrefix>1.0.4</VersionPrefix>
+    <Copyright>Copyright Eternal Developments, LLC. All Rights Reserved.</Copyright>
     <PackageProjectUrl>http://eternaldevelopments.com/docs/index.html</PackageProjectUrl>
-    <PackageReadmeFile>ReadMe.md</PackageReadmeFile>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/JohnJScott/Eternal</RepositoryUrl>
     <PackageTags>ImageProcessing;TextureCompression</PackageTags>
     <PackAsTool>True</PackAsTool>
     <Company>Eternal Developments, LLC.</Company>
-    <Authors>JohnScott</Authors>		
+    <Authors>JohnJScott</Authors>		
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -37,8 +37,8 @@
   </ItemGroup>
 
   <ItemGroup>
-	<PackageReference Include="Eternal.ConsoleUtilities" Version="1.0.11" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
+	<PackageReference Include="Eternal.ConsoleUtilities" Version="1.0.12" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="4.0.0" />
   </ItemGroup>
 
 </Project>

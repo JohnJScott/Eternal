@@ -52,6 +52,11 @@ This will save an image preserving the R and G channels, but setting the blue ch
 
 This will reconstruct the blue component of the normal map and save as image.RG01.RGN1.png - Eternal.TheSwizzler.exe image.RG01.png RGN1
 
+# Changes 7th June 2026
+
+Updated dependencies.
+Applied some code analysis suggestions.
+
 # Changes 25th November 2025
 
 Updated to .net10. Updated dependencies.

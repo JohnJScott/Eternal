@@ -58,7 +58,7 @@ namespace Eternal.TheSwizzler
 		}
 	}
 
-	public class TheSwizzler
+	public static class TheSwizzler
 	{
 		/// <summary>
 		/// Ensures the swizzle is valid.
@@ -278,6 +278,7 @@ namespace Eternal.TheSwizzler
 				ConsoleLogger.Log( " .. 255 - the original red component in the green channel," );
 				ConsoleLogger.Log( " .. the original blue component in the blue channel," );
 				ConsoleLogger.Log( " .. and 255 in the alpha channel." );
+				ConsoleLogger.Log( "This tool uses a SixLabors Community license which expires 2027-09-04" );
 				return -1;
 			}
 
