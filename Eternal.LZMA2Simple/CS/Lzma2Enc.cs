@@ -2,6 +2,7 @@
 
 namespace Eternal.LZMA2SimpleCS.CS
 {
+	using int32 = Int32;
 	using int64 = Int64;
 	using uint32 = UInt32;
 	using uint64 = UInt64;
@@ -39,14 +40,13 @@ namespace Eternal.LZMA2SimpleCS.CS
 		}
 	}
 
-	internal class Lzma2Enc
+	internal class Lzma2Enc( CLzma2EncoderProperties encoderProperties, ProgressInterface? progress )
 	{
-		private readonly CLzmaEncoderProperties EncoderProperties;
-		private readonly ProgressInterface? Progress;
-		private readonly uint8[] WorkBuffer;
+		private readonly CLzmaEncoderProperties EncoderProperties = encoderProperties;
+		private readonly uint8[] WorkBuffer = new uint8[Lzma.Lzma2MaxCompressedChunkSize];
 
-		private readonly Lzma1Enc Encoder;
-		private readonly int64 ExpectedDataSize = Int64.MaxValue;
+		private readonly Lzma1Enc Encoder = new( encoderProperties, progress );
+		private readonly int64 ExpectedDataSize = int64.MaxValue;
 
 		private int64 SourcePosition = 0;
 
@@ -67,12 +67,22 @@ namespace Eternal.LZMA2SimpleCS.CS
 				RealStreamInterface = inRealStreamInterface;
 			}
 
+			/// <summary>
+			/// Resets the processed-byte counter and the end-of-stream flag.
+			/// </summary>
 			public void Reset()
 			{
 				Processed = 0u;
 				Finished = false;
 			}
 
+			/// <summary>
+			/// Reads bytes from the underlying stream and accumulates the total bytes processed.
+			/// </summary>
+			/// <param name="bufferBase">Destination buffer.</param>
+			/// <param name="offset">Byte offset into bufferBase to write to.</param>
+			/// <param name="size">On entry: maximum bytes to read. On exit: bytes actually read (0 signals end of stream).</param>
+			/// <returns>SevenZipOK, or an error code from the underlying stream.</returns>
 			public override SevenZipResult Read( uint8[] bufferBase, int64 offset, ref int64 size ) 
 			{
 				SevenZipResult result = SevenZipResult.SevenZipOK;
@@ -90,21 +100,8 @@ namespace Eternal.LZMA2SimpleCS.CS
 			public int64 Processed = 0;
 			public bool Finished = false;
 
-			private InStreamInterface RealStreamInterface;
+			private readonly InStreamInterface RealStreamInterface;
 		};
-
-		public Lzma2Enc( CLzma2EncoderProperties encoderProperties, ProgressInterface? progress )
-		{
-			EncoderProperties = encoderProperties;
-			Progress = progress;
-			Encoder = new Lzma1Enc( encoderProperties, progress );
-		
-			WorkBuffer = new uint8[Lzma.Lzma2MaxCompressedChunkSize];
-		}
-
-		~Lzma2Enc()
-		{
-		}
 
 		/// <summary>
 		/// Reads and caches the encoder property byte if it has not already been retrieved.
@@ -149,8 +146,8 @@ namespace Eternal.LZMA2SimpleCS.CS
 		{
 			int64 pack_size_limit = packSizeRes;
 			int64 pack_size = pack_size_limit;
-			uint32 unpack_size = Lzma.Lzma2MaxUnpackSize;
-			uint32 lz_header_size = 5u + ( NeedInitProp ? 1u : 0u );
+			int64 unpack_size = Lzma.Lzma2MaxUnpackSize;
+			int32 lz_header_size = 5 + ( NeedInitProp ? 1 : 0 );
 			bool use_copy_block;
 
 			packSizeRes = 0;
@@ -164,7 +161,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 			Encoder.SavedState.SaveState( Encoder );
 			SevenZipResult result = Encoder.CodeOneMemBlock( NeedInitState, WorkBuffer, lz_header_size, ref pack_size, Lzma.Lzma2MaxPackSize, ref unpack_size );
 
-			if( unpack_size == 0u )
+			if( unpack_size == 0 )
 			{
 				return result;
 			}
@@ -188,15 +185,15 @@ namespace Eternal.LZMA2SimpleCS.CS
 			{
 				while( unpack_size > 0u )
 				{
-					uint32 copy_chunk_size = ( unpack_size < Lzma.Lzma2CopyChunkSize ) ? unpack_size : Lzma.Lzma2CopyChunkSize;
+					uint32 copy_chunk_size = Math.Min( ( uint32 )unpack_size, Lzma.Lzma2CopyChunkSize );
 					if( pack_size_limit - dest_position < copy_chunk_size + 3u )
 					{
 						return SevenZipResult.SevenZipErrorOutputEof;
 					}
 
-					WorkBuffer[dest_position++] = (uint8)( ( SourcePosition == 0 ? Lzma.Lzma2ControlCopyResetDict : Lzma.Lzma2ControlCopy ) & 0xff );
-					WorkBuffer[dest_position++] = (uint8)( ( ( copy_chunk_size - 1u ) >> 8 ) & 0xff );
-					WorkBuffer[dest_position++] = (uint8)( ( copy_chunk_size - 1u ) & 0xff );
+					WorkBuffer[dest_position++] = ( uint8 )( ( SourcePosition == 0 ? Lzma.Lzma2ControlCopyResetDict : Lzma.Lzma2ControlCopy ) & 0xff );
+					WorkBuffer[dest_position++] = ( uint8 )( ( ( copy_chunk_size - 1u ) >> 8 ) & 0xff );
+					WorkBuffer[dest_position++] = ( uint8 )( ( copy_chunk_size - 1u ) & 0xff );
 					// MatchFinder->BufferBase + MatchFinder->BufferOffset - AdditionalOffset
 					Array.Copy( Encoder.GetBufferBase(), ( int64 )( Encoder.GetCurrentOffset() - unpack_size ), WorkBuffer, ( int64 )dest_position, copy_chunk_size );
 					unpack_size -= copy_chunk_size;
@@ -217,15 +214,15 @@ namespace Eternal.LZMA2SimpleCS.CS
 			}
 
 			dest_position = 0u;
-			uint32 copy_size = unpack_size - 1u;
+			uint32 copy_size = ( uint32 )( unpack_size - 1u );
 			uint32 write_pack_size = ( uint32 )( pack_size - 1u );
 			uint32 mode = ( SourcePosition == 0 ) ? 3u : ( NeedInitState ? ( NeedInitProp ? 2u : 1u ) : 0u );
 
-			WorkBuffer[dest_position++] = (uint8)( ( Lzma.Lzma2ControlLzma | ( mode << 5 ) | ( ( copy_size >> 16 ) & 31u ) ) );
-			WorkBuffer[dest_position++] = (uint8)( ( copy_size >> 8 ) & 0xff );
-			WorkBuffer[dest_position++] = (uint8)( copy_size & 0xff );
-			WorkBuffer[dest_position++] = (uint8)( ( write_pack_size >> 8 ) & 0xff );
-			WorkBuffer[dest_position++] = (uint8)( write_pack_size & 0xff );
+			WorkBuffer[dest_position++] = ( uint8 )( ( Lzma.Lzma2ControlLzma | ( mode << 5 ) | ( ( copy_size >> 16 ) & 31u ) ) );
+			WorkBuffer[dest_position++] = ( uint8 )( ( copy_size >> 8 ) & 0xff );
+			WorkBuffer[dest_position++] = ( uint8 )( copy_size & 0xff );
+			WorkBuffer[dest_position++] = ( uint8 )( ( write_pack_size >> 8 ) & 0xff );
+			WorkBuffer[dest_position++] = ( uint8 )( write_pack_size & 0xff );
 
 			if( NeedInitProp )
 			{
@@ -324,9 +321,9 @@ namespace Eternal.LZMA2SimpleCS.CS
 
 					pack_total += pack_size;
 
-					if( Progress != null )
+					if( progress != null )
 					{
-						result = Progress.Progress( unpack_total + SourcePosition, pack_total );
+						result = progress.Progress( unpack_total + SourcePosition, pack_total );
 						if( result != SevenZipResult.SevenZipOK )
 						{
 							break;

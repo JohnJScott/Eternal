@@ -9,17 +9,17 @@ namespace Eternal.LZMA2SimpleCS.CS
 
 	public class CLzma2Result
 	{
-		/** The encoded size of the dictionary - 40 means to find it. */
+		/// <summary>The encoded size of the dictionary - 40 means to find it.</summary>
 		public uint8 PropertySummary = 0;
 
-		/** The overall result. */
+		/// <summary>The overall result.</summary>
 		public SevenZipResult Result = SevenZipResult.SevenZipOK;
 
-		/** The number of bytes output from the compress/decompress operation */
+		/// <summary>The number of bytes output from the compress/decompress operation.</summary>
 		public int64 OutputLength = 0;
 	}
 
-	public class Lzma2Lib
+	public static class Lzma2Lib
 	{
 		private class FMemoryWriter( uint8[] destinationData, int64 size ) 
 			: OutStreamInterface

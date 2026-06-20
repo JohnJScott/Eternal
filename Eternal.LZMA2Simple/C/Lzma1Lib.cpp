@@ -1,5 +1,9 @@
-/* Lzma1Lib.c -- LZMA library wrapper
-2015-06-13 : Igor Pavlov : Public domain */
+/**
+ * @file Lzma1Lib.cpp
+ * @brief LZMA1 library wrapper.
+ *
+ * 2015-06-13 : Igor Pavlov : Public domain
+ */
 
 #include "7zTypes.h"
 
@@ -10,7 +14,14 @@
 static MemoryInterface allocator;
 
 /**
- * The main LZMA1 compress function.
+ * @brief Compresses a block of memory using LZMA1.
+ *
+ * @param data              Source and destination buffers with their sizes.
+ * @param encoderProperties Encoder configuration parameters.
+ * @param result            Receives the compression result, properties, and output length.
+ * @param alloc             Memory allocator; pass nullptr to use the default allocator.
+ * @param progress          Optional progress callback; pass nullptr to disable.
+ * @return SevenZipOK on success, or an error code.
  */
 SevenZipResult Lzma1Compress( const CLzmaData* data, CLzmaEncoderProperties* encoderProperties, CLzma1Result* result, MemoryInterface* alloc, ProgressInterface* progress )
 {
@@ -33,7 +44,12 @@ SevenZipResult Lzma1Compress( const CLzmaData* data, CLzmaEncoderProperties* enc
 }
 
 /**
- * The main LZMA1 decompress function.
+ * @brief Decompresses a block of LZMA1-compressed memory.
+ *
+ * @param data   Source and destination buffers with their sizes.
+ * @param result On entry: must contain the Properties from compression. On exit: receives the decompressed length and result code.
+ * @param alloc  Memory allocator; pass nullptr to use the default allocator.
+ * @return SevenZipOK on success, or an error code.
  */
 SevenZipResult Lzma1Decompress( CLzmaData* data, CLzma1Result* result, MemoryInterface* alloc )
 {

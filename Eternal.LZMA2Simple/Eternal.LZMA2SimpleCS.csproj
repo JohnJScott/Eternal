@@ -6,8 +6,8 @@
     <Nullable>enable</Nullable>
     <BaseOutputPath>$(SolutionDir)\Binaries\$(Platform)\</BaseOutputPath>
     <Description>A cut down LZMA2 implementation for C#</Description>
-    <Copyright>Copyright 2026 Eternal Developments, LLC. All Rights Reserved.</Copyright>
-	<VersionPrefix>1.0.1</VersionPrefix>
+    <Copyright>Copyright Eternal Developments, LLC. All Rights Reserved.</Copyright>
+	<VersionPrefix>1.0.2</VersionPrefix>
     <AssemblyVersion>2.5.0.1</AssemblyVersion>
     <FileVersion>2.5.0.1</FileVersion>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -21,7 +21,7 @@
     <RepositoryUrl>https://github.com/JohnJScott/Eternal</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>Lzma2;7-Zip;C#;C++;Linux</PackageTags>
-    <PackageReleaseNotes>This is the initial beta release</PackageReleaseNotes>
+    <PackageReleaseNotes>This has had a lot of cleanup done on it.</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -30,6 +30,7 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <WarningLevel>9999</WarningLevel>
+    <DefineConstants>$(DefineConstants);USE_BLOCK_SIZE_LOOKUP</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

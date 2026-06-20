@@ -20,10 +20,6 @@ namespace Eternal.LZMA2SimpleCSTest
 	public class ProgressInterfaceReporter
 		: ProgressInterface
 	{
-		public ProgressInterfaceReporter()
-		{
-		}
-
 		public override SevenZipResult Progress( int64 inSize, int64 outSize )
 		{
 			return SevenZipResult.SevenZipOK;
@@ -52,9 +48,8 @@ namespace Eternal.LZMA2SimpleCSTest
 		{
 			int64 destination_length = decompress.DestinationLength;
 
-			CLzma2Result result = new CLzma2Result();
+			CLzma2Result result = new CLzma2Result { PropertySummary = property };
 
-			result.PropertySummary = property;
 			Assert.AreEqual( SevenZipResult.SevenZipOK, Lzma2Lib.Lzma2Decompress( decompress, ref result ), "Decompression should have succeeded" );
 
 			ConsoleLogger.Log( $"LZMA2: Decompressed {decompress.SourceLength} to {result.OutputLength}" );
@@ -317,7 +312,7 @@ namespace Eternal.LZMA2SimpleCSTest
 			}
 		}
 
-		private static int16[] fast_bytes =
+		private static readonly int16[] FastBytes =
 		[
 			-1,
 			0,
@@ -348,7 +343,7 @@ namespace Eternal.LZMA2SimpleCSTest
 			/* 0 <= Level <= 9 */
 			for( uint8 level = 0; level <= 9; level++ )
 			{
-				foreach( int16 fast_byte in fast_bytes )
+				foreach( int16 fast_byte in FastBytes )
 				{
 					CLzma2EncoderProperties encoder_properties = new CLzma2EncoderProperties();
 
@@ -359,7 +354,7 @@ namespace Eternal.LZMA2SimpleCSTest
 			}
 		}
 
-		private static uint32[] match_cycles =
+		private static readonly uint32[] MatchCycles =
 		[
 			0,
 			1,
@@ -389,7 +384,7 @@ namespace Eternal.LZMA2SimpleCSTest
 			/* 0 <= Level <= 9 */
 			for( uint8 level = 0; level <= 9; level++ )
 			{
-				foreach( uint32 match_cycle in match_cycles )
+				foreach( uint32 match_cycle in MatchCycles )
 				{
 					CLzma2EncoderProperties encoder_properties = new CLzma2EncoderProperties();
 

@@ -2,9 +2,6 @@
 
 global using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Eternal.LZMA2SimpleCS.CS;
-using System;
-using System.Drawing;
-using System.Linq;
 
 [assembly: Parallelize( Scope = ExecutionScope.MethodLevel )]
 
@@ -22,13 +19,9 @@ namespace Eternal.LZMA2SimpleCSTest
 	[TestClass]
 	public sealed class EternalLZMA1CSSimpleTest
 	{
-		public class ProgressInterfaceReporter
+		private class ProgressInterfaceReporter
 			: ProgressInterface
 		{
-			public ProgressInterfaceReporter()
-			{
-			}
-
 			public override SevenZipResult Progress( int64 inSize, int64 outSize )
 			{
 				return SevenZipResult.SevenZipOK;
@@ -316,7 +309,7 @@ namespace Eternal.LZMA2SimpleCSTest
 			}
 		}
 
-		private static int16[] fast_bytes =
+		private static readonly int16[] FastBytes =
 		[
 			-1,
 			0,
@@ -347,7 +340,7 @@ namespace Eternal.LZMA2SimpleCSTest
 			/* 0 <= Level <= 9 */
 			for( uint8 level = 0; level <= 9; level++ )
 			{
-				foreach( int16 fast_byte in fast_bytes )
+				foreach( int16 fast_byte in FastBytes )
 				{
 					CLzma1EncoderProperties encoder_properties = new CLzma1EncoderProperties();
 
@@ -358,7 +351,7 @@ namespace Eternal.LZMA2SimpleCSTest
 			}
 		}
 
-		private static uint32[] match_cycles =
+		private static readonly uint32[] MatchCycles =
 		[
 			0,
 			1,
@@ -388,7 +381,7 @@ namespace Eternal.LZMA2SimpleCSTest
 			/* 0 <= Level <= 9 */
 			for( uint8 level = 0; level <= 9; level++ )
 			{
-				foreach( uint32 match_cycle in match_cycles )
+				foreach( uint32 match_cycle in MatchCycles )
 				{
 					CLzma1EncoderProperties encoder_properties = new CLzma1EncoderProperties();
 

@@ -1,5 +1,9 @@
-/* Lzma2Enc.c -- LZMA2 Encoder
-2021-02-09 : Igor Pavlov : Public domain */
+/**
+ * @file Lzma2Enc.cpp
+ * @brief LZMA2 Encoder.
+ *
+ * 2021-02-09 : Igor Pavlov : Public domain
+ */
 
 #include "7zTypes.h"
 
@@ -151,8 +155,8 @@ SevenZipResult Lzma2Enc::EncodeSubblock( int64& packSizeRes, OutStreamInterface&
 {
 	const int64 pack_size_limit = packSizeRes;
 	int64 pack_size = pack_size_limit;
-	uint32 unpack_size = Lzma::Lzma2MaxUnpackSize;
-	const uint32 lz_header_size = 5u + ( NeedInitProp ? 1u : 0u );
+	int64 unpack_size = Lzma::Lzma2MaxUnpackSize;
+	const int32 lz_header_size = 5 + ( NeedInitProp ? 1 : 0 );
 	bool use_copy_block;
 
 	packSizeRes = 0;
@@ -164,9 +168,9 @@ SevenZipResult Lzma2Enc::EncodeSubblock( int64& packSizeRes, OutStreamInterface&
 	pack_size -= lz_header_size;
 
 	Encoder.SaveState();
-	SevenZipResult result = Encoder.CodeOneMemBlock( NeedInitState, WorkBuffer, lz_header_size, pack_size, Lzma::Lzma2MaxPackSize, unpack_size );
+	const SevenZipResult result = Encoder.CodeOneMemBlock( NeedInitState, WorkBuffer, lz_header_size, pack_size, Lzma::Lzma2MaxPackSize, unpack_size );
 
-	if( unpack_size == 0u )
+	if( unpack_size == 0 )
 	{
 		return result;
 	}
@@ -188,9 +192,9 @@ SevenZipResult Lzma2Enc::EncodeSubblock( int64& packSizeRes, OutStreamInterface&
 	uint32 dest_position = 0;
 	if( use_copy_block )
 	{
-		while( unpack_size > 0u )
+		while( unpack_size > 0 )
 		{
-			const uint32 copy_chunk_size = ( unpack_size < Lzma::Lzma2CopyChunkSize ) ? unpack_size : Lzma::Lzma2CopyChunkSize;
+			const uint32 copy_chunk_size = std::min( static_cast<uint32>( unpack_size ), Lzma::Lzma2CopyChunkSize );
 			if( pack_size_limit - dest_position < copy_chunk_size + 3u )
 			{
 				return SevenZipResult::SevenZipErrorOutputEof;
@@ -218,15 +222,15 @@ SevenZipResult Lzma2Enc::EncodeSubblock( int64& packSizeRes, OutStreamInterface&
 	}
 
 	dest_position = 0u;
-	uint32 copy_size = unpack_size - 1u;
+	const uint32 copy_size = static_cast<uint32>( unpack_size - 1u );
 	const uint32 write_pack_size = static_cast<uint32>( pack_size - 1u );
 	const uint32 mode = ( SourcePosition == 0 ) ? 3u : ( NeedInitState ? ( NeedInitProp ? 2u : 1u ) : 0u );
 
-	WorkBuffer[dest_position++] = static_cast<uint8>( (Lzma::Lzma2ControlLzma | ( mode << 5 ) | ( ( copy_size >> 16 ) & 31u ) ) );
-	WorkBuffer[dest_position++] = static_cast<uint8>( ( copy_size >> 8 ) & 0xff );
-	WorkBuffer[dest_position++] = static_cast<uint8>( copy_size & 0xff );
-	WorkBuffer[dest_position++] = static_cast<uint8>( ( write_pack_size >> 8 ) & 0xff );
-	WorkBuffer[dest_position++] = static_cast<uint8>( write_pack_size & 0xff );
+	WorkBuffer[dest_position++] = static_cast< uint8 >( ( Lzma::Lzma2ControlLzma | ( mode << 5 ) | ( ( copy_size >> 16 ) & 31u ) ) );
+	WorkBuffer[dest_position++] = static_cast< uint8 >( ( copy_size >> 8 ) & 0xff );
+	WorkBuffer[dest_position++] = static_cast< uint8 >( copy_size & 0xff );
+	WorkBuffer[dest_position++] = static_cast< uint8 >( ( write_pack_size >> 8 ) & 0xff );
+	WorkBuffer[dest_position++] = static_cast< uint8 >( write_pack_size & 0xff );
 
 	if( NeedInitProp )
 	{
@@ -422,7 +426,7 @@ SevenZipResult Lzma2Encode( OutStreamInterface& outStream, InStreamInterface& in
 {
 	Lzma2Enc enc2( encoderProperties, alloc, progress );
 
-	/** Dict size - this needs passing to Lzma2Decode() */
+	// Dict size - this needs passing to Lzma2Decode()
 	*propertySummary = enc2.GetCodedDictionary();
 
 	enc2.PropertiesAreSet = false;

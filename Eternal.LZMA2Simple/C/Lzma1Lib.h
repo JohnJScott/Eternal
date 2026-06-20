@@ -9,7 +9,7 @@
  * You must use LzmaFinishModeEnd, when you know that current output buffer
  *  covers last bytes of block. In other cases you must use LzmaFinishModeAny.
  *
- *  If LZMA Decoder sees end marker before reaching output limit, it returns SZ_OK,
+ *  If LZMA Decoder sees end marker before reaching output limit, it returns SevenZipOK,
  *  and output value of destLen will be less than output buffer size limit.
  *  You can check status result also.
  *
@@ -46,7 +46,7 @@ enum class LzmaStatus
 	LzmaStatusMaybeFinishedWithoutMark
 };
 
-inline int64 LzmaWorstCompression( int64 size )
+inline int64 LzmaWorstCompression( const int64 size )
 {
 	/** LZMA documentations states worst case compression is ( size * 0.001 ) + 32 */
 	return ( size + ( ( size + 511 ) >> 9 ) ) + 32;
@@ -140,36 +140,32 @@ public:
 	virtual SevenZipResult Normalize() override;
 };
 
-/*
-RAM requirements for LZMA:
-  for compression:   (DictionarySize * 11.5 + 6 MB) + state_size
-  for decompression: DictionarySize + state_size
-	state_size = (4 + (1.5 << (LiteralContextBits + LiteralPositionBits))) KB
-	by default (LiteralContextBits=3, LiteralPositionBits=0), state_size = 16 KB.
-*/
+/**
+ * RAM requirements for LZMA:
+ * For compression:   (DictionarySize * 11.5 + 6 MB) + state_size
+ * For decompression: DictionarySize + state_size
+ * state_size = ( 4 + ( 1.5 << ( LiteralContextBits + LiteralPositionBits ) ) ) KB
+ * by default (LiteralContextBits = 3, LiteralPositionBits = 0), state_size = 16 KB.
+ */
 
-/*
-LzmaCompress
-------------
-Returns:
-  SZ_OK               - OK
-  SZ_ERROR_MEM        - Memory allocation error
-  SZ_ERROR_PARAM      - Incorrect parameter
-  SZ_ERROR_OUTPUT_EOF - output buffer overflow
-  SZ_ERROR_THREAD     - errors in multithreading functions (only for Mt version)
-*/
-
+/**
+ * LzmaCompress
+ * Returns:
+ *  SevenZipOK               - OK
+ *  SevenZipErrorMem         - Memory allocation error
+ *  SevenZipErrorParam       - Incorrect parameter
+ *  SevenZipErrorOutputEof   - output buffer overflow
+ *  SevenZipErrorThread      - errors in multithreading functions (only for Mt version)
+ */
 SevenZipResult Lzma1Compress( const CLzmaData* data, CLzmaEncoderProperties* encoderProperties, CLzma1Result* result, MemoryInterface* alloc, ProgressInterface* progress );
 
-/*
-LzmaDecompress
---------------
-Returns:
-  SZ_OK                - OK
-  SZ_ERROR_DATA        - Data error
-  SZ_ERROR_MEM         - Memory allocation error
-  SZ_ERROR_UNSUPPORTED - Unsupported properties
-  SZ_ERROR_INPUT_EOF   - it needs more bytes in input buffer (src)
-*/
-
+/**
+ * LzmaDecompress
+ * Returns:
+ *  SevenZipOK                - OK
+ *  SevenZipErrorData         - Data error
+ *  SevenZipErrorMem          - Memory allocation error
+ *  SevenZipErrorUnsupported  - Unsupported properties
+ *  SevenZipErrorInputEof     - it needs more bytes in input buffer (src)
+ */
 SevenZipResult Lzma1Decompress( CLzmaData* data, CLzma1Result* result, MemoryInterface* alloc );

@@ -1,5 +1,9 @@
-/* LzmaEnc.c -- LZMA Encoder
-2021-11-18: Igor Pavlov : Public domain */
+/**
+ * @file Lzma1Enc.cpp
+ * @brief LZMA1 Encoder.
+ *
+ * 2021-11-18 : Igor Pavlov : Public domain
+ */
 
 #include "7zTypes.h"
 #include "Lzma1Enc.h"
@@ -42,8 +46,15 @@ CProbPrice Lzma1Enc::ProbabilityPrices[Lzma::BitModelTableSize >> LzmaEncoder::N
 	0x07, 0x07, 0x07, 0x06, 0x06, 0x06, 0x06, 0x05, 0x05, 0x05, 0x05, 0x05, 0x04, 0x04, 0x04, 0x04, 0x03, 0x03, 0x03, 0x03, 0x03, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x01, 0x01, 0x01, 0x01, 0x01
 };
 
-// The lookup table is 5% faster than calculating the value each time, but requires the 16KB table.
-// Function defined here so the compiler can inline it.
+/**
+ * @brief Returns the position-slot index for a distance value (equivalent to floor(log2(position))).
+ *
+ * The lookup-table variant is ~5% faster than computing the value each time but requires a 16 KB table.
+ * Defined at file scope so the compiler can inline it at every call site.
+ *
+ * @param position Distance value to classify.
+ * @return Position-slot index.
+ */
 static uint8 GetBlockSizeFromPosition( const uint32 position )
 {
 #if USE_BLOCK_SIZE_LOOKUP
@@ -79,6 +90,14 @@ public:
 		Overflow = false;
 	}
 
+	/**
+	 * @brief Copies bytes into the output buffer, capping the write if the buffer would overflow.
+	 *
+	 * @param data   Source data array.
+	 * @param offset Byte offset within @p data to begin copying from.
+	 * @param size   Number of bytes requested; may be reduced if the buffer is nearly full.
+	 * @return Number of bytes actually written.
+	 */
 	virtual int64 Write( const uint8* data, const int64 offset, int64 size ) override
 	{
 		const int64 remaining = WorkBufferSize - WorkBufferOffset;
@@ -105,6 +124,14 @@ private:
 	int64 WorkBufferSize = 0;
 };
 
+/**
+ * @brief Returns the effective dictionary size, selecting a default based on compression level if none was set.
+ *
+ * Clamps the result to the valid encoder range and optionally limits it
+ * to the estimated source data size.
+ *
+ * @return Effective dictionary size in bytes.
+ */
 uint32 CLzmaEncoderProperties::GetDictionarySize() const
 {
 	uint32 dictionary_size = DictionarySize;
@@ -146,7 +173,11 @@ uint32 CLzmaEncoderProperties::GetDictionarySize() const
 	return dictionary_size;
 }
 
-/** Enforce the limits common to both Lzma1 and Lzma2. */
+/**
+ * @brief Enforces the limits common to both LZMA1 and LZMA2, filling in any unset fields with defaults.
+ *
+ * @return SevenZipOK (always succeeds for the base class; derived classes may return an error).
+ */
 SevenZipResult CLzmaEncoderProperties::Normalize()
 {
 	CompressionLevel = std::clamp<uint8>( CompressionLevel, 0, 9 );
@@ -164,6 +195,14 @@ SevenZipResult CLzmaEncoderProperties::Normalize()
 	return SevenZipResult::SevenZipOK;
 }
 
+/**
+ * @brief Validates and fills in default values for all LZMA1-specific encoder properties.
+ *
+ * Calls the base-class Normalize() first, then clamps FastBytes and sets MatchCycles
+ * when not explicitly provided.
+ *
+ * @return SevenZipOK on success.
+ */
 SevenZipResult CLzma1EncoderProperties::Normalize()
 {
 	CLzmaEncoderProperties::Normalize();
@@ -182,6 +221,9 @@ SevenZipResult CLzma1EncoderProperties::Normalize()
 	return SevenZipResult::SevenZipOK;
 }
 
+/**
+ * @brief Initialises all probability tables in this length encoder to the default probability value.
+ */
 void CLengthEncoder::Init()
 {
 	for( CProbability& probability : Low )
@@ -195,6 +237,9 @@ void CLengthEncoder::Init()
 	}
 }
 
+/**
+ * @brief Frees the output buffer allocated by AllocateMemory().
+ */
 void CRangeEncoder::FreeMemory()
 {
 	if( RangeEncoderBuffer != nullptr )
@@ -204,6 +249,11 @@ void CRangeEncoder::FreeMemory()
 	}
 }
 
+/**
+ * @brief Allocates the internal output buffer for the range coder.
+ *
+ * @return Pointer to the allocated buffer, or nullptr on failure.
+ */
 uint8* CRangeEncoder::AllocateMemory()
 {
 	if( RangeEncoderBuffer == nullptr )
@@ -214,6 +264,9 @@ uint8* CRangeEncoder::AllocateMemory()
 	return RangeEncoderBuffer;
 }
 
+/**
+ * @brief Resets the range coder to its initial state ready for a new encoding pass.
+ */
 void CRangeEncoder::Init()
 {
 	Range = UINT32_MAX;
@@ -225,11 +278,14 @@ void CRangeEncoder::Init()
 	Result = SevenZipResult::SevenZipOK;
 }
 
+/**
+ * @brief Writes any bytes remaining in the internal buffer to the output stream.
+ */
 void CRangeEncoder::FlushStream()
 {
 	if( Result == SevenZipResult::SevenZipOK )
 	{
-		if( BufferOffset != outStream->Write( RangeEncoderBuffer, 0, BufferOffset ) )
+		if( BufferOffset != OutStream->Write( RangeEncoderBuffer, 0, BufferOffset ) )
 		{
 			Result = SevenZipResult::SevenZipErrorWrite;
 		}
@@ -240,6 +296,9 @@ void CRangeEncoder::FlushStream()
 }
 
 
+/**
+ * @brief Flushes the output buffer to the stream if it is full.
+ */
 void CRangeEncoder::CheckFlush()
 {
 	if( BufferOffset >= LzmaEncoder::RangeEncoderBufferSize )
@@ -248,6 +307,9 @@ void CRangeEncoder::CheckFlush()
 	}
 }
 
+/**
+ * @brief Propagates any carry and outputs a byte when the low register crosses the range threshold.
+ */
 void CRangeEncoder::ShiftLow()
 {
 	uint32 low32 = static_cast< uint32 >( Low & UINT32_MAX );
@@ -278,6 +340,9 @@ void CRangeEncoder::ShiftLow()
 	}
 }
 
+/**
+ * @brief Outputs the final five range-coder state bytes to terminate the stream.
+ */
 void CRangeEncoder::FlushData()
 {
 	for( int32 i = 0; i < 5; i++ )
@@ -286,6 +351,9 @@ void CRangeEncoder::FlushData()
 	}
 }
 
+/**
+ * @brief Normalises the range by left-shifting and flushing a byte when Range falls below the threshold.
+ */
 void CRangeEncoder::UpdateRange()
 {
 	if( Range < Lzma::MaxRangeValue )
@@ -295,6 +363,11 @@ void CRangeEncoder::UpdateRange()
 	}
 }
 
+/**
+ * @brief Updates the range after encoding a 1-bit at the given bound.
+ *
+ * @param bound The partition point returned by CalcNewBound().
+ */
 void CRangeEncoder::UpdateNewBoundUpdateRange( const uint32 bound )
 {
 	Range -= bound;
@@ -303,17 +376,33 @@ void CRangeEncoder::UpdateNewBoundUpdateRange( const uint32 bound )
 	UpdateRange();
 }
 
+/**
+ * @brief Sets the range to the given bound and normalises.
+ *
+ * @param bound New range bound (upper half for a 0-bit, lower half for a 1-bit).
+ */
 void CRangeEncoder::SetNewBoundUpdateRange( const uint32 bound )
 {
 	Range = bound;
 	UpdateRange();
 }
 
+/**
+ * @brief Computes the partition boundary for the next bit given its probability.
+ *
+ * @param probability Current probability of a 0-bit (out of BitModelTableSize).
+ * @return Range boundary that separates the 0 and 1 coding intervals.
+ */
 uint32 CRangeEncoder::CalcNewBound( const uint32 probability ) const
 {
 	return ( Range >> Lzma::NumBitModelTotalBits ) * probability;
 }
 
+/**
+ * @brief Encodes a 0-bit and updates the probability upward.
+ *
+ * @param probability Probability model entry, updated in place.
+ */
 void CRangeEncoder::EncodeBit0( CProbability& probability )
 {
 	Range = CalcNewBound( probability );
@@ -322,28 +411,42 @@ void CRangeEncoder::EncodeBit0( CProbability& probability )
 	UpdateRange();
 }
 
-void CRangeEncoder::Iterate( CProbability* probabilities, uint32 offset, const uint32 bit )
+/**
+ * @brief Encodes one bit through a probability table entry and updates the probability.
+ *
+ * @param probabilityLocation Probability array.
+ * @param offset              Index of the probability entry to use.
+ * @param bit                 Bit value to encode (0 or 1).
+ */
+void CRangeEncoder::Iterate( CProbability* probabilityLocation, uint32 offset, const uint32 bit )
 {
-	const CProbability probability = probabilities[offset];
+	const CProbability probability = probabilityLocation[offset];
 	const uint32 new_bound = CalcNewBound( probability );
 
 	if( bit == 0u )
 	{
-		/* bit == 0: encode lower half of range */
+		// bit == 0: encode lower half of range
 		Range = new_bound;
-		probabilities[offset] = static_cast< CProbability >( probability + ( (Lzma::BitModelTableSize - probability ) >> Lzma::NumMoveBits ) );
+		probabilityLocation[offset] = static_cast< CProbability >( probability + ( (Lzma::BitModelTableSize - probability ) >> Lzma::NumMoveBits ) );
 	}
 	else
 	{
-		/* bit == 1: encode upper half of range */
+		// bit == 1: encode upper half of range
 		Range -= new_bound;
 		Low += new_bound;
-		probabilities[offset] = static_cast< CProbability >( probability - ( probability >> Lzma::NumMoveBits ) );
+		probabilityLocation[offset] = static_cast< CProbability >( probability - ( probability >> Lzma::NumMoveBits ) );
 	}
 
 	UpdateRange();
 }
 
+/**
+ * @brief Encodes a byte through an 8-level binary literal probability tree.
+ *
+ * @param probabilities Base probability array.
+ * @param arrayOffset   Offset into probabilities for this literal context.
+ * @param symbol        Byte value to encode.
+ */
 void CRangeEncoder::Encode( CProbability* probabilities, uint32 arrayOffset, uint32 symbol )
 {
 	symbol |= 0x100u;
@@ -358,6 +461,14 @@ void CRangeEncoder::Encode( CProbability* probabilities, uint32 arrayOffset, uin
 	} while( symbol < 0x10000u );
 }
 
+/**
+ * @brief Encodes a literal byte using matched-literal coding, where the match byte guides tree traversal.
+ *
+ * @param probabilities Base probability array.
+ * @param arrayOffset   Offset into probabilities for this literal context.
+ * @param symbol        Byte value to encode.
+ * @param matchByte     Byte at the same position in the previous match (REP0 distance).
+ */
 void CRangeEncoder::EncodeMatched( CProbability* probabilities, uint32 arrayOffset, uint32 symbol, uint32 matchByte )
 {
 	uint32 offset = 0x100u;
@@ -376,6 +487,14 @@ void CRangeEncoder::EncodeMatched( CProbability* probabilities, uint32 arrayOffs
 }
 
 
+/**
+ * @brief Encodes footer bits (LSB-first) into a position-encoder binary tree.
+ *
+ * @param probabilities Position encoder probability array.
+ * @param arrayOffset   Starting offset in the array.
+ * @param numBits       Number of footer bits to encode.
+ * @param symbol        Distance footer value.
+ */
 void CRangeEncoder::ReverseEncode( CProbability* probabilities, uint32 arrayOffset, int8 numBits, uint32 symbol )
 {
 	uint32 offset = 1u;
@@ -391,6 +510,13 @@ void CRangeEncoder::ReverseEncode( CProbability* probabilities, uint32 arrayOffs
 	} while( --numBits != 0u );
 }
 
+/**
+ * @brief Encodes a match length using the three-tier LZMA length model.
+ *
+ * @param le       Length encoder containing the probability tables.
+ * @param symbol   Adjusted match length (already offset by Lzma1MinMatchLength).
+ * @param posState Position state index.
+ */
 void CRangeEncoder::LengthEncode( CLengthEncoder& le, uint32 symbol, const uint32 posState )
 {
 	uint32 le_offset = 0u;
@@ -439,6 +565,11 @@ void CRangeEncoder::LengthEncode( CLengthEncoder& le, uint32 symbol, const uint3
 	}
 }
 
+/**
+ * @brief Encodes the 1-bit that opens the LZMA end-of-stream marker sequence.
+ *
+ * @param probability IsMatch probability entry, updated in place.
+ */
 void CRangeEncoder::IterateEndMark( CProbability& probability )
 {
 	const uint32 new_bound = CalcNewBound( probability );
@@ -450,7 +581,12 @@ void CRangeEncoder::IterateEndMark( CProbability& probability )
 	probability = static_cast< CProbability >( probability - ( probability >> Lzma::NumMoveBits ) );
 }
 
-// Helper function to encode a tree symbol with all bits set to 1
+/**
+ * @brief Encodes all-ones through a binary tree model (used for the EOS position slot).
+ *
+ * @param probabilities Binary tree probability array.
+ * @param numBits       Depth of the tree (number of bits to encode).
+ */
 void CRangeEncoder::EncodeTreeAllOnes( CProbability* probabilities, int8 numBits )
 {
 	uint32 offset = 1u;
@@ -485,7 +621,7 @@ Lzma1Enc::Lzma1Enc( const CLzmaEncoderProperties* encoderProperties, MemoryInter
 
 Lzma1Enc::~Lzma1Enc()
 {
-	FreeLits();
+	FreeLiterals();
 
 	if( Optimals != nullptr )
 	{
@@ -568,6 +704,13 @@ void Lzma1Enc::SetDataSize( int64 expectedDataSize ) const
 	MatchFinder->ExpectedDataSize = expectedDataSize;
 }
 
+/**
+ * @brief Returns the bit-price to encode a literal byte in the given literal context.
+ *
+ * @param literalContext Combined position/previous-byte context index.
+ * @param symbol         Byte value to price.
+ * @return Price in probability-price units.
+ */
 uint32 Lzma1Enc::GetPrice( const uint32 literalContext, uint32 symbol ) const
 {
 	const uint32 base_offset = 3u * ( literalContext << LiteralContextBits );
@@ -586,6 +729,14 @@ uint32 Lzma1Enc::GetPrice( const uint32 literalContext, uint32 symbol ) const
 }
 
 
+/**
+ * @brief Returns the bit-price to encode a matched literal byte.
+ *
+ * @param literalContext Combined position/previous-byte context index.
+ * @param symbol         Byte value to price.
+ * @param matchByte      Byte at the same position in the previous match.
+ * @return Price in probability-price units.
+ */
 uint32 Lzma1Enc::MatchedGetPrice( const uint32 literalContext, uint32 symbol, uint32 matchByte ) const
 {
 	const uint32 base_offset = 3u * ( literalContext << LiteralContextBits );
@@ -605,6 +756,15 @@ uint32 Lzma1Enc::MatchedGetPrice( const uint32 literalContext, uint32 symbol, ui
 	return price;
 }
 
+/**
+ * @brief Fills eight consecutive price entries for a single position state from the length probability tree.
+ *
+ * @param baseArray   Probability array to read from.
+ * @param baseOffset  Base offset within baseArray for this position state.
+ * @param startPrice  Starting price to which tree-node prices are added.
+ * @param prices      Output price array.
+ * @param priceOffset Starting index in prices to write to.
+ */
 void Lzma1Enc::SetPrices( const CProbability* baseArray, const uint32 baseOffset, const uint32 startPrice, uint32* prices, uint32 priceOffset )
 {
 	for( uint32 i = 0u; i < 8u; i += 2u )
@@ -620,6 +780,13 @@ void Lzma1Enc::SetPrices( const CProbability* baseArray, const uint32 baseOffset
 	}
 }
 
+/**
+ * @brief Rebuilds all position-state price tables for a length encoder.
+ *
+ * @param lpe          Length price encoder whose tables to rebuild.
+ * @param numPosStates Number of position states to fill.
+ * @param le           Source length encoder probability tables.
+ */
 void Lzma1Enc::UpdateTables( CLengthPriceEncoder* lpe, const uint32 numPosStates, const CLengthEncoder* le )
 {
 	DebugPrint( "---UpdateTables" );
@@ -674,6 +841,12 @@ void Lzma1Enc::UpdateTables( CLengthPriceEncoder* lpe, const uint32 numPosStates
 	}
 }
 
+/**
+ * @brief Queries the match finder for available matches at the current position.
+ *
+ * @param numPairs On exit, the number of (length, distance) pairs placed in Matches[].
+ * @return The length of the longest match found (extended to NumAvail if the match finder hit MaxMatchLength).
+ */
 uint32 Lzma1Enc::ReadMatchDistances( uint32& numPairs )
 {
 	numPairs = 0u;
@@ -711,6 +884,14 @@ uint32 Lzma1Enc::ReadMatchDistances( uint32& numPairs )
 }
 
 
+/**
+ * @brief Returns the bit-price for encoding a pure repeat match (without the length cost).
+ *
+ * @param repIndex Which of the four repeat distances to use (0–3).
+ * @param state    Current LZMA encoder state.
+ * @param posState Current position state.
+ * @return Price in probability-price units.
+ */
 uint32 Lzma1Enc::GetPricePureRep( const uint32 repIndex, const uint64 state, const uint64 posState ) const
 {
 	uint32 price;
@@ -739,6 +920,12 @@ uint32 Lzma1Enc::GetPricePureRep( const uint32 repIndex, const uint64 state, con
 	return price;
 }
 
+/**
+ * @brief Traces the optimal path from position cur back to 0 and records the sequence in Optimals[].
+ *
+ * @param cur Final position index in the optimal array.
+ * @return Length of the first symbol in the optimal sequence.
+ */
 uint32 Lzma1Enc::Backward( uint32 cur )
 {
 	DebugPrint( "---Backward" );
@@ -790,6 +977,16 @@ uint32 Lzma1Enc::Backward( uint32 cur )
 	return length;
 }
 
+/**
+ * @brief Tests whether the current optimal entry is cheap enough to terminate the forward pass.
+ *
+ * If the parser is near the end of the optimal buffer, finds the cheapest entry and
+ * skips the match finder forward to align with it.
+ *
+ * @param curRef Current index; updated to the cheapest entry if a skip occurs.
+ * @param last   Last populated index in the optimal array.
+ * @return True if the forward pass should stop at curRef.
+ */
 bool Lzma1Enc::GetBestPrice( uint32& curRef, const uint32 last )
 {
 	// 18.06
@@ -824,6 +1021,13 @@ bool Lzma1Enc::GetBestPrice( uint32& curRef, const uint32 last )
 	return false;
 }
 
+/**
+ * @brief Fills repeats[] with the four repeat distances that will be active after the symbol at Optimals[previous].
+ *
+ * @param repeats  Output array of four repeat distances.
+ * @param previous Index in the optimal array of the preceding symbol.
+ * @param distance Distance of the symbol at previous (may be a repeat index or a new-match distance + NumRepeats).
+ */
 void Lzma1Enc::GetOptimalRepeats( uint32* repeats, const uint32 previous, const uint32 distance ) const
 {
 	if( distance < Lzma::NumRepeats )
@@ -861,7 +1065,15 @@ void Lzma1Enc::GetOptimalRepeats( uint32* repeats, const uint32 previous, const 
 	}
 }
 
-// Initialize repeat distance lengths
+/**
+ * @brief Initialises the repeat-distance lengths array and finds the best repeat index.
+ *
+ * @param reps           Output: current repeat distances from Repeats[].
+ * @param repLens        Output: match length for each repeat distance (0 if no match).
+ * @param dataOffset     Buffer offset of the current byte.
+ * @param numAvail       Number of bytes available from the current position.
+ * @param repeatMaxIndex Output: index of the repeat distance with the longest match.
+ */
 void Lzma1Enc::InitRepeatLengths( uint32* reps, uint32* repLens, const int64 dataOffset, const uint32 numAvail, uint32& repeatMaxIndex ) const
 {
 	repeatMaxIndex = 0u;
@@ -899,7 +1111,18 @@ void Lzma1Enc::InitRepeatLengths( uint32* reps, uint32* repLens, const int64 dat
 	}
 }
 
-// Check for immediate fast matches
+/**
+ * @brief Checks for very-long matches that allow skipping the full optimal pass.
+ *
+ * If the best repeat or the main match meets or exceeds FastBytes, skips the match
+ * finder and returns its length immediately (bypassing optimal parsing).
+ *
+ * @param mainLength     Length of the main match from the match finder.
+ * @param pairCount      Number of (length, distance) pairs in Matches[].
+ * @param repeatLengths  Match lengths for each of the four repeat distances.
+ * @param repeatMaxIndex Index of the longest repeat match in repeatLengths.
+ * @return Length of the fast match if one was found, 0 to continue with optimal parsing.
+ */
 uint32 Lzma1Enc::CheckFastMatches( const uint32 mainLength, const uint32 pairCount, const uint32* repeatLengths, const uint32 repeatMaxIndex )
 {
 	const uint32 best_rep_len = repeatLengths[repeatMaxIndex];
@@ -926,7 +1149,15 @@ uint32 Lzma1Enc::CheckFastMatches( const uint32 mainLength, const uint32 pairCou
 	return 0u;
 }
 
-// Initialize first optimal entry (literal)
+/**
+ * @brief Fills the first COptimal entry and seeds the forward pass with a literal price.
+ *
+ * @param position      Current absolute encoding position.
+ * @param dataOffset    Buffer offset of the current byte.
+ * @param curByte       Byte at the current position.
+ * @param matchByte     Byte at distance Repeats[0] from the current position.
+ * @param positionState Position state (position & PositionMask).
+ */
 void Lzma1Enc::InitFirstOptimal( const uint32 position, const int64 dataOffset, const uint32 curByte, const uint32 matchByte, const uint32 positionState ) const
 {
 	// Set initial state
@@ -947,7 +1178,16 @@ void Lzma1Enc::InitFirstOptimal( const uint32 position, const int64 dataOffset, 
 	DebugPrint( "InitFirstOptimal: %d", Optimals[1].Price );
 }
 
-// Try short repeat (REP0 with length 1)
+/**
+ * @brief Tests a length-1 REP0 (short repeat) at the current position and updates Optimals[1] if it wins.
+ *
+ * @param curByte          Byte at the current position.
+ * @param matchByte        Byte at distance Repeats[0].
+ * @param repLens          Match lengths for each of the four repeat distances.
+ * @param repeatMatchPrice Base price for entering a repeat-match sequence.
+ * @param positionState    Current position state.
+ * @param last             Last populated optimal index; updated to 1 if a short repeat terminates the pass.
+ */
 void Lzma1Enc::TryShortRepeat( const uint32 curByte, const uint32 matchByte, const uint32* repLens, const uint32 repeatMatchPrice, const uint32 positionState, uint32& last )
 {
 	// Only process if bytes match and REP0 distance is valid
@@ -981,7 +1221,13 @@ void Lzma1Enc::TryShortRepeat( const uint32 curByte, const uint32 matchByte, con
 	}
 }
 
-// Process repeat matches
+/**
+ * @brief Evaluates all four repeat-distance candidates at the first optimal position and seeds Optimals[].
+ *
+ * @param repLens          Match length for each of the four repeat distances.
+ * @param repeatMatchPrice Base price for entering a repeat-match sequence.
+ * @param positionState    Current position state.
+ */
 void Lzma1Enc::ProcessRepeatMatches( const uint32* repLens, const uint32 repeatMatchPrice, const uint32 positionState ) const
 {
 	DebugPrint( "---ProcessRepeatMatches" );
@@ -1014,7 +1260,15 @@ void Lzma1Enc::ProcessRepeatMatches( const uint32* repLens, const uint32 repeatM
 	}
 }
 
-// Process main matches
+/**
+ * @brief Evaluates new-match candidates from the match finder at the first optimal position.
+ *
+ * @param mainLength    Length of the main match.
+ * @param pairCount     Number of (length, distance) pairs in Matches[].
+ * @param repLens       Match lengths for the four repeat distances (used to skip dominated candidates).
+ * @param matchPrice    Base price for entering a match sequence.
+ * @param positionState Current position state.
+ */
 void Lzma1Enc::ProcessMainMatches( const uint32 mainLength, const uint32 pairCount, const uint32* repLens, const uint32 matchPrice, const uint32 positionState ) const
 {
 	// Early exit if no main matches to process
@@ -1091,7 +1345,16 @@ void Lzma1Enc::ProcessMainMatches( const uint32 mainLength, const uint32 pairCou
 	}
 }
 
-// Try literal followed by REP0
+/**
+ * @brief Tests the literal + REP0 combined sequence as a candidate at position cur+length.
+ *
+ * @param cur          Current position in the optimal array.
+ * @param last         Last populated optimal index; extended if a new entry is written.
+ * @param nextIsLiteral True if Optimals[cur+1] already holds a literal candidate.
+ * @param bytesMatch   True if the next byte equals the byte at REP0 distance.
+ * @param literalPrice Price of the literal at cur+1 (0 if the literal was skipped).
+ * @param numAvailFull Number of bytes available at cur.
+ */
 void Lzma1Enc::TryLiteralRep0( const uint32 cur, uint32& last, const bool nextIsLiteral, const bool bytesMatch, const uint32 literalPrice, const uint32 numAvailFull ) const
 {
 	// Early exit checks - skip if any condition fails
@@ -1149,7 +1412,17 @@ void Lzma1Enc::TryLiteralRep0( const uint32 cur, uint32& last, const bool nextIs
 	}
 }
 
-// Try REP : LIT : REP0 sequence
+/**
+ * @brief Tests the repeat + literal + REP0 three-symbol sequence as a candidate.
+ *
+ * @param cur         Current position in the optimal array.
+ * @param last        Last populated optimal index; extended if a new entry is written.
+ * @param repIndex    Repeat-distance index (0–3) of the leading repeat.
+ * @param length      Length of the leading repeat match.
+ * @param price       Base price accumulated so far (before the repeat length is added).
+ * @param dataOffset  Repeat distance (buffer byte offset delta).
+ * @param numAvailFull Number of bytes available at cur.
+ */
 void Lzma1Enc::TryRepLitRep0( const uint32 cur, uint32& last, const uint32 repIndex, const uint32 length, uint32 price, const int64 dataOffset, const uint32 numAvailFull ) const
 {
 	// Calculate initial limit and check viability
@@ -1179,13 +1452,12 @@ void Lzma1Enc::TryRepLitRep0( const uint32 cur, uint32& last, const uint32 repIn
 		MatchedGetPrice( literal_context, MatchFinder->BufferBase[data_offset_literal], MatchFinder->BufferBase[data_offset_literal - dataOffset] );
 
 	// Add price for the final REP0
-	constexpr uint32 final_state = LzmaEncoder::EncodeStateLiteralAfterRepeat;
 	const uint32 final_position_state = ( position_state2 + 1u ) & PositionMask;
 
-	price += ProbabilityPrices[( IsMatch[final_state][final_position_state] ^ Lzma::BitModelTableMask ) >> LzmaEncoder::NumMoveReducingBits] +
-		ProbabilityPrices[( IsRep0Long[final_state][final_position_state] ^ Lzma::BitModelTableMask ) >> LzmaEncoder::NumMoveReducingBits] +
-		ProbabilityPrices[( IsRep[final_state] ^ Lzma::BitModelTableMask ) >> LzmaEncoder::NumMoveReducingBits] +
-		ProbabilityPrices[IsRepG0[final_state] >> LzmaEncoder::NumMoveReducingBits];
+	price += ProbabilityPrices[( IsMatch[LzmaEncoder::EncodeStateLiteralAfterRepeat][final_position_state] ^ Lzma::BitModelTableMask ) >> LzmaEncoder::NumMoveReducingBits] +
+		ProbabilityPrices[( IsRep0Long[LzmaEncoder::EncodeStateLiteralAfterRepeat][final_position_state] ^ Lzma::BitModelTableMask ) >> LzmaEncoder::NumMoveReducingBits] +
+		ProbabilityPrices[( IsRep[LzmaEncoder::EncodeStateLiteralAfterRepeat] ^ Lzma::BitModelTableMask ) >> LzmaEncoder::NumMoveReducingBits] +
+		ProbabilityPrices[IsRepG0[LzmaEncoder::EncodeStateLiteralAfterRepeat] >> LzmaEncoder::NumMoveReducingBits];
 
 	// Find full REP0 match length
 	uint32 repeat0_length = start_position;
@@ -1217,8 +1489,15 @@ void Lzma1Enc::TryRepLitRep0( const uint32 cur, uint32& last, const uint32 repIn
 	}
 }
 
-// Process repeat distances in optimal parsing loop
-void Lzma1Enc::ProcessRepeatsInLoop( const uint32 cur, uint32& last, uint32& startLength, const uint32 numAvailFull ) const						
+/**
+ * @brief Iterates over all four repeat distances at position cur during the forward optimal pass.
+ *
+ * @param cur          Current position in the optimal array.
+ * @param last         Last populated optimal index; extended as new entries are written.
+ * @param startLength  Updated to one past the longest REP0 match found (guides main-match start length).
+ * @param numAvailFull Number of bytes available at cur.
+ */
+void Lzma1Enc::ProcessRepeatsInLoop( const uint32 cur, uint32& last, uint32& startLength, const uint32 numAvailFull ) const
 {
 	DebugPrint( "---ProcessRepeatsInLoop" );
 	for( uint32 repeat_index = 0u; repeat_index < Lzma::NumRepeats; repeat_index++ )
@@ -1272,7 +1551,16 @@ void Lzma1Enc::ProcessRepeatsInLoop( const uint32 cur, uint32& last, uint32& sta
 	}
 }
 
-// Try MATCH : LIT : REP0 sequence
+/**
+ * @brief Tests the match + literal + REP0 three-symbol sequence as a candidate.
+ *
+ * @param cur           Current position in the optimal array.
+ * @param last          Last populated optimal index; extended if a new entry is written.
+ * @param matchLength   Length of the leading new match.
+ * @param matchDistance Distance of the leading new match.
+ * @param price         Price of the leading match (before length encoding is added).
+ * @param numAvailFull  Number of bytes available at cur.
+ */
 void Lzma1Enc::TryMatchLitRep0( const uint32 cur, uint32& last, const uint32 matchLength, const uint32 matchDistance, uint32 price, const uint32 numAvailFull ) const
 {
 	DebugPrint( "---TryMatchLitRep0" );
@@ -1314,13 +1602,12 @@ void Lzma1Enc::TryMatchLitRep0( const uint32 cur, uint32& last, const uint32 mat
 		MatchedGetPrice( literal_context, MatchFinder->BufferBase[literal_position + MatchFinder->BufferOffset - 1u], MatchFinder->BufferBase[literal_position + MatchFinder->BufferOffset - matchDistance - 2u] );
 
 	// Add price for the final REP0
-	constexpr uint32 final_state = LzmaEncoder::EncodeStateLiteralAfterMatch;
 	const uint32 final_position_state = ( position_state2 + 1u ) & PositionMask;
 
-	price += ProbabilityPrices[( IsMatch[final_state][final_position_state] ^ Lzma::BitModelTableMask ) >> LzmaEncoder::NumMoveReducingBits] +
-		ProbabilityPrices[( IsRep0Long[final_state][final_position_state] ^ Lzma::BitModelTableMask ) >> LzmaEncoder::NumMoveReducingBits] +
-		ProbabilityPrices[( IsRep[final_state] ^ Lzma::BitModelTableMask ) >> LzmaEncoder::NumMoveReducingBits] +
-		ProbabilityPrices[IsRepG0[final_state] >> LzmaEncoder::NumMoveReducingBits];
+	price += ProbabilityPrices[( IsMatch[LzmaEncoder::EncodeStateLiteralAfterMatch][final_position_state] ^ Lzma::BitModelTableMask ) >> LzmaEncoder::NumMoveReducingBits] +
+		ProbabilityPrices[( IsRep0Long[LzmaEncoder::EncodeStateLiteralAfterMatch][final_position_state] ^ Lzma::BitModelTableMask ) >> LzmaEncoder::NumMoveReducingBits] +
+		ProbabilityPrices[( IsRep[LzmaEncoder::EncodeStateLiteralAfterMatch] ^ Lzma::BitModelTableMask ) >> LzmaEncoder::NumMoveReducingBits] +
+		ProbabilityPrices[IsRepG0[LzmaEncoder::EncodeStateLiteralAfterMatch] >> LzmaEncoder::NumMoveReducingBits];
 
 	// Update last position if this extends it
 	const uint32 end_position = cur + matchLength + rep0_length;
@@ -1343,7 +1630,16 @@ void Lzma1Enc::TryMatchLitRep0( const uint32 cur, uint32& last, const uint32 mat
 	}
 }
 
-// Process main matches in optimal parsing loop
+/**
+ * @brief Iterates over new-match candidates at position cur during the forward optimal pass.
+ *
+ * @param cur          Current position in the optimal array.
+ * @param last         Last populated optimal index; extended as new entries are written.
+ * @param newLength    Longest match length returned by the match finder at cur.
+ * @param pairCount    Number of (length, distance) pairs in Matches[].
+ * @param startLength  Minimum match length to process (set by ProcessRepeatsInLoop).
+ * @param numAvailFull Number of bytes available at cur.
+ */
 void Lzma1Enc::ProcessMainMatchesInLoop( const uint32 cur, uint32& last, const uint32 newLength, const uint32 pairCount, const uint32 startLength, const uint32 numAvailFull ) const
 {
 	// Early exit if new length doesn't extend past start length
@@ -1424,7 +1720,12 @@ void Lzma1Enc::ProcessMainMatchesInLoop( const uint32 cur, uint32& last, const u
 	}
 }
 
-// Main optimal parsing function (now much shorter!)
+/**
+ * @brief Runs the full optimal (dynamic-programming) parser for the current position.
+ *
+ * @param position Current absolute encoding position.
+ * @return Length of the cheapest first-symbol encoding.
+ */
 uint32 Lzma1Enc::GetOptimum( uint32 position )
 {
 	uint32 reps[Lzma::NumRepeats];
@@ -1496,11 +1797,8 @@ uint32 Lzma1Enc::GetOptimum( uint32 position )
 		return 1u;
 	}
 
-	// Copy initial repeat distances
-	Optimals[0].Repeats[0] = reps[0];
-	Optimals[0].Repeats[1] = reps[1];
-	Optimals[0].Repeats[2] = reps[2];
-	Optimals[0].Repeats[3] = reps[3];
+	// Copy initial repeat distance
+	std::ranges::copy( std::as_const(reps), Optimals[0].Repeats );
 
 	// Process initial repeat matches
 	ProcessRepeatMatches( repeat_lengths, repeat_match_price, position_state );
@@ -1678,6 +1976,11 @@ uint32 Lzma1Enc::GetOptimum( uint32 position )
 	return Backward( cur );
 }
 
+/**
+ * @brief Runs the fast (greedy, single-pass) match selector.
+ *
+ * @return Length of the selected match, or 1 for a literal.
+ */
 uint32 Lzma1Enc::GetOptimumFast()
 {
 	// Get match distances from match finder
@@ -1866,6 +2169,11 @@ uint32 Lzma1Enc::GetOptimumFast()
 	return main_length;
 }
 
+/**
+ * @brief Writes the LZMA end-of-stream (EOS) marker sequence.
+ *
+ * @param posState Current position state (selects the IsMatch probability context).
+ */
 void Lzma1Enc::WriteEndMarker( uint32 posState )
 {
 	// Encode isMatch = 1 (this is a match, not a literal)
@@ -1899,6 +2207,11 @@ void Lzma1Enc::WriteEndMarker( uint32 posState )
 	RangeCoder.EncodeTreeAllOnes( PositionAlignEncoder, Lzma::NumAlignmentBits );
 }
 
+/**
+ * @brief Checks the range coder and match finder for I/O errors and sets Finished on failure.
+ *
+ * @return Current result code.
+ */
 SevenZipResult Lzma1Enc::CheckErrors()
 {
 	if( Result != SevenZipResult::SevenZipOK )
@@ -1924,6 +2237,11 @@ SevenZipResult Lzma1Enc::CheckErrors()
 	return Result;
 }
 
+/**
+ * @brief Finalises the stream: optionally writes EOS, then flushes range-coder and stream buffers.
+ *
+ * @param nowPos Current encoding position (used to derive the EOS position state).
+ */
 void Lzma1Enc::Flush( uint32 nowPos )
 {
 	Finished = true;
@@ -1936,7 +2254,13 @@ void Lzma1Enc::Flush( uint32 nowPos )
 	RangeCoder.FlushStream();
 }
 
-// Helper function to calculate price for encoding a symbol through binary tree
+/**
+ * @brief Computes the bit-price for the first three alignment bits of a symbol.
+ *
+ * @param symbol Alignment symbol (lower 3 bits are used).
+ * @param m      Binary-tree node index, updated in place as bits are consumed.
+ * @return Price in probability-price units.
+ */
 uint32 Lzma1Enc::CalcTreeAlignPrice( uint32 symbol, uint32& m ) const
 {
 	uint32 price = 0u;
@@ -1955,6 +2279,15 @@ uint32 Lzma1Enc::CalcTreeAlignPrice( uint32 symbol, uint32& m ) const
 	return price;
 }
 
+/**
+ * @brief Computes the bit-price for the footer bits of a position-model distance.
+ *
+ * @param positionIndex  Distance index within the position-model block.
+ * @param positionOffset Offset into PositionEncoders[] for this block.
+ * @param footerBits     Number of footer bits to price.
+ * @param m              Binary-tree node index, updated in place.
+ * @return Price in probability-price units.
+ */
 uint32 Lzma1Enc::GetPositionModelPrice( const uint32 positionIndex, const uint32 positionOffset, int8 footerBits, uint32& m ) const
 {
 	uint32 price = 0;
@@ -1977,6 +2310,13 @@ uint32 Lzma1Enc::GetPositionModelPrice( const uint32 positionIndex, const uint32
 	return price;
 }
 
+/**
+ * @brief Computes the price for a position-slot symbol through the binary tree.
+ *
+ * @param lps    Length-to-position state index.
+ * @param symbol Position slot index to price.
+ * @return Price in probability-price units.
+ */
 uint32 Lzma1Enc::CalcTreeDistancePrice( uint32 lps, uint32 symbol ) const
 {
 	const CProbability* probabilities = PositionSlotEncoder[lps];
@@ -1996,6 +2336,9 @@ uint32 Lzma1Enc::CalcTreeDistancePrice( uint32 lps, uint32 symbol ) const
 	return price;
 }
 
+/**
+ * @brief Precomputes AlignPrices[] for all 16 alignment bit values.
+ */
 void Lzma1Enc::FillAlignPrices()
 {
 	DebugPrint( "---FillAlignPrices" );
@@ -2015,6 +2358,9 @@ void Lzma1Enc::FillAlignPrices()
 	}
 }
 
+/**
+ * @brief Precomputes DistancesPrices[] and PositionSlotPrices[] for all length-to-position states.
+ */
 void Lzma1Enc::FillDistancesPrices()
 {
 	DebugPrint( "---FillDistancesPrices" );
@@ -2085,7 +2431,10 @@ void Lzma1Enc::FillDistancesPrices()
 }
 
 
-void Lzma1Enc::FreeLits()
+/**
+ * @brief Frees both the live and saved-state literal probability arrays.
+ */
+void Lzma1Enc::FreeLiterals()
 {
 	const uint32 prob_array_size = ( 0x300u << TotalLiteralBits ) * sizeof( CProbability );
 
@@ -2102,6 +2451,11 @@ void Lzma1Enc::FreeLits()
 	}
 }
 
+/**
+ * @brief Encodes the literal byte at the current match-finder offset.
+ *
+ * @param nowPos32 Current 32-bit encoding position (selects the literal probability context).
+ */
 void Lzma1Enc::Lit( const uint32 nowPos32 )
 {
 	const int64 data_offset = MatchFinder->BufferOffset - AdditionalOffset;
@@ -2119,6 +2473,12 @@ void Lzma1Enc::Lit( const uint32 nowPos32 )
 	}
 }
 
+/**
+ * @brief Returns the optimal match length for the current encoding position.
+ *
+ * @param nowPos32 Current 32-bit encoding position.
+ * @return Optimal match length selected by the parser.
+ */
 uint32 Lzma1Enc::GetLength( uint32 nowPos32 )
 {
 	uint32 length;
@@ -2144,6 +2504,16 @@ uint32 Lzma1Enc::GetLength( uint32 nowPos32 )
 	return length;
 }
 
+/**
+ * @brief Handles the first-byte special case and returns the current 32-bit position.
+ *
+ * At position 0, if no data is available, flushes the stream.  Otherwise, reads the first
+ * match distance and encodes the first byte as a literal before returning 1.  For all later
+ * positions, simply returns the low 32 bits of NowPos64.
+ *
+ * @param re Range encoder used to emit the initial literal bits at position 0.
+ * @return 1 if the first byte was encoded, or the low 32 bits of the current position otherwise.
+ */
 uint32 Lzma1Enc::LiteralBit( CRangeEncoder& re )
 {
 	if( NowPos64 == 0 )
@@ -2167,7 +2537,18 @@ uint32 Lzma1Enc::LiteralBit( CRangeEncoder& re )
 	return static_cast<uint32>( NowPos64 & UINT32_MAX );
 }
 
-SevenZipResult Lzma1Enc::CodeOneBlock( uint32 maxPackSize, const uint32 maxUnpackSize )
+/**
+ * @brief Encodes one block of data, stopping when a pack or unpack size limit is reached.
+ *
+ * Initialises the match finder on the first call, then loops encoding symbols (literals,
+ * repeat matches, and new matches) until the input is exhausted or a size limit fires.
+ * Price tables are refreshed periodically during the loop.
+ *
+ * @param maxPackSize   Maximum compressed bytes to emit before yielding (0 = no limit).
+ * @param maxUnpackSize Maximum uncompressed bytes to consume before yielding.
+ * @return SevenZipOK, or a read/write error code if an I/O failure was detected.
+ */
+SevenZipResult Lzma1Enc::CodeOneBlock( const uint32 maxPackSize, const int64 maxUnpackSize )
 {
 	if( NeedInit )
 	{
@@ -2187,7 +2568,6 @@ SevenZipResult Lzma1Enc::CodeOneBlock( uint32 maxPackSize, const uint32 maxUnpac
 	}
 
 	const uint32 start_pos_32 = static_cast<uint32>( NowPos64 & UINT32_MAX );
-
 	uint32 now_pos_32 = LiteralBit( RangeCoder );
 
 	result = CheckErrors();
@@ -2310,7 +2690,7 @@ SevenZipResult Lzma1Enc::CodeOneBlock( uint32 maxPackSize, const uint32 maxUnpac
 					}
 					else
 					{
-						const uint32 dist_limit = ( 1u << ( Lzma::NumLogBits + 6 ) );
+						constexpr uint32 dist_limit = 1u << ( Lzma::NumLogBits + 6 );
 						const int8 shift = ( dist < dist_limit ) ? 6 : 5 + Lzma::NumLogBits;
 						pos_slot = GetBlockSizeFromPosition( dist >> shift ) + static_cast<uint32>( shift << 1 );
 					}
@@ -2414,6 +2794,14 @@ SevenZipResult Lzma1Enc::CodeOneBlock( uint32 maxPackSize, const uint32 maxUnpac
 	return CheckErrors();
 }
 
+/**
+ * @brief Allocates the range-encoder buffer, literal probability tables, match-finder
+ *        window, and optimal-parser array.
+ *
+ * @param keepWindowSize Number of bytes at the beginning of the dictionary window to preserve
+ *                       across re-initialisation (passed to the match finder).
+ * @return SevenZipOK on success, or SevenZipErrorMemory if any allocation fails.
+ */
 SevenZipResult Lzma1Enc::AllocateMemory( uint32 keepWindowSize )
 {
 	// Allocate range encoder buffer
@@ -2426,7 +2814,7 @@ SevenZipResult Lzma1Enc::AllocateMemory( uint32 keepWindowSize )
 	const int32 lclp = LiteralContextBits + LiteralPositionBits;
 	if( LiteralProbabilities == nullptr || SavedState.LiteralProbabilities == nullptr || TotalLiteralBits != lclp )
 	{
-		FreeLits();
+		FreeLiterals();
 
 		const uint32 prob_array_size = ( 0x300u << lclp ) * sizeof( CProbability );
 		LiteralProbabilities = static_cast<CProbability*>( Alloc->Alloc( prob_array_size, "Lzma1Enc::LiteralProbabilities" ) );
@@ -2434,7 +2822,7 @@ SevenZipResult Lzma1Enc::AllocateMemory( uint32 keepWindowSize )
 
 		if( LiteralProbabilities == nullptr || SavedState.LiteralProbabilities == nullptr )
 		{
-			FreeLits();
+			FreeLiterals();
 			return SevenZipResult::SevenZipErrorMemory;
 		}
 
@@ -2474,53 +2862,41 @@ SevenZipResult Lzma1Enc::AllocateMemory( uint32 keepWindowSize )
 	return SevenZipResult::SevenZipOK;
 }
 
+/**
+ * @brief Resets all encoder state to its initial values.
+ *
+ * Zeroes the LZ state, repeat distances, all probability models, position masks,
+ * literal mask, and the optimal-parser queue.
+ */
 void Lzma1Enc::Init()
 {
 	State = 0u;
-	Repeats[0] = 1u;
-	Repeats[1] = 1u;
-	Repeats[2] = 1u;
-	Repeats[3] = 1u;
+	std::ranges::fill(Repeats, 1u );
 
 	RangeCoder.Init();
 
-	for( CProbability& probability : PositionAlignEncoder )
-	{
-		probability = Lzma::InitProbabilityValue;
-	}
+	std::ranges::fill( PositionAlignEncoder, Lzma::InitProbabilityValue );
+
+	std::ranges::fill( IsRep, Lzma::InitProbabilityValue );
+	std::ranges::fill( IsRepG0, Lzma::InitProbabilityValue );
+	std::ranges::fill( IsRepG1, Lzma::InitProbabilityValue );
+	std::ranges::fill( IsRepG2, Lzma::InitProbabilityValue );
 
 	for( uint32 i = 0u; i < Lzma::NumStates; i++ )
 	{
-		for( uint32 j = 0u; j < Lzma::MaxPositionBitsStates; j++ )
-		{
-			IsMatch[i][j] = Lzma::InitProbabilityValue;
-			IsRep0Long[i][j] = Lzma::InitProbabilityValue;
-		}
-
-		IsRep[i] = Lzma::InitProbabilityValue;
-		IsRepG0[i] = Lzma::InitProbabilityValue;
-		IsRepG1[i] = Lzma::InitProbabilityValue;
-		IsRepG2[i] = Lzma::InitProbabilityValue;
+		std::ranges::fill( IsMatch[i], Lzma::InitProbabilityValue );
+		std::ranges::fill( IsRep0Long[i], Lzma::InitProbabilityValue );
 	}
 
-	for( uint32 i = 0u; i < Lzma::NumLengthToPositionStates; i++ )
+	for( CProbability( &probability )[64] : PositionSlotEncoder )
 	{
-		for( uint32 j = 0u; j < ( 1 << Lzma::NumPositionSlotBits ); j++ )
-		{
-			PositionSlotEncoder[i][j] = Lzma::InitProbabilityValue;
-		}
+		std::ranges::fill( probability, Lzma::InitProbabilityValue );
 	}
 
-	for( CProbability& probability : PositionEncoders )
-	{
-		probability = Lzma::InitProbabilityValue;
-	}
+	std::ranges::fill( PositionEncoders, Lzma::InitProbabilityValue );
 
 	const uint32 count = Lzma::LiteralSize << ( LiteralPositionBits + LiteralContextBits );
-	for( uint32 i = 0; i < count; i++ )
-	{
-		LiteralProbabilities[i] = Lzma::InitProbabilityValue;
-	}
+	std::ranges::fill_n( LiteralProbabilities, count, Lzma::InitProbabilityValue );
 
 	LengthProbabilities.Init();
 	RepeatLengthProbabilities.Init();
@@ -2539,6 +2915,12 @@ void Lzma1Enc::Init()
 	LiteralMask = ( 0x100u << LiteralPositionBits ) - ( 0x100u >> LiteralContextBits );
 }
 
+/**
+ * @brief Initialises price tables and length-encoder counters after Init().
+ *
+ * Fills distance and alignment price caches when not in fast mode, sets the
+ * length-table sizes, and seeds both length encoders with initial prices.
+ */
 void Lzma1Enc::InitPrices()
 {
 	if( !FastMode )
@@ -2556,6 +2938,12 @@ void Lzma1Enc::InitPrices()
 	UpdateTables( &RepeatLenEnc, 1u << PositionBits, &RepeatLengthProbabilities );
 }
 
+/**
+ * @brief Computes the distance table size, then allocates and fully initialises the encoder.
+ *
+ * @param keepWindowSize Number of dictionary bytes to preserve across re-initialisation.
+ * @return SevenZipOK on success, or a memory-allocation error code.
+ */
 SevenZipResult Lzma1Enc::AllocAndInit( uint32 keepWindowSize )
 {
 	int32 shift;
@@ -2599,6 +2987,17 @@ SevenZipResult Lzma1Enc::Prepare( InStreamInterface* inStream, uint32 keepWindow
 	return AllocAndInit( keepWindowSize );
 }
 
+/**
+ * @brief Prepares the encoder to compress an in-memory buffer.
+ *
+ * Configures the match finder to read directly from the supplied byte array instead of
+ * a stream, then calls AllocAndInit() to reset and allocate all encoder state.
+ *
+ * @param src            Pointer to the uncompressed input data.
+ * @param srcLen         Length of the input data in bytes.
+ * @param keepWindowSize Number of dictionary bytes to preserve across re-initialisation.
+ * @return SevenZipOK on success, or a memory-allocation error code.
+ */
 SevenZipResult Lzma1Enc::MemPrepare( const uint8* src, int64 srcLen, uint32 keepWindowSize )
 {
 	MatchFinder->DirectInput = true;
@@ -2630,6 +3029,12 @@ int64 Lzma1Enc::GetCurrentOffset() const
 	return MatchFinder->BufferOffset - AdditionalOffset;
 }
 
+/**
+ * @brief Reports the current compress progress to the optional progress callback.
+ *
+ * @return SevenZipOK if no callback is registered or the callback succeeded;
+ *         SevenZipErrorProgress if the callback signalled cancellation.
+ */
 SevenZipResult Lzma1Enc::ReportProgress() const
 {
 	if( Progress != nullptr )
@@ -2660,7 +3065,7 @@ SevenZipResult Lzma1Enc::GetCodedProperties( uint8* properties, uint64& size ) c
 	size = Lzma::LzmaPropertiesSize;
 
 	// Encode properties byte (LiteralContextBits, LiteralPositionBits, PositionBits)
-	const int32 full_properties = ( PositionBits * 5 + LiteralPositionBits ) * 9 + LiteralContextBits;
+	const int32 full_properties = ( ( ( PositionBits * 5 ) + LiteralPositionBits ) * 9 ) + LiteralContextBits;
 	properties[0] = static_cast<uint8>( full_properties & 0xff );
 
 	// Encode aligned dictionary size for decoder
@@ -2706,7 +3111,7 @@ SevenZipResult Lzma1Enc::GetCodedProperties( uint8* properties, uint64& size ) c
  * @param unpackSize      On exit: number of uncompressed bytes consumed.
  * @return SevenZipOK on success, or SevenZipErrorOutputEof if the output buffer is full.
  */
-SevenZipResult Lzma1Enc::CodeOneMemBlock( bool reInit, uint8* baseDest, int64 offset, int64& destLen, uint32 desiredPackSize, uint32& unpackSize )
+SevenZipResult Lzma1Enc::CodeOneMemBlock( const bool reInit, uint8* baseDest, const int64 offset, int64& destLen, const uint32 desiredPackSize, int64& unpackSize )
 {
 	CheckedSeqOutStream out_stream( baseDest, offset, destLen );
 
@@ -2723,7 +3128,7 @@ SevenZipResult Lzma1Enc::CodeOneMemBlock( bool reInit, uint8* baseDest, int64 of
 
 	const int64 now_pos_64 = NowPos64;
 	RangeCoder.Init();
-	RangeCoder.outStream = &out_stream;
+	RangeCoder.OutStream = &out_stream;
 
 	if( desiredPackSize == 0 )
 	{
@@ -2732,7 +3137,7 @@ SevenZipResult Lzma1Enc::CodeOneMemBlock( bool reInit, uint8* baseDest, int64 of
 
 	const SevenZipResult result = CodeOneBlock( desiredPackSize, unpackSize );
 
-	unpackSize = static_cast< uint32 >( NowPos64 - now_pos_64 );
+	unpackSize = NowPos64 - now_pos_64;
 	destLen = out_stream.WorkBufferOffset - offset;
 	if( out_stream.Overflow )
 	{
@@ -2756,7 +3161,7 @@ SevenZipResult Lzma1Enc::MemEncode( uint8* compressed, int64& compressedLength, 
 {
 	CheckedSeqOutStream out_stream( compressed, 0, compressedLength );
 
-	RangeCoder.outStream = &out_stream;
+	RangeCoder.OutStream = &out_stream;
 
 	SevenZipResult result = MemPrepare( decompressed, decompressedLength, 0 );
 
@@ -2764,7 +3169,7 @@ SevenZipResult Lzma1Enc::MemEncode( uint8* compressed, int64& compressedLength, 
 	{
 		while( !Finished && result == SevenZipResult::SevenZipOK )
 		{
-			result = CodeOneBlock( 0u, 0u );
+			result = CodeOneBlock( 0u, 0 );
 			if( result == SevenZipResult::SevenZipOK )
 			{
 				result = ReportProgress();

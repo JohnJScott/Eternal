@@ -1,4 +1,5 @@
-// Copyright Eternal Developments LLC. All Rights Reserved.
+/* LzmaEnc.c -- LZMA Encoder
+2021-11-18: Igor Pavlov : Public domain */
 
 #pragma once
 #include "Lzma1Enc.h"
@@ -73,7 +74,7 @@ public:
 	 *  LzmaFinishModeEnd - Stream must be finished after dicLimit.
 	 *
 	 * Returns:
-	 * SZ_OK
+	 * SevenZipOK
 	 *	status:
 	 *	  LzmaStatusFinishedWithMark
 	 *	  LzmaStatusNotFinished
@@ -82,32 +83,32 @@ public:
 	 * SZ_ERROR_DATA - Data error
 	 * SZ_ERROR_FAIL - Some unexpected error: internal error of Code, memory corruption or hardware failure
 	 */
-	SevenZipResult DecodeToDict( int64 dicLimit, const uint8* compressed, int64 compressedOffset, int64& compressedLength, LzmaFinishMode finishMode, LzmaStatus& status );
+	SevenZipResult DecodeToDict( const int64 dicLimit, const uint8* compressed, int64 compressedOffset, int64& compressedLength, LzmaFinishMode finishMode, LzmaStatus& status );
 
-	CLzmaDecoderProperties DecoderProperties;
+	CLzmaDecoderProperties DecoderProperties{};
 	CProbability* Probabilities = nullptr;
-	int64 DictionaryBufferSize;
-	int64 DictionaryPosition;
+	int64 DictionaryBufferSize = 0;
+	int64 DictionaryPosition = 0;
 
-	uint32 PositionMask;
-	uint32 LiteralMask;
+	uint32 PositionMask = 0u;
+	uint32 LiteralMask = 0u;
 
 private:
 	static LzmaDummy UpdateRangeDummy( CParameters& parameters, const int64 bufLimitOffset );
 	static void UpdateRange( CParameters& parameters );
 	static bool SimpleIterate( CParameters& parameters, CProbability& probability );
-	static bool DummySimpleIterate( CParameters& parameters, const CProbability& probabilityLocation );
+	static bool DummySimpleIterate( CParameters& parameters, const CProbability probability );
 
-	static LzmaDummy DummyDecodeTreeBit( CParameters& parameters, const CProbability& prob, const int64 bufLimitOffset );
-	static LzmaDummy DummyDecodeMatchedLiteralBit( CParameters& parameters, const CProbability& prob, const int64 bufLimitOffset );
-	static LzmaDummy DummyDecodePositionModelBit( CParameters& parameters, const CProbability& prob, const int64 bufLimitOffset );
-	static LzmaDummy DummyConsumeBit( CParameters& parameters, const CProbability& prob, const int64 bufLimitOffset );
+	static LzmaDummy DummyDecodeTreeBit( CParameters& parameters, const CProbability& probability, const int64 bufLimitOffset );
+	static LzmaDummy DummyDecodeMatchedLiteralBit( CParameters& parameters, const CProbability& probability, const int64 bufLimitOffset );
+	static LzmaDummy DummyDecodePositionModelBit( CParameters& parameters, const CProbability& probability, const int64 bufLimitOffset );
+	static LzmaDummy DummyConsumeBit( CParameters& parameters, const CProbability& probability, const int64 bufLimitOffset );
 
-	static void DecodeTreeBit( CParameters& parameters, CProbability& prob ) ;
-	static void DecodeMatchedLiteralBit( CParameters& parameters, CProbability& prob );
-	static void DecodeReverseBit( CParameters& parameters, CProbability& prob );
-	static void DecodeReverseBitLast( CParameters& parameters, CProbability& prob );
-	static void DecodePositionModelBit( CParameters& parameters, CProbability& prob );
+	static void DecodeTreeBit( CParameters& parameters, CProbability& probability ) ;
+	static void DecodeMatchedLiteralBit( CParameters& parameters, CProbability& probability );
+	static void DecodeReverseBit( CParameters& parameters, CProbability& probability );
+	static void DecodeReverseBitLast( CParameters& parameters, CProbability& probability );
+	static void DecodePositionModelBit( CParameters& parameters, CProbability& probability );
 
 	void UpdateDistance( CParameters& parameters );
 	void UpdateSymbol( CParameters& parameters );
@@ -125,19 +126,19 @@ private:
 	LzmaDummy TryDummyDistance( CParameters& parameters, const int64 bufOutOffset, const uint32 length ) const;
 	LzmaDummy TryDummy( const uint8* buffer, int64 bufferOffset, int64& bufOutOffset ) const;
 
-	MemoryInterface* Alloc;
+	MemoryInterface* Alloc = nullptr;
 	
 	uint8* Dictionary = nullptr;
-	uint32 RepeatDistances[Lzma::NumRepeats];
+	uint32 RepeatDistances[Lzma::NumRepeats] = { 0 };
 
-	CParameters Parameters;
+	CParameters Parameters{};
 
-	uint32 ProcessedPosition;
-	uint32 CheckDictionarySize;
-	uint32 RemainingLength;
+	uint32 ProcessedPosition = 0u;
+	uint32 CheckDictionarySize = 0u;
+	uint32 RemainingLength = 0u;
 
-	uint32 NumProbabilities;
-	uint32 TempBufferSize;
+	uint32 NumProbabilities = 0u;
+	uint32 TempBufferSize = 0u;
 };
 
 /* There are two types of LZMA streams:
@@ -164,10 +165,7 @@ private:
 	 LzmaDec_Free()
 */
 
-
-/* ---------- One Call Interface ---------- */
-
-/* Lzma1Decode
+/** Lzma1Decode
 
 finishMode:
   It has meaning only if the decoding reaches output limit (*destLen).
@@ -175,16 +173,16 @@ finishMode:
   LzmaFinishModeEnd - Stream must be finished after (*destLen).
 
 Returns:
-  SZ_OK
+  SevenZipOK
 	status:
 	  LzmaStatusFinishedWithMark
 	  LzmaStatusNotFinished
 	  LzmaStatusMaybeFinishedWithoutMark
-  SZ_ERROR_DATA - Data error
-  SZ_ERROR_MEM  - Memory allocation error
-  SZ_ERROR_UNSUPPORTED - Unsupported properties
-  SZ_ERROR_INPUT_EOF - It needs more bytes in input buffer (src).
-  SZ_ERROR_FAIL - Some unexpected error: internal error of Code, memory corruption or hardware failure
+  SevenZipErrorData        - Data error
+  SevenZipErrorMem         - Memory allocation error
+  SevenZipErrorUnsupported - Unsupported properties
+  SevenZipErrorInputEof    - It needs more bytes in input buffer (src).
+  SevenZipErrorFail        - Some unexpected error: internal error of Code, memory corruption or hardware failure
 */
 
 SevenZipResult Lzma1Decode( uint8* decompressed, int64& decompressedLength, const uint8* compressed, int64& compressedLength, const uint8* propData, uint32 propSize, const LzmaFinishMode finishMode, LzmaStatus& status, MemoryInterface* alloc );

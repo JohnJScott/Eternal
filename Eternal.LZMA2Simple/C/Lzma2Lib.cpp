@@ -1,5 +1,9 @@
-/* Lzma2Lib.c -- LZMA library wrapper
-2015-06-13 : Igor Pavlov : Public domain */
+/**
+ * @file Lzma2Lib.cpp
+ * @brief LZMA2 library wrapper.
+ *
+ * 2015-06-13 : Igor Pavlov : Public domain
+ */
 
 #include "7zTypes.h"
 
@@ -22,7 +26,14 @@ public:
 
 	virtual ~FMemoryWriter() override = default;
 
-	/** Returns: result - the number of actually written bytes. (result < size) means error */
+	/**
+	 * @brief Writes bytes from the provided buffer to the output buffer.
+	 *
+	 * @param bufferBase Source buffer to write from.
+	 * @param offset Byte offset within bufferBase to start reading.
+	 * @param size Number of bytes to write.
+	 * @return Number of bytes actually written; less than size indicates an error.
+	 */
 	virtual int64 Write( const uint8* bufferBase, const int64 offset, int64 size ) override
 	{
 		if( Offset + size < Size )
@@ -37,7 +48,6 @@ public:
 
 	/**
 	 * @brief Returns the number of bytes written to the output buffer so far.
-	 *
 	 * @return Current write position as a byte offset from the start of the buffer.
 	 */
 	int64 GetOffset() const
@@ -64,7 +74,14 @@ public:
 
 	virtual ~FMemoryReader() override = default;
 
-	/** if (input(*size) != 0 && output(*size) == 0) means end_of_stream. (output(*size) < input(*size)) is allowed */
+	/**
+	 * @brief Reads bytes from the source memory block into the provided buffer.
+	 *
+	 * @param bufferBase Destination buffer to read into.
+	 * @param offset Byte offset within bufferBase to start writing.
+	 * @param size On entry: maximum bytes to read. On exit: bytes actually read; 0 signals end of stream.
+	 * @return SevenZipOK on success.
+	 */
 	virtual SevenZipResult Read( uint8* bufferBase, const int64 offset, int64* size ) override
 	{
 		if( Offset == Size )
@@ -90,7 +107,14 @@ private:
 };
 
 /**
- * The main LZMA2 compress function.
+ * @brief Compresses a block of memory using LZMA2.
+ *
+ * @param data Source and destination buffers with their sizes.
+ * @param encoderProperties Encoder configuration parameters.
+ * @param result Receives the compression result, property summary byte, and output length.
+ * @param alloc Memory allocator; pass nullptr to use the default allocator.
+ * @param progress Optional progress callback; pass nullptr to disable.
+ * @return SevenZipOK on success, or an error code.
  */
 SevenZipResult Lzma2Compress( const CLzmaData* data, CLzma2EncoderProperties* encoderProperties, CLzma2Result* result, MemoryInterface* alloc, ProgressInterface* progress )
 {
@@ -115,7 +139,12 @@ SevenZipResult Lzma2Compress( const CLzmaData* data, CLzma2EncoderProperties* en
 }
 
 /**
- * The main LZMA2 decompress function.
+ * @brief Decompresses a block of LZMA2-compressed memory.
+ *
+ * @param data Source and destination buffers with their sizes.
+ * @param result On entry: must contain the PropertySummary byte from compression. On exit: receives the decompressed length and result code.
+ * @param alloc Memory allocator; pass nullptr to use the default allocator.
+ * @return SevenZipOK on success, or an error code.
  */
 SevenZipResult Lzma2Decompress( CLzmaData* data, CLzma2Result* result, MemoryInterface* alloc )
 {

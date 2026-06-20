@@ -34,10 +34,8 @@ namespace Eternal.LZMA2SimpleCSTest
 
 		public static void SaveFile( string filename, uint8[] data )
 		{
-			using( FileStream outstream = new FileStream( filename, FileMode.Create, FileAccess.Write ) )
-			{
-				outstream.Write( data, 0, data.Length );
-			}
+			using FileStream outstream = new FileStream( filename, FileMode.Create, FileAccess.Write );
+			outstream.Write( data, 0, data.Length );
 		}
 
 		public static CLzmaData AllocateDecompressionBuffers( CLzmaData compressed, int64 compressedSize )

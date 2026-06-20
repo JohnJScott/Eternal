@@ -162,7 +162,7 @@ public:
 	virtual ~ProgressInterface() = default;
 
 	/** 
-	 * Returns: SZ_RESULT. (result != SZ_OK) means break.
+	 * Returns: SZ_RESULT. (result != SevenZipOK) means break.
 	 * Value UINT64_MAX for size means unknown value. 
 	 */
 	virtual SevenZipResult Progress( int64 inSize, int64 outSize ) = 0;

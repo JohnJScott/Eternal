@@ -1,5 +1,9 @@
-/* LzFind.c -- Match finder for LZ algorithms
-2021-11-29 : Igor Pavlov : Public domain */
+/**
+ * @file LzFind.cpp
+ * @brief Match finder for LZ algorithms.
+ *
+ * 2021-11-29 : Igor Pavlov : Public domain
+ */
 
 #include "7zTypes.h"
 
@@ -16,16 +20,14 @@ namespace MatchFinder
 	static constexpr uint32 MatchFinderHash3Size = 1u << 16;
 	static constexpr uint32 MatchFinderHash3Mask = MatchFinderHash3Size - 1u;
 
-	/*
-	  We use up to 3 crc values for hash:
-		crc0
-		crc1 << Shift_1
-		crc2 << Shift_2
-	  (Shift_1 = 5) and (Shift_2 = 10) is good tradeoff.
-	  Small values for Shift are not good for collision rate.
-	  Big value for Shift_2 increases the minimum size
-	  of hash table, that will be slow for small files.
-	*/
+	// We use up to 3 crc values for hash:
+	//   crc0
+	//   crc1 << Shift_1
+	//   crc2 << Shift_2
+	// (Shift_1 = 5) and (Shift_2 = 10) is good tradeoff.
+	// Small values for Shift are not good for collision rate.
+	// Big value for Shift_2 increases the minimum size
+	// of hash table, that will be slow for small files.
 	static constexpr int8 HashCrcShift1 = 5;
 
 	static constexpr int8 NumRefAlignmentBits = 4;
@@ -33,17 +35,17 @@ namespace MatchFinder
 	static constexpr int64 NumRefAlignmentTableMask = NumRefAlignmentTableSize - 1u;
 	static constexpr int64 NumRefAlignmentTableTruncate = ~NumRefAlignmentTableMask;
 
-	// alignment for memmove()
+	// Alignment for memmove()
 	static constexpr uint32 BlockMoveAlignSize = 1u << 7;
 	static constexpr uint32 BlockMoveAlignMask = BlockMoveAlignSize - 1u;
 	static constexpr uint32 BlockMoveAlignTruncate = ~BlockMoveAlignMask;
 
-	// alignment for block allocation
-	static constexpr uint32 BlockSizeAlignSize = 1 << 16;
+	// Alignment for block allocation
+	static constexpr uint32 BlockSizeAlignSize = 1u << 16;
 	static constexpr uint32 BlockSizeAlignMask = BlockSizeAlignSize - 1u;
 	static constexpr uint32 BlockSizeAlignTruncate = ~BlockSizeAlignMask;
 
-	// it's 1/256 from 4 GB dictinary
+	// It's 1/256 from 4 GB dictinary
 	static constexpr uint32 MinBlockSizeReserve = 1u << 24;
 
 	static_assert( MinBlockSizeReserve > BlockSizeAlignSize, "Block size reserve too small" );
@@ -69,6 +71,9 @@ uint32 CMatchFinder::CrcLookupTable[256] =
 	0xBDBDF21Cu, 0xCABAC28Au, 0x53B39330u, 0x24B4A3A6u, 0xBAD03605u, 0xCDD70693u, 0x54DE5729u, 0x23D967BFu, 0xB3667A2Eu, 0xC4614AB8u, 0x5D681B02u, 0x2A6F2B94u, 0xB40BBE37u, 0xC30C8EA1u, 0x5A05DF1Bu, 0x2D02EF8Du
 };
 
+/**
+ * @brief Frees the input buffer if it was internally allocated.
+ */
 void CMatchFinder::FreeBuffer()
 {
 	if( !DirectInput && BufferBase != nullptr )
@@ -78,6 +83,12 @@ void CMatchFinder::FreeBuffer()
 	}
 }
 
+/**
+ * @brief Allocates or reuses the input buffer with the given size.
+ *
+ * @param newBlockSize Desired buffer size in bytes.
+ * @return true if the buffer is allocated and ready; false if newBlockSize is zero or allocation fails.
+ */
 bool CMatchFinder::CreateBuffer( const uint32 newBlockSize )
 {
 	if( newBlockSize == 0u )
@@ -96,6 +107,9 @@ bool CMatchFinder::CreateBuffer( const uint32 newBlockSize )
 	return BufferBase != nullptr;
 }
 
+/**
+ * @brief Frees the combined hash and son array.
+ */
 void CMatchFinder::FreeHashes()
 {
 	if( Hash != nullptr )
@@ -105,6 +119,12 @@ void CMatchFinder::FreeHashes()
 	}
 }
 
+/**
+ * @brief Allocates (or reuses) the combined hash and son array.
+ *
+ * @param num Number of CLzRef elements required.
+ * @return true on success, false if allocation fails.
+ */
 bool CMatchFinder::AllocHashes( const int64 num )
 {
 	if( Hash == nullptr || NumRefs != num )
@@ -125,6 +145,9 @@ void CMatchFinder::Free()
 	FreeBuffer();
 }
 
+/**
+ * @brief Reads the next chunk of input data from the stream into the buffer.
+ */
 void CMatchFinder::ReadBlock()
 {
 	if( StreamEndWasReached || Result != SevenZipResult::SevenZipOK )
@@ -141,7 +164,7 @@ void CMatchFinder::ReadBlock()
 		DirectInputRemaining -= current_size;
 		StreamPosition += current_size;
 
-		if( DirectInputRemaining == 0u )
+		if( DirectInputRemaining == 0 )
 		{
 			StreamEndWasReached = true;
 		}
@@ -151,11 +174,11 @@ void CMatchFinder::ReadBlock()
 
 	// Handle stream input mode
 	const uint32 available_bytes = StreamPosition - Position;
-	int64 offset = BufferOffset + available_bytes;
+	const int64 offset = BufferOffset + available_bytes;
 	int64 size = BlockSize - BufferOffset - available_bytes;
 
 	// Check if buffer has space (should always be true in normal operation)
-	if( size == 0u )
+	if( size == 0 )
 	{
 		// This shouldn't happen if NeedMove() and MoveBlock() were called properly
 		return;
@@ -169,7 +192,7 @@ void CMatchFinder::ReadBlock()
 	}
 
 	// Check for end of stream
-	if( size == 0u )
+	if( size == 0 )
 	{
 		StreamEndWasReached = true;
 		return;
@@ -178,6 +201,9 @@ void CMatchFinder::ReadBlock()
 	StreamPosition += static_cast<uint32>( size );
 }
 
+/**
+ * @brief Shifts unprocessed data to the start of the buffer to make room for more input.
+ */
 void CMatchFinder::MoveBlock()
 {
 	const uint32 offset = static_cast<uint32>( BufferOffset ) - KeepSizeBefore;
@@ -189,14 +215,15 @@ void CMatchFinder::MoveBlock()
 	memmove( BufferBase, BufferBase + ( offset & MatchFinder::BlockMoveAlignTruncate ), move_size );
 }
 
-/* We call MoveBlock() before ReadBlock().
-   So MoveBlock() can be wasteful operation, if the whole input data
-   can fit in current block even without calling MoveBlock().
-   in important case where (dataSize <= HistorySize)
-	 condition (p->BlockSize > dataSize + p->KeepSizeAfter) is met
-	 So there is no MoveBlock() in that case case.
-*/
-
+/**
+ * @brief Returns true if the buffer is nearly exhausted and MoveBlock() should be called before ReadBlock().
+ * @remarks
+ * We call MoveBlock() before ReadBlock().
+ * So MoveBlock() can be wasteful operation, if the whole input data can fit in current block even without calling MoveBlock().
+ * In important case where (dataSize <= HistorySize) condition (p->BlockSize > dataSize + p->KeepSizeAfter) is met
+ * So there is no MoveBlock() in that case.
+ * @return true if a block move is needed; false in direct-input mode or when the stream has ended.
+ */
 bool CMatchFinder::NeedMove() const
 {
 	if( DirectInput )
@@ -212,29 +239,34 @@ bool CMatchFinder::NeedMove() const
 	return ( BlockSize - BufferOffset ) <= KeepSizeAfter;
 }
 
+/**
+ * @brief Computes the total buffer size required for the given history size.
+ *
+ * @param inHistorySize Requested history (dictionary) size in bytes.
+ * @return Required block size rounded up to the alignment granularity, or 0 if the combined keep-sizes would overflow.
+ */
 uint32 CMatchFinder::GetBlockSize( const uint32 inHistorySize ) const
 {
 	uint32 block_size = KeepSizeBefore + KeepSizeAfter;
 
-	// if 32-bit overflow
+	// If 32-bit overflow
 	if( KeepSizeBefore < inHistorySize || block_size < KeepSizeBefore )  
 	{
 		return 0u;
 	}
 
-	constexpr uint32 max_block_size = MatchFinder::BlockSizeAlignTruncate;
-	const uint32 remaining = max_block_size - block_size;
-	// do not overflow 32-bit here
+	const uint32 remaining = MatchFinder::BlockSizeAlignTruncate - block_size;
+	// Do not overflow 32-bit here
 	const uint32 reserve = ( block_size >> ( block_size < ( 1u << 30 ) ? 1 : 2 ) ) + ( 1u << 12 ) + MatchFinder::BlockMoveAlignSize + MatchFinder::BlockSizeAlignSize;
-	// we reject settings that will be slow
-	if( block_size >= max_block_size || remaining < MatchFinder::MinBlockSizeReserve ) 
+	// We reject settings that will be slow
+	if( block_size >= MatchFinder::BlockSizeAlignTruncate || remaining < MatchFinder::MinBlockSizeReserve )
 	{
 		return 0u;
 	}
 
 	if( reserve >= remaining )
 	{
-		block_size = max_block_size;
+		block_size = MatchFinder::BlockSizeAlignTruncate;
 	}
 	else
 	{
@@ -257,12 +289,12 @@ uint32 CMatchFinder::GetBlockSize( const uint32 inHistorySize ) const
  */
 bool CMatchFinder::Create( const uint32 inHistorySize, const uint32 keepAddBufferBefore, const uint32 inMatchMaxLen, uint32 keepAddBufferAfter )
 {
-	/* we need one additional byte in (mf->KeepSizeBefore),
-	   since we use MoveBlock() after (mf->Position++) and before dictionary using */
+	// We need one additional byte in (mf->KeepSizeBefore),
+	// since we use MoveBlock() after (mf->Position++) and before dictionary using
 	KeepSizeBefore = inHistorySize + keepAddBufferBefore + 1u;
 
 	keepAddBufferAfter += inMatchMaxLen;
-	/* we need (mf->KeepSizeAfter >= mf->NumHashBytes) */
+	// We need (mf->KeepSizeAfter >= mf->NumHashBytes)
 	keepAddBufferAfter = std::max( keepAddBufferAfter, 4u );
 
 	bool buffer_created = false;
@@ -317,7 +349,6 @@ bool CMatchFinder::Create( const uint32 inHistorySize, const uint32 keepAddBuffe
 
 		history_size += FixedHashSize;
 
-		HistorySize = inHistorySize;
 		HashSizeSum = history_size;
 		// it must be = (HistorySize + 1)
 		CyclicBufferSize = new_cyclic_buffer_size; 
@@ -344,6 +375,9 @@ bool CMatchFinder::Create( const uint32 inHistorySize, const uint32 keepAddBuffe
 	return false;
 }
 
+/**
+ * @brief Recalculates PositionLimit and LengthLimit based on the current stream state.
+ */
 void CMatchFinder::SetLimits()
 {
 	uint32 length = 0u - Position;
@@ -359,16 +393,15 @@ void CMatchFinder::SetLimits()
 	uint32 max_length = MatchMaxLength;
 	if( num_available_bytes > keep_size_after )
 	{
-		// we must limit exactly to KeepSizeAfter for ReadBlock
+		// We must limit exactly to KeepSizeAfter for ReadBlock
 		num_available_bytes -= keep_size_after; 
 	}
 	else if( num_available_bytes >= max_length )
 	{
-		// the limitation for (LengthLimit) update
-		// optimization : to reduce the number of checks
+		// The limitation for (LengthLimit) update
+		// Optimization : to reduce the number of checks
 		num_available_bytes -= max_length;   
 		num_available_bytes++;
-		// k = 1; // non-optimized version : for debug
 	}
 	else
 	{
@@ -387,7 +420,7 @@ void CMatchFinder::SetLimits()
 }
 
 /**
- * @brief Initialises the match finder state ready to process a new stream.
+ * @brief Resets all hash tables and counters, then reads the first block of input from the stream.
  */
 void CMatchFinder::Init()
 {
@@ -400,8 +433,8 @@ void CMatchFinder::Init()
 
 	BufferOffset = 0;
 
-	/* EMPTY_HASH_VALUE = 0 (Zero) is used in hash tables as NO-VALUE marker.
-	   the code in CMatchFinderMt expects (Position = 1) */
+	// EMPTY_HASH_VALUE = 0 (Zero) is used in hash tables as NO-VALUE marker.
+	// The code in CMatchFinderMt expects (Position = 1)
 	Position = 1u;
 	// it's smallest optimal value. do not change it
 	StreamPosition = 1u;
@@ -411,14 +444,17 @@ void CMatchFinder::Init()
 
 	ReadBlock();
 
-	/* if we init (CyclicBufferPosition = Position), then we can use one variable
-	   instead of both (CyclicBufferPosition) and (Position) : only before (CyclicBufferPosition) wrapping */
+	// if we init (CyclicBufferPosition = Position), then we can use one variable
+	// instead of both (CyclicBufferPosition) and (Position) : only before (CyclicBufferPosition) wrapping
 	CyclicBufferPosition = Position; // init with relation to (Position)
 	SetLimits();
 }
 
-// call MatchFinder_CheckLimits() only after (p->Position++) update
-
+/**
+ * @brief Refills input data and resets limits when the current position has reached PositionLimit.
+ *
+ * @note Call this only after incrementing Position.
+ */
 void CMatchFinder::CheckLimits()
 {
 	if( KeepSizeAfter == StreamPosition - Position )
@@ -440,16 +476,14 @@ void CMatchFinder::CheckLimits()
 	SetLimits();
 }
 
+/**
+ * @brief Advances all position counters by one and calls CheckLimits() if PositionLimit is reached.
+ */
 void CMatchFinder::MovePos()
 {
-	/* we go here at the end of stream data, when (avail < num_hash_bytes)
-	   We don't update sons[CyclicBufferPosition << BinaryTreeMode].
-	   So (sons) record will contain junk. And we cannot resume match searching
-	   to normal operation, even if we will provide more input data in buffer.
-	   p->sons[p->CyclicBufferPosition << p->BinaryTreeMode] = 0;  // EMPTY_HASH_VALUE
-	   if (p->BinaryTreeMode)
-		  p->sons[(p->CyclicBufferPosition << p->BinaryTreeMode) + 1] = 0;  // EMPTY_HASH_VALUE
-	*/
+	 // We go here at the end of stream data, when (avail < num_hash_bytes)
+	 // We don't update sons[CyclicBufferPosition << BinaryTreeMode].
+	 // So (sons) record will contain junk. And we cannot resume match searching to normal operation, even if we will provide more input data in buffer.
 	++CyclicBufferPosition;
 	BufferOffset++;
 	Position++;
@@ -460,7 +494,15 @@ void CMatchFinder::MovePos()
 	}
 }
 
-uint32 CMatchFinder::HashCalcInternal( uint32* h2, uint32* h3, uint32* hv ) const
+/**
+ * @brief Computes all three hash values for the four bytes at the current buffer position.
+ *
+ * @param h2 Receives the 2-byte hash index.
+ * @param h3 Receives the 3-byte hash index.
+ * @param hv Receives the full 4-byte hash index into the main hash table.
+ * @return The previous match position stored in the main hash table at hv.
+ */
+uint32 CMatchFinder::HashCalcInternal( uint32& h2, uint32& h3, uint32& hv ) const
 {
 	// Load all bytes once
 	const uint32 b0 = BufferBase[BufferOffset + 0];
@@ -470,26 +512,42 @@ uint32 CMatchFinder::HashCalcInternal( uint32* h2, uint32* h3, uint32* hv ) cons
 
 	// Compute intermediate hash values
 	const uint32 temp1 = CrcLookupTable[b0] ^ b1;
-	*h2 = temp1 & MatchFinder::MatchFinderHash2Mask;
+	h2 = temp1 & MatchFinder::MatchFinderHash2Mask;
 
 	const uint32 temp2 = temp1 ^ ( b2 << 8 );
-	*h3 = temp2 & MatchFinder::MatchFinderHash3Mask;
+	h3 = temp2 & MatchFinder::MatchFinderHash3Mask;
 
-	*hv = ( temp2 ^ ( CrcLookupTable[b3] << MatchFinder::HashCrcShift1 ) ) & HashMask;
+	hv = ( temp2 ^ ( CrcLookupTable[b3] << MatchFinder::HashCrcShift1 ) ) & HashMask;
 
-	return Hash[*hv + MatchFinder::MatchFinderHash2Size + MatchFinder::MatchFinderHash3Size];
+	return Hash[hv + MatchFinder::MatchFinderHash2Size + MatchFinder::MatchFinderHash3Size];
 }
 
-void CMatchFinder::HashUpdate( const uint32 h2, const uint32 h3, const uint32 hv, uint32* d2, uint32* d3 ) const
+/**
+ * @brief Updates all three hash table entries to the current position and returns the previous distances.
+ *
+ * @param h2 2-byte hash index.
+ * @param h3 3-byte hash index.
+ * @param hv Full hash index.
+ * @param d2 Receives the distance to the previous 2-byte match.
+ * @param d3 Receives the distance to the previous 3-byte match.
+ */
+void CMatchFinder::HashUpdate( const uint32 h2, const uint32 h3, const uint32 hv, uint32& d2, uint32& d3 ) const
 {
-	*d2 = Position - Hash[h2];
-	*d3 = Position - Hash[h3 + MatchFinder::MatchFinderHash2Size];
+	d2 = Position - Hash[h2];
+	d3 = Position - Hash[h3 + MatchFinder::MatchFinderHash2Size];
 
 	Hash[h2] = Position;
 	Hash[h3 + MatchFinder::MatchFinderHash2Size] = Position;
 	Hash[hv + MatchFinder::MatchFinderHash2Size + MatchFinder::MatchFinderHash3Size] = Position;
 }
 
+/**
+ * @brief Updates all three hash table entries to the current position without returning old distances.
+ *
+ * @param h2 2-byte hash index.
+ * @param h3 3-byte hash index.
+ * @param hv Full hash index.
+ */
 void CMatchFinder::HashSkip( const uint32 h2, const uint32 h3, const uint32 hv ) const
 {
 	Hash[h2] = Hash[h3 + MatchFinder::MatchFinderHash2Size]
@@ -497,24 +555,34 @@ void CMatchFinder::HashSkip( const uint32 h2, const uint32 h3, const uint32 hv )
 		= Position;
 }
 
-bool CMatchFinder::FindDistances( uint32* d2, const uint32 d3, const uint32 maxDistance, uint32* distances, uint32& matchCount ) const
+/**
+ * @brief Checks the 2-byte and 3-byte hash distances for short matches and records any found.
+ *
+ * @param d2           On entry: distance to the previous 2-byte match. May be updated to d3 if d2 misses but d3 hits.
+ * @param d3           Distance to the previous 3-byte match.
+ * @param maxDistance  Maximum valid distance (capped to CyclicBufferSize and Position).
+ * @param distances    Output array receiving (length, distance-1) pairs.
+ * @param matchCount   Number of elements already in distances; incremented in-place for each match recorded.
+ * @return true if no short match was found and the caller should continue to longer-match search; false if a match was confirmed.
+ */
+bool CMatchFinder::FindDistances( uint32& d2, const uint32 d3, const uint32 maxDistance, uint32* distances, uint32& matchCount ) const
 {
 	// Fast path: Check d2 match first (most common case)
-	if( *d2 < maxDistance && BufferBase[BufferOffset - *d2] == BufferBase[BufferOffset] )
+	if( d2 < maxDistance && BufferBase[BufferOffset - d2] == BufferBase[BufferOffset] )
 	{
 		// Write 2-byte match
 		distances[matchCount++] = 2u;
-		distances[matchCount++] = *d2 - 1u;
+		distances[matchCount++] = d2 - 1u;
 
 		// Check if 3rd byte matches
-		if( BufferBase[BufferOffset - *d2 + 2] != BufferBase[BufferOffset + 2] )
+		if( BufferBase[BufferOffset - d2 + 2] != BufferBase[BufferOffset + 2] )
 		{
 			// Try d3 as fallback
 			if( d3 < maxDistance && BufferBase[BufferOffset - d3] == BufferBase[BufferOffset] )
 			{
 				matchCount++;
 				distances[matchCount++] = d3 - 1u;
-				*d2 = d3;
+				d2 = d3;
 			}
 			else
 			{
@@ -530,7 +598,7 @@ bool CMatchFinder::FindDistances( uint32* d2, const uint32 d3, const uint32 maxD
 	{
 		matchCount++;
 		distances[matchCount++] = d3 - 1u;
-		*d2 = d3;
+		d2 = d3;
 		return false;
 	}
 
@@ -538,6 +606,13 @@ bool CMatchFinder::FindDistances( uint32* d2, const uint32 d3, const uint32 maxD
 	return true;
 }
 
+/**
+ * @brief Extends a short match at distance d2 as far as possible up to LengthLimit.
+ *
+ * @param d2        Distance (in bytes) to the candidate match position.
+ * @param maxLength Starting match length; the search begins at this offset.
+ * @return The longest confirmed match length, capped at LengthLimit.
+ */
 uint32 CMatchFinder::UpdateMaxLen( const uint32 d2, const uint32 maxLength ) const
 {
 	int64 index = BufferOffset + maxLength;
@@ -556,24 +631,35 @@ uint32 CMatchFinder::UpdateMaxLen( const uint32 d2, const uint32 maxLength ) con
 	return static_cast< uint32 >( index - BufferOffset );
 }
 
-uint32 CMatchFinder::CalcHash( uint32* d2, uint32* d3 ) const
+/**
+ * @brief Computes hashes for the current position, updates the hash tables, and returns the previous main match.
+ *
+ * @param d2 Receives the distance to the previous 2-byte match.
+ * @param d3 Receives the distance to the previous 3-byte match.
+ * @return The previous match position recorded in the main hash table.
+ */
+uint32 CMatchFinder::CalcHash( uint32& d2, uint32& d3 ) const
 {
 	uint32 h2, h3, hv;
 
-	uint32 current_match = HashCalcInternal( &h2, &h3, &hv );
+	uint32 current_match = HashCalcInternal( h2, h3, hv );
 	HashUpdate( h2, h3, hv, d2, d3 );
 	return current_match;
 }
 
+/**
+ * @brief Computes hashes for the current position, updates the hash tables without recording distances, and returns the previous main match.
+ *
+ * @return The previous match position recorded in the main hash table.
+ */
 uint32 CMatchFinder::CalcHashSkip() const
 {
 	uint32 h2, h3, hv;
 
-	uint32 current_match = HashCalcInternal( &h2, &h3, &hv );
+	uint32 current_match = HashCalcInternal( h2, h3, hv );
 	HashSkip( h2, h3, hv );
 	return current_match;
 }
-
 
 class CMatchFinderHashChain
 	: public CMatchFinder
@@ -586,11 +672,6 @@ public:
 
 	virtual ~CMatchFinderHashChain() override = default;
 
-	virtual bool IsBinaryTreeMode() const override
-	{
-		return false;
-	}
-
 	/**
 	 * @brief Finds matches at the current position using a hash chain and advances the position.
 	 *
@@ -599,35 +680,32 @@ public:
 	 */
 	virtual void GetMatches( uint32* baseDistances, uint32& pairCount ) override
 	{
-		if( LengthLimit < 4u )
+		if( LengthLimit >= 4u )
 		{
-			MovePos();
-			return;
-		}
+			uint32 d2;
+			uint32 d3;
+			const uint32 current_match = CalcHash( d2, d3 );
+			const uint32 max_distance = std::min( CyclicBufferSize, Position );
+			uint32 max_length = 3u;
 
-		uint32 d2;
-		uint32 d3;
-		const uint32 current_match = CalcHash( &d2, &d3 );
-		const uint32 max_distance = std::min( CyclicBufferSize, Position );
-		uint32 max_length = 3u;
-
-		// Try to find short distance matches
-		if( !FindDistances( &d2, d3, max_distance, baseDistances, pairCount ) )
-		{
-			// HC: just update max_length
-			max_length = UpdateMaxLen( d2, max_length );
-			baseDistances[pairCount - 2] = max_length;
-
-			if( max_length == LengthLimit )
+			// Try to find short distance matches
+			if( !FindDistances( d2, d3, max_distance, baseDistances, pairCount ) )
 			{
-				Hash[SonOffset + CyclicBufferPosition] = current_match;
-				MovePos();
-				return;
-			}
-		}
+				// HC: just update max_length
+				max_length = UpdateMaxLen( d2, max_length );
+				baseDistances[pairCount - 2] = max_length;
 
-		// Search for longer matches using hash chain
-		pairCount += GetMatchesSpec( current_match, baseDistances, pairCount, max_length );
+				if( max_length == LengthLimit )
+				{
+					Hash[SonOffset + CyclicBufferPosition] = current_match;
+					MovePos();
+					return;
+				}
+			}
+
+			// Search for longer matches using hash chain
+			pairCount += GetMatchesSpec( current_match, baseDistances, pairCount, max_length );
+		}
 
 		MovePos();
 	}
@@ -673,7 +751,23 @@ public:
 		}
 	}
 
+protected:
+	/** @brief Returns false; this class uses a hash chain, not a binary tree. */
+	virtual bool IsBinaryTreeMode() const override
+	{
+		return false;
+	}
+
 private:
+	/**
+	 * @brief Walks the hash chain from currentMatch to find all matches longer than maxLength.
+	 *
+	 * @param currentMatch Previous match position from the main hash table.
+	 * @param distances    Output array receiving (length, distance-1) pairs for each new match found.
+	 * @param pairCount    Number of elements already in distances; new entries are appended from this index.
+	 * @param maxLength    Minimum match length to record; only matches strictly longer than this are appended.
+	 * @return Number of new (length, distance-1) pairs appended to distances.
+	 */
 	uint32 GetMatchesSpec( uint32 currentMatch, uint32* distances, uint32 pairCount, uint32 maxLength ) const
 	{
 		uint32 cut_value = CutValue;
@@ -735,15 +829,9 @@ class CMatchFinderBinaryTree
 public:
 	CMatchFinderBinaryTree( MemoryInterface* alloc )
 		: CMatchFinder( alloc )
-	{
-	}
+	{}
 
 	virtual ~CMatchFinderBinaryTree() override = default;
-
-	virtual bool IsBinaryTreeMode() const override
-	{
-		return true;
-	}
 
 	/**
 	 * @brief Finds matches at the current position using a binary tree and advances the position.
@@ -753,35 +841,32 @@ public:
 	 */
 	virtual void GetMatches( uint32* baseDistances, uint32& pairCount ) override
 	{
-		if( LengthLimit < 4u )
+		if( LengthLimit >= 4u )
 		{
-			MovePos();
-			return;
-		}
+			uint32 d2;
+			uint32 d3;
+			const uint32 current_match = CalcHash( d2, d3 );
+			const uint32 max_distance = std::min( CyclicBufferSize, Position );
+			uint32 max_length = 3u;
 
-		uint32 d2;
-		uint32 d3;
-		const uint32 current_match = CalcHash( &d2, &d3 );
-		const uint32 max_distance = std::min( CyclicBufferSize, Position );
-		uint32 max_length = 3u;
-
-		// Try to find short distance matches
-		if( !FindDistances( &d2, d3, max_distance, baseDistances, pairCount ) )
-		{
-			// BT4: just update max_length
-			max_length = UpdateMaxLen( d2, max_length );
-			baseDistances[pairCount - 2] = max_length;
-
-			if( max_length == LengthLimit )
+			// Try to find short distance matches
+			if( !FindDistances( d2, d3, max_distance, baseDistances, pairCount ) )
 			{
-				SkipMatchesSpec( current_match );
-				MovePos();
-				return;
-			}
-		}
+				// BT4: just update max_length
+				max_length = UpdateMaxLen( d2, max_length );
+				baseDistances[pairCount - 2] = max_length;
 
-		// Search for longer matches using binary tree
-		pairCount += BinaryTreeTraverse( current_match, baseDistances, pairCount, max_length, true );
+				if( max_length == LengthLimit )
+				{
+					SkipMatchesSpec( current_match );
+					MovePos();
+					return;
+				}
+			}
+
+			// Search for longer matches using binary tree
+			pairCount += BinaryTreeTraverse( current_match, baseDistances, pairCount, max_length, true );
+		}
 
 		MovePos();
 	}
@@ -795,22 +880,34 @@ public:
 	{
 		do
 		{
-			if( LengthLimit < 4u )
+			if( LengthLimit >= 4u )
 			{
-				MovePos();
+				SkipMatchesSpec( CalcHashSkip() );
 			}
-			else
-			{
-				const uint32 current_match = CalcHashSkip();
-				SkipMatchesSpec( current_match );
 
-				MovePos();
-			}
+			MovePos();
 
 		} while( --length != 0u );
 	}
 
+protected:
+	/** @brief Returns true; this class uses a binary tree. */
+	virtual bool IsBinaryTreeMode() const override
+	{
+		return true;
+	}
+
 private:
+	/**
+	 * @brief Traverses the binary match tree from currentMatch, recording or skipping matches.
+	 *
+	 * @param currentMatch  Starting match position from the main hash table.
+	 * @param distances     Output array for (length, distance-1) pairs; may be nullptr when recordMatches is false.
+	 * @param pairCount     Number of elements already in distances; new entries are appended from this index.
+	 * @param maxLength     Minimum match length to record; only matches strictly longer than this are appended.
+	 * @param recordMatches If true, appends matching (length, distance-1) pairs to distances; if false, only updates the tree.
+	 * @return Number of new (length, distance-1) pairs appended to distances (0 when recordMatches is false).
+	 */
 	uint32 BinaryTreeTraverse( uint32 currentMatch, uint32* distances, uint32 pairCount, uint32 maxLength, bool recordMatches ) const
 	{
 		uint32 cut_value = CutValue;
@@ -898,6 +995,11 @@ private:
 		return match_count;
 	}
 
+	/**
+	 * @brief Traverses the binary tree from currentMatch to keep it consistent without recording any matches.
+	 *
+	 * @param currentMatch Starting match position from the main hash table.
+	 */
 	void SkipMatchesSpec( uint32 currentMatch ) const
 	{
 		BinaryTreeTraverse( currentMatch, nullptr, 0u, 0u, false );

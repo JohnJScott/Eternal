@@ -1,5 +1,9 @@
-/* Lzma2Dec.c -- LZMA2 Decoder
-2021-02-09 : Igor Pavlov : Public domain */
+/**
+ * @file Lzma2Dec.cpp
+ * @brief LZMA2 Decoder.
+ *
+ * 2021-02-09 : Igor Pavlov : Public domain
+ */
 
 #include "7zTypes.h"
 
@@ -9,19 +13,17 @@
 
 #include <algorithm>
 
-/*
-00000000  -  End of data
-00000001 U U  -  Decompressed, reset Dictionary, need reset State and set new DecoderProperties
-00000010 U U  -  Decompressed, no reset
-100uuuuu U U P P  -  LZMA, no reset
-101uuuuu U U P P  -  LZMA, reset State
-110uuuuu U U P P S  -  LZMA, reset State + set new DecoderProperties
-111uuuuu U U P P S  -  LZMA, reset State + set new DecoderProperties, reset Dictionary
-
-  u, U - Unpack Size
-  P - Pack Size
-  S - Props
-*/
+// 00000000  -  End of data
+// 00000001 U U  -  Decompressed, reset Dictionary, need reset State and set new DecoderProperties
+// 00000010 U U  -  Decompressed, no reset
+// 100uuuuu U U P P  -  LZMA, no reset
+// 101uuuuu U U P P  -  LZMA, reset State
+// 110uuuuu U U P P S  -  LZMA, reset State + set new DecoderProperties
+// 111uuuuu U U P P S  -  LZMA, reset State + set new DecoderProperties, reset Dictionary
+//
+//   u, U - Unpack Size
+//   P - Pack Size
+//   S - Props
 
 enum class Lzma2State
 	: int8
@@ -46,7 +48,13 @@ public:
 	{
 	}
 
-	/** Decode Lzma2 byte summary to 5 byte array of Lzma1 properties */
+	/**
+	 * @brief Decodes a one-byte LZMA2 property summary to the standard 5-byte LZMA1 properties array.
+	 *
+	 * @param prop              One-byte LZMA2 property summary encoding the dictionary size.
+	 * @param decoderProperties Output buffer (at least 5 bytes) to receive the decoded properties.
+	 * @return SevenZipOK on success, SevenZipErrorUnsupported if prop is out of range.
+	 */
 	static SevenZipResult DecodeLegacyProperties( uint8 prop, uint8* decoderProperties );
 	SevenZipResult DecodeToDictionary( const int64 dictLimit, const uint8* compressed, int64& compressedLength, const LzmaFinishMode finishMode, LzmaStatus& status );
 
@@ -81,6 +89,13 @@ SevenZipResult Lzma2Dec::DecodeLegacyProperties( uint8 prop, uint8* decoderPrope
 	return SevenZipResult::SevenZipOK;
 }
 
+/**
+ * @brief Decodes a single LZMA2 properties byte into the decoder's PositionBits, LiteralContextBits,
+ *        and LiteralPositionBits fields, and updates PositionMask and LiteralMask.
+ *
+ * @param stateByte The LZMA2 properties byte encoding lc, pb, and lp as (pb * 5 + lp) * 9 + lc.
+ * @return Lzma2StateData on success, or Lzma2StateError if the byte is out of range or lc + lp exceeds MaxCombinedLiteralBits.
+ */
 Lzma2State Lzma2Dec::DecodeProperties( uint8 stateByte )
 {
 	if( stateByte >= 9u * 5u * 5u )
@@ -101,12 +116,18 @@ Lzma2State Lzma2Dec::DecodeProperties( uint8 stateByte )
 	Decoder.DecoderProperties.LiteralContextBits = static_cast< uint8 >( literal_context_bits & 0xff );
 	Decoder.DecoderProperties.LiteralPositionBits = static_cast< uint8 >( literal_position_bits & 0xff );
 
-	Decoder.PositionMask = ( 1u << position_bits ) - 1u;
-	Decoder.LiteralMask = ( 256u << literal_position_bits ) - ( 256u >> literal_context_bits );
+	Decoder.PositionMask = static_cast< uint32 >( ( 1u << position_bits ) - 1u );
+	Decoder.LiteralMask = static_cast< uint32 >( ( 256u << literal_position_bits ) - ( 256u >> literal_context_bits ) );
 	return Lzma2State::Lzma2StateData;
 }
 
-// ELzma2State
+/**
+ * @brief Advances the LZMA2 block-header state machine by one byte, driving through
+ *        Control → Unpack0 → Unpack1 → Pack0 → Pack1 → Properties → Data transitions.
+ *
+ * @param stateByte The next byte of the LZMA2 block header.
+ * @return The next Lzma2State, or Lzma2StateFinished / Lzma2StateError as appropriate.
+ */
 Lzma2State Lzma2Dec::UpdateState( uint8 stateByte )
 {
 	switch( StateControl )
@@ -137,7 +158,7 @@ Lzma2State Lzma2Dec::UpdateState( uint8 stateByte )
 			}
 
 			NeedInitLevel = 0;
-			UnpackSize = ( stateByte & 31u ) << 16;
+			UnpackSize = static_cast<uint32>( ( stateByte & 31u ) << 16 );
 		}
 
 		return Lzma2State::Lzma2StateUnpack0;
@@ -243,8 +264,8 @@ SevenZipResult Lzma2Dec::DecodeToDictionary( const int64 dictLimit, const uint8*
 
 			if( StateControl == Lzma2State::Lzma2StateData )
 			{
-				const bool initDic = ( Control == Lzma::Lzma2ControlCopyResetDict );
-				Decoder.InitDictAndState( initDic, false );
+				const bool init_dic = ( Control == Lzma::Lzma2ControlCopyResetDict );
+				Decoder.InitDictAndState( init_dic, false );
 			}
 
 			in_current = std::min(in_current, out_current);
@@ -359,7 +380,7 @@ SevenZipResult Lzma2Decode( uint8* decompressed, int64& decompressedLength, cons
 		return result;
 	}
 
-	// Allocate the probabitilies based on the decompression parameters.
+	// Allocate the probabilities based on the decompression parameters.
 	result = dec2.Decoder.AllocateProbabilities();
 	if( result != SevenZipResult::SevenZipOK )
 	{

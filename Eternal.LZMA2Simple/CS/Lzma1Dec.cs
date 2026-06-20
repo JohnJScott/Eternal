@@ -21,9 +21,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 		LzmaFinishModeEnd
 	};
 
-	/**
-	 * ELzmaStatus is used only as output value for function call
-	 */
+	/// <summary>ELzmaStatus is used only as output value for function call.</summary>
 	public enum ELzmaStatus
 		: int8
 	{
@@ -51,35 +49,31 @@ namespace Eternal.LZMA2SimpleCS.CS
 		DummyOk
 	};
 
-	public class LzmaDecoder
+	public static class LzmaDecoder
 	{
-		LzmaDecoder()
-		{
-		}
+		public const uint32 LzmaRequiredInput = 20;
 
-		public static readonly uint32 LzmaRequiredInput = 20;
+		private const int8 MaxNumPositionBits = 4;
+		public const uint32 MaxNumPositionStates = 1u << MaxNumPositionBits;
+		public const uint32 NumLengthProbabilities = (MaxNumPositionStates << (Lzma.LengthEncoderNumLowBits + 1)) + Lzma.LengthEncoderNumHighSymbols;
 
-		public static readonly int8 MaxNumPositionBits = 4;
-		public static readonly uint32 MaxNumPositionStates = 1u << MaxNumPositionBits;
-		public static readonly uint32 NumLengthProbabilities = ( MaxNumPositionStates << ( Lzma.LengthEncoderNumLowBits + 1 ) ) + Lzma.LengthEncoderNumHighSymbols;
+		private const uint32 NumExtendedStates = 16u;
+		public const uint32 NumStatePositionProbabilities = NumExtendedStates << MaxNumPositionBits;
+		public const uint32 NumLiteralStates = 7u;
+		public const uint32 MinMatchLength = 2u;
 
-		public static readonly uint32 NumExtendedStates = 16u;
-		public static readonly uint32 NumStatePositionProbabilities = NumExtendedStates << MaxNumPositionBits;
-		public static readonly uint32 NumLiteralStates = 7u;
-		public static readonly uint32 MinMatchLength = 2u;
+		public const uint32 MaxNormalMatchLength = MinMatchLength + ( Lzma.LengthEncoderNumLowSymbols << 1 ) + Lzma.LengthEncoderNumHighSymbols;
+		public const uint32 NormalMatchLengthErrorData = 1u << 9;
+		public const uint32 NormalMatchLengthErrorFail = NormalMatchLengthErrorData - 1u;
 
-		public static readonly uint32 MaxNormalMatchLength = MinMatchLength + ( Lzma.LengthEncoderNumLowSymbols << 1 ) + Lzma.LengthEncoderNumHighSymbols;
-		public static readonly uint32 NormalMatchLengthErrorData = 1u << 9;
-		public static readonly uint32 NormalMatchLengthErrorFail = NormalMatchLengthErrorData - 1u;
+		public const uint32 IsMatchBase = Lzma.NumFullDistancesSize + NumStatePositionProbabilities + (NumLengthProbabilities << 1 );
+		public const uint32 IsRepeat = IsMatchBase + NumStatePositionProbabilities + Lzma.AlignmentTableSize;
 
-		public static readonly uint32 IsMatchBase = Lzma.NumFullDistancesSize + NumStatePositionProbabilities + (NumLengthProbabilities << 1 );
-		public static readonly uint32 IsRepeat = IsMatchBase + NumStatePositionProbabilities + Lzma.AlignmentTableSize;
-
-		public static readonly uint32 MaxBound = ( ( UInt32.MaxValue >> Lzma.NumBitModelTotalBits ) << ( Lzma.NumBitModelTotalBits - 1 ) );
-		public static readonly uint32 BadRepeatCode = ( MaxBound + ( ( ( UInt32.MaxValue - MaxBound ) >> Lzma.NumBitModelTotalBits ) << ( Lzma.NumBitModelTotalBits - 1 ) ) );
+		private const uint32 MaxBound = ( ( uint32.MaxValue >> Lzma.NumBitModelTotalBits ) << ( Lzma.NumBitModelTotalBits - 1 ) );
+		public const uint32 BadRepeatCode = ( MaxBound + ( ( ( uint32.MaxValue - MaxBound ) >> Lzma.NumBitModelTotalBits ) << ( Lzma.NumBitModelTotalBits - 1 ) ) );
 	}
 
-	/* ---------- LZMA Parameters ---------- */
+	// ---------- LZMA Parameters ----------
 
 	internal struct CParameters
 	{
@@ -93,7 +87,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 		public uint32 Bit;
 	}
 
-	internal class Lzma1Dec
+	internal class Lzma1Dec( uint8[] decompressed )
 	{
 		internal struct CLzmaDecoderProperties
 		{
@@ -111,7 +105,6 @@ namespace Eternal.LZMA2SimpleCS.CS
 		public uint32 PositionMask;
 		public uint32 LiteralMask;
 
-		private readonly uint8[] Dictionary;
 		private readonly uint32[] RepeatDistances = new uint32[Lzma.NumRepeats];
 
 		private CParameters Parameters = new CParameters();
@@ -123,61 +116,50 @@ namespace Eternal.LZMA2SimpleCS.CS
 		private uint32 NumProbabilities;
 		private uint32 TempBufferSize;
 
-		/*
-		p->RemainingLength : shows status of LZMA decoder:
-			< MaxNormalMatchLength  : the number of bytes to be copied with (p->rep0) Offset
-			= MaxNormalMatchLength  : the LZMA stream was finished with end mark
-			= MaxNormalMatchLength + 1  : need init Range coder
-			= MaxNormalMatchLength + 2  : need init Range coder and State
-			= NormalMatchLengthErrorFail                : Internal Code Failure
-			= NormalMatchLengthErrorData + [0 ... 273]  : LZMA Data Error
-		*/
+		// p->RemainingLength : shows status of LZMA decoder:
+		//   < MaxNormalMatchLength  : the number of bytes to be copied with (p->rep0) Offset
+		//   = MaxNormalMatchLength  : the LZMA stream was finished with end mark
+		//   = MaxNormalMatchLength + 1  : need init Range coder
+		//   = MaxNormalMatchLength + 2  : need init Range coder and State
+		//   = NormalMatchLengthErrorFail                : Internal Code Failure
+		//   = NormalMatchLengthErrorData + [0 ... 273]  : LZMA Data Error
 
-		/* ---------- LZMA_DECODE_REAL ---------- */
-		/*
-		LzmaDec_DecodeRealInternal() can be implemented in external ASM file.
-		3 - is the Code compatibility version of that function for check at link time.
-		*/
+		// ---------- LZMA_DECODE_REAL ----------
+		// LzmaDec_DecodeRealInternal() can be implemented in external ASM file.
+		// 3 - is the Code compatibility version of that function for check at link time.
 
-		/*
-		LzmaDec_DecodeRealInternal()
-		In:
-		  RangeCoder is normalized
-		  if (p->DictionaryPosition == limit)
-		  {
-			LzmaDec_TryDummy() was called before to exclude LITERAL and MATCH-REP cases.
-			So first Symbol can be only MATCH-NON-REP. And if that MATCH-NON-REP Symbol
-			is not END_OF_PAYALOAD_MARKER, then the function doesn't write any byte to dictionary,
-			the function returns SZ_OK, and the caller can use (p->RemainingLength) and (p->RepeatDistances[0]) later.
-		  }
-
-		Processing:
-		  The first LZMA Symbol will be decoded in any case.
-		  All main checks for limits are at the end of main loop,
-		  It decodes additional LZMA-symbols while (p->DataBuffer < bufLimit && DictionaryPosition < limit),
-		  RangeCoder is still without last normalization when (p->DataBuffer < bufLimit) is being checked.
-		  But if (p->DataBuffer < bufLimit), the caller provided at least (LzmaRequiredInput + 1) bytes for
-		  next iteration  before limit (bufLimit + LzmaRequiredInput),
-		  that is enough for worst case LZMA Symbol with one additional RangeCoder normalization for one Bit.
-		  So that function never reads bufLimit [LzmaRequiredInput] byte.
-
-		Out:
-		  RangeCoder is normalized
-		  Result:
-			SZ_OK - OK
-			  p->RemainingLength:
-				< MaxNormalMatchLength : the number of bytes to be copied with (p->RepeatDistances[0]) Offset
-				= MaxNormalMatchLength : the LZMA stream was finished with end mark
-
-			SZ_ERROR_DATA - error, when the MATCH-Symbol refers out of dictionary
-			  p->RemainingLength : undefined
-			  p->RepeatDistances[*]    : undefined
-		*/
-
-		public Lzma1Dec( uint8[] decompressed )
-		{
-			Dictionary = decompressed;
-		}
+		// LzmaDec_DecodeRealInternal()
+		// In:
+		//   RangeCoder is normalized
+		//   if (p->DictionaryPosition == limit)
+		//   {
+		//     LzmaDec_TryDummy() was called before to exclude LITERAL and MATCH-REP cases.
+		//     So first Symbol can be only MATCH-NON-REP. And if that MATCH-NON-REP Symbol
+		//     is not END_OF_PAYALOAD_MARKER, then the function doesn't write any byte to dictionary,
+		//     the function returns SevenZipOK, and the caller can use (p->RemainingLength) and (p->RepeatDistances[0]) later.
+		//   }
+		//
+		// Processing:
+		//   The first LZMA Symbol will be decoded in any case.
+		//   All main checks for limits are at the end of main loop,
+		//   It decodes additional LZMA-symbols while (p->DataBuffer < bufLimit && DictionaryPosition < limit),
+		//   RangeCoder is still without last normalization when (p->DataBuffer < bufLimit) is being checked.
+		//   But if (p->DataBuffer < bufLimit), the caller provided at least (LzmaRequiredInput + 1) bytes for
+		//   next iteration  before limit (bufLimit + LzmaRequiredInput),
+		//   that is enough for worst case LZMA Symbol with one additional RangeCoder normalization for one Bit.
+		//   So that function never reads bufLimit [LzmaRequiredInput] byte.
+		//
+		// Out:
+		//   RangeCoder is normalized
+		//   Result:
+		//     SevenZipOK - OK
+		//       p->RemainingLength:
+		//         < MaxNormalMatchLength : the number of bytes to be copied with (p->RepeatDistances[0]) Offset
+		//         = MaxNormalMatchLength : the LZMA stream was finished with end mark
+		//
+		//     SZ_ERROR_DATA - error, when the MATCH-Symbol refers out of dictionary
+		//       p->RemainingLength : undefined
+		//       p->RepeatDistances[*]    : undefined
 
 		/// <summary>
 		/// Copies decompressed bytes into the dictionary and updates internal position counters.
@@ -187,17 +169,24 @@ namespace Eternal.LZMA2SimpleCS.CS
 		/// <param name="size">Number of bytes to copy.</param>
 		public void UpdateWithDecompressed( uint8[] src, int64 offset, int64 size )
 		{
-			Array.Copy( src, offset, Dictionary, DictionaryPosition, size );
+			Array.Copy( src, offset, decompressed, DictionaryPosition, size );
 			DictionaryPosition += size;
 			if( ( CheckDictionarySize == 0u ) && ( DecoderProperties.DictionarySize - ProcessedPosition <= size ) )
 			{
 				CheckDictionarySize = DecoderProperties.DictionarySize;
 			}
 
-			ProcessedPosition += ( uint32 )( size & UInt32.MaxValue );
+			ProcessedPosition += ( uint32 )( size & uint32.MaxValue );
 		}
 
-		private ELzmaDummy UpdateRangeDummy( ref CParameters parameters, int64 bufLimitOffset )
+		/// <summary>
+		/// Normalizes the range coder in read-ahead (dummy) mode.
+		/// Returns DummyInputEof if normalization would require consuming a byte past bufLimitOffset.
+		/// </summary>
+		/// <param name="parameters">Range-coder state; Range, Code, and DataBufferOffset may be updated.</param>
+		/// <param name="bufLimitOffset">Absolute input offset beyond which no byte may be consumed.</param>
+		/// <returns>DummyOk on success, DummyInputEof if insufficient input remains.</returns>
+		private static ELzmaDummy UpdateRangeDummy( ref CParameters parameters, int64 bufLimitOffset )
 		{
 			if( parameters.Range < Lzma.MaxRangeValue )
 			{
@@ -213,7 +202,11 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return ELzmaDummy.DummyOk;
 		}
 
-		private void UpdateRange( ref CParameters parameters )
+		/// <summary>
+		/// Normalizes the range coder by consuming one input byte when Range falls below MaxRangeValue.
+		/// </summary>
+		/// <param name="parameters">Range-coder state; Range, Code, and DataBufferOffset are updated in place.</param>
+		private static void UpdateRange( ref CParameters parameters )
 		{
 			if( parameters.Range < Lzma.MaxRangeValue )
 			{
@@ -222,19 +215,25 @@ namespace Eternal.LZMA2SimpleCS.CS
 			}
 		}
 
-		private bool SimpleIterate( ref CParameters parameters, ref CProbability probability )
+		/// <summary>
+		/// Decodes one range-coder bit and updates the probability entry via the LZMA adaptive model.
+		/// </summary>
+		/// <param name="parameters">Range-coder state; Range and Code are updated.</param>
+		/// <param name="probability">Probability entry; updated to reflect the decoded bit.</param>
+		/// <returns>true if the bit decoded to 0, false if it decoded to 1.</returns>
+		private static bool SimpleIterate( ref CParameters parameters, ref CProbability probability )
 		{
 			uint32 bound = ( parameters.Range >> Lzma.NumBitModelTotalBits ) * probability;
 			if( parameters.Code < bound )
 			{
-				/* Bit = 0 path */
+				// Bit = 0 path
 				parameters.Range = bound;
 				probability = ( CProbability )( probability + ( ( Lzma.BitModelTableSize - probability ) >> Lzma.NumMoveBits ) );
 				return true;
 			}
 			else
 			{
-				/* Bit = 1 path */
+				// Bit = 1 path
 				parameters.Range -= bound;
 				parameters.Code -= bound;
 				probability = ( CProbability )( probability - ( probability >> Lzma.NumMoveBits ) );
@@ -242,19 +241,26 @@ namespace Eternal.LZMA2SimpleCS.CS
 			}
 		}
 
-		private bool DummySimpleIterate( ref CParameters parameters, ref CProbability probability )
+		/// <summary>
+		/// Decodes one range-coder bit without modifying the probability table.
+		/// Used during read-ahead probing so that probability state is not disturbed.
+		/// </summary>
+		/// <param name="parameters">Range-coder state; Range and Code are updated.</param>
+		/// <param name="probability">Probability value used for the bound calculation (read-only).</param>
+		/// <returns>true if the bit decoded to 0, false if it decoded to 1.</returns>
+		private static bool DummySimpleIterate( ref CParameters parameters, CProbability probability )
 		{
 			uint32 bound = ( parameters.Range >> Lzma.NumBitModelTotalBits ) * probability;
 			if( parameters.Code < bound )
 			{
-				/* Bit = 0 path */
+				// Bit = 0 path
 				parameters.Range = bound;
 				//SetProbabilityPositive();
 				return true;
 			}
 			else
 			{
-				/* Bit = 1 path */
+				// Bit = 1 path
 				parameters.Range -= bound;
 				parameters.Code -= bound;
 				//SetProbabilityNegative();
@@ -263,17 +269,21 @@ namespace Eternal.LZMA2SimpleCS.CS
 		}
 
 		/// <summary>
-		/// Identical to LzmaDec_Iterate, but does not write any data.
+		/// Read-ahead variant of DecodeTreeBit: advances Symbol in the binary tree
+		/// without modifying any probability entry.
 		/// </summary>
-		/// <returns></returns>
-		private ELzmaDummy DummyDecodeTreeBit( ref CParameters parameters, ref CProbability probability, int64 bufLimitOffset )
+		/// <param name="parameters">Range-coder state; Symbol is updated.</param>
+		/// <param name="probability">Probability value (read-only).</param>
+		/// <param name="bufLimitOffset">Input limit for dummy range normalization.</param>
+		/// <returns>DummyOk on success, DummyInputEof if input is exhausted.</returns>
+		private static ELzmaDummy DummyDecodeTreeBit( ref CParameters parameters, CProbability probability, int64 bufLimitOffset )
 		{
 			if( UpdateRangeDummy( ref parameters, bufLimitOffset ) == ELzmaDummy.DummyInputEof )
 			{
 				return ELzmaDummy.DummyInputEof;
 			}
 
-			if( DummySimpleIterate( ref parameters, ref probability ) )
+			if( DummySimpleIterate( ref parameters, probability ) )
 			{
 				parameters.Symbol <<= 1;
 			}
@@ -287,17 +297,21 @@ namespace Eternal.LZMA2SimpleCS.CS
 		}
 
 		/// <summary>
-		/// Identical to LzmaDec_Iterate, but does not write any data.
+		/// Read-ahead variant of DecodeMatchedLiteralBit: decodes one matched-literal
+		/// tree step without modifying any probability entry.
 		/// </summary>
-		/// <returns></returns>
-		private ELzmaDummy DummyDecodeMatchedLiteralBit( ref CParameters parameters, ref CProbability probability, int64 bufLimitOffset )
+		/// <param name="parameters">Range-coder state; Symbol and Offset are updated.</param>
+		/// <param name="probability">Probability value (read-only).</param>
+		/// <param name="bufLimitOffset">Input limit for dummy range normalization.</param>
+		/// <returns>DummyOk on success, DummyInputEof if input is exhausted.</returns>
+		private static ELzmaDummy DummyDecodeMatchedLiteralBit( ref CParameters parameters, CProbability probability, int64 bufLimitOffset )
 		{
 			if( UpdateRangeDummy( ref parameters, bufLimitOffset ) == ELzmaDummy.DummyInputEof )
 			{
 				return ELzmaDummy.DummyInputEof;
 			}
 
-			if( DummySimpleIterate( ref parameters, ref probability ) )
+			if( DummySimpleIterate( ref parameters, probability ) )
 			{
 				parameters.Symbol <<= 1;
 				parameters.Offset ^= parameters.Bit;
@@ -312,17 +326,21 @@ namespace Eternal.LZMA2SimpleCS.CS
 		}
 
 		/// <summary>
-		/// Identical to LzmaDec_Iterate, but does not write any data.
+		/// Read-ahead variant of DecodePositionModelBit: decodes one position-model
+		/// tree step without modifying any probability entry.
 		/// </summary>
-		/// <returns></returns>
-		private ELzmaDummy DummyDecodePositionModelBit( ref CParameters parameters, ref CProbability probability, int64 bufLimitOffset )
+		/// <param name="parameters">Range-coder state; Symbol and Offset are updated.</param>
+		/// <param name="probability">Probability value (read-only).</param>
+		/// <param name="bufLimitOffset">Input limit for dummy range normalization.</param>
+		/// <returns>DummyOk on success, DummyInputEof if input is exhausted.</returns>
+		private static ELzmaDummy DummyDecodePositionModelBit( ref CParameters parameters, CProbability probability, int64 bufLimitOffset )
 		{
 			if( UpdateRangeDummy( ref parameters, bufLimitOffset ) == ELzmaDummy.DummyInputEof )
 			{
 				return ELzmaDummy.DummyInputEof;
 			}
 
-			if( DummySimpleIterate( ref parameters, ref probability ) )
+			if( DummySimpleIterate( ref parameters, probability ) )
 			{
 				parameters.Symbol += parameters.Offset;
 				parameters.Offset <<= 1;
@@ -337,26 +355,36 @@ namespace Eternal.LZMA2SimpleCS.CS
 		}
 
 		/// <summary>
-		/// Identical to LzmaDec_Iterate, but does not write any data.
+		/// Decodes a single range-coder bit and discards the result.
+		/// Advances the range coder past a bit position without accumulating symbol state.
 		/// </summary>
-		/// <returns></returns>
-		private ELzmaDummy DummyConsumeBit( ref CParameters parameters, ref CProbability probability, int64 bufLimitOffset )
+		/// <param name="parameters">Range-coder state; Range and Code are updated.</param>
+		/// <param name="probability">Probability value (read-only).</param>
+		/// <param name="bufLimitOffset">Input limit for dummy range normalization.</param>
+		/// <returns>DummyOk on success, DummyInputEof if input is exhausted.</returns>
+		private static ELzmaDummy DummyConsumeBit( ref CParameters parameters, CProbability probability, int64 bufLimitOffset )
 		{
 			if( UpdateRangeDummy( ref parameters, bufLimitOffset ) == ELzmaDummy.DummyInputEof )
 			{
 				return ELzmaDummy.DummyInputEof;
 			}
 
-			DummySimpleIterate( ref parameters, ref probability );
+			DummySimpleIterate( ref parameters, probability );
 
 			return ELzmaDummy.DummyOk;
 		}
 
-		private void DecodeTreeBit( ref CParameters parameters, ref CProbability prob )
+		/// <summary>
+		/// Decodes one bit in a binary tree, updating Symbol and the probability entry.
+		/// Symbol is shifted left on each call; a 1 bit additionally increments Symbol by 1.
+		/// </summary>
+		/// <param name="parameters">Range-coder state.</param>
+		/// <param name="probability">Probability entry updated via the LZMA adaptive model.</param>
+		private static void DecodeTreeBit( ref CParameters parameters, ref CProbability probability )
 		{
 			UpdateRange( ref parameters );
 
-			if( SimpleIterate( ref parameters, ref prob ) )
+			if( SimpleIterate( ref parameters, ref probability ) )
 			{
 				parameters.Symbol <<= 1;
 			}
@@ -367,11 +395,18 @@ namespace Eternal.LZMA2SimpleCS.CS
 			}
 		}
 
-		private void DecodeMatchedLiteralBit( ref CParameters parameters, ref CProbability prob )
+		/// <summary>
+		/// Decodes one bit in a matched-literal binary tree.
+		/// On a 0 bit, Symbol is shifted left and Offset is XOR-ed with Bit.
+		/// On a 1 bit, Symbol is shifted left and incremented.
+		/// </summary>
+		/// <param name="parameters">Range-coder state; Symbol and Offset are updated.</param>
+		/// <param name="probability">Probability entry updated via the LZMA adaptive model.</param>
+		private static void DecodeMatchedLiteralBit( ref CParameters parameters, ref CProbability probability )
 		{
 			UpdateRange( ref parameters );
 
-			if( SimpleIterate( ref parameters, ref prob ) )
+			if( SimpleIterate( ref parameters, ref probability ) )
 			{
 				parameters.Symbol <<= 1;
 				parameters.Offset ^= parameters.Bit;
@@ -383,11 +418,18 @@ namespace Eternal.LZMA2SimpleCS.CS
 			}
 		}
 
-		private void DecodeReverseBit( ref CParameters parameters, ref CProbability prob )
+		/// <summary>
+		/// Decodes one bit in a reverse-coded position tree.
+		/// On a 0 bit, Symbol is incremented by Offset.
+		/// On a 1 bit, Offset is doubled first and then added to Symbol.
+		/// </summary>
+		/// <param name="parameters">Range-coder state; Symbol is updated.</param>
+		/// <param name="probability">Probability entry updated via the LZMA adaptive model.</param>
+		private static void DecodeReverseBit( ref CParameters parameters, ref CProbability probability )
 		{
 			UpdateRange( ref parameters );
 
-			if( SimpleIterate( ref parameters, ref prob ) )
+			if( SimpleIterate( ref parameters, ref probability ) )
 			{
 				parameters.Symbol += parameters.Offset;
 			}
@@ -397,21 +439,34 @@ namespace Eternal.LZMA2SimpleCS.CS
 			}
 		}
 
-		private void DecodeReverseBitLast( ref CParameters parameters, ref CProbability prob )
+		/// <summary>
+		/// Decodes the final bit of a reverse-coded alignment symbol.
+		/// On a 0 bit, subtracts 8 from Symbol to remove the tree-walk sentinel.
+		/// </summary>
+		/// <param name="parameters">Range-coder state; Symbol is conditionally adjusted.</param>
+		/// <param name="probability">Probability entry updated via the LZMA adaptive model.</param>
+		private static void DecodeReverseBitLast( ref CParameters parameters, ref CProbability probability )
 		{
 			UpdateRange( ref parameters );
 
-			if( SimpleIterate( ref parameters, ref prob ) )
+			if( SimpleIterate( ref parameters, ref probability ) )
 			{
 				parameters.Symbol -= 8;
 			}
 		}
 
-		private void DecodePositionModelBit( ref CParameters parameters, ref CProbability prob )
+		/// <summary>
+		/// Decodes one bit in a position-model tree.
+		/// On a 0 bit, adds Offset to Symbol then doubles Offset.
+		/// On a 1 bit, doubles Offset first then adds to Symbol.
+		/// </summary>
+		/// <param name="parameters">Range-coder state; Symbol and Offset are updated.</param>
+		/// <param name="probability">Probability entry updated via the LZMA adaptive model.</param>
+		private static void DecodePositionModelBit( ref CParameters parameters, ref CProbability probability )
 		{
 			UpdateRange( ref parameters );
 
-			if( SimpleIterate( ref parameters, ref prob ) )
+			if( SimpleIterate( ref parameters, ref probability ) )
 			{
 				parameters.Symbol += parameters.Offset;
 				parameters.Offset <<= 1;
@@ -423,6 +478,12 @@ namespace Eternal.LZMA2SimpleCS.CS
 			}
 		}
 
+		/// <summary>
+		/// Updates the repeat-distance history for a REP1/REP2/REP3 match.
+		/// Decodes which of the three previous distances is being reused and rotates it
+		/// to RepeatDistances[0], shifting older entries down.
+		/// </summary>
+		/// <param name="parameters">Range-coder state.</param>
 		private void UpdateDistance( ref CParameters parameters )
 		{
 			uint32 distance;
@@ -454,12 +515,18 @@ namespace Eternal.LZMA2SimpleCS.CS
 			RepeatDistances[0] = distance;
 		}
 
+		/// <summary>
+		/// Decodes one LZMA literal symbol and writes it to the dictionary.
+		/// Selects plain-tree or matched-literal decoding based on the current state.
+		/// Advances DictionaryPosition and ProcessedPosition by one.
+		/// </summary>
+		/// <param name="parameters">Range-coder state; State and Symbol are updated.</param>
 		private void UpdateSymbol( ref CParameters parameters )
 		{
 			uint32 probability_offset = LzmaDecoder.IsRepeat + ( Lzma.NumStates * 4u ) + ( Lzma.NumLengthToPositionStates << Lzma.NumPositionSlotBits );
 			if( ProcessedPosition != 0u || CheckDictionarySize != 0u )
 			{
-				uint32 add = ( ( ProcessedPosition << 8 ) + Dictionary[( DictionaryPosition == 0u ? DictionaryBufferSize : DictionaryPosition ) - 1u] ) & LiteralMask;
+				uint32 add = ( ( ProcessedPosition << 8 ) + decompressed[( DictionaryPosition == 0u ? DictionaryBufferSize : DictionaryPosition ) - 1u] ) & LiteralMask;
 				probability_offset += 3u * ( add << DecoderProperties.LiteralContextBits );
 			}
 
@@ -478,8 +545,8 @@ namespace Eternal.LZMA2SimpleCS.CS
 			}
 			else
 			{
-				uint32 match_byte = Dictionary[DictionaryPosition - RepeatDistances[0] + ( DictionaryPosition < RepeatDistances[0] ? DictionaryBufferSize : 0u )];
-				parameters.Offset = 256u;
+				uint32 match_byte = decompressed[DictionaryPosition - RepeatDistances[0] + ( DictionaryPosition < RepeatDistances[0] ? DictionaryBufferSize : 0u )];
+				parameters.Offset = 0x100u;
 
 				for( uint32 count = 0; count < 8; count++ )
 				{
@@ -491,9 +558,18 @@ namespace Eternal.LZMA2SimpleCS.CS
 				}
 			}
 
-			Dictionary[DictionaryPosition++] = ( uint8 )( parameters.Symbol & 0xff );
+			decompressed[DictionaryPosition++] = ( uint8 )( parameters.Symbol & 0xff );
 		}
 
+		/// <summary>
+		/// Decodes a mid-range or high-range match length.
+		/// Assumes the low-range selector bit has already been consumed by the caller.
+		/// The low-range path (values 0-7) is handled separately by DecodeLowLength.
+		/// </summary>
+		/// <param name="parameters">Range-coder state.</param>
+		/// <param name="probabilityOffset">Base index into the length probability table.</param>
+		/// <param name="positionState">Current position state (0 .. MaxNumPositionStates-1).</param>
+		/// <returns>Decoded length value relative to the mid or high length base.</returns>
 		private uint32 UpdateLength( ref CParameters parameters, uint32 probabilityOffset, uint32 positionState )
 		{
 			uint32 length;
@@ -525,6 +601,16 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return length;
 		}
 
+		/// <summary>
+		/// Decodes the distance for a new MATCH, updates RepeatDistances, and detects
+		/// the end-of-stream marker or an out-of-dictionary error.
+		/// Decodes the 6-bit position slot, optional position-model bits, and alignment bits.
+		/// On an end marker, sets length to MaxNormalMatchLength and adjusts State.
+		/// On a distance exceeding the valid dictionary range, sets length to an error sentinel.
+		/// </summary>
+		/// <param name="parameters">Range-coder state.</param>
+		/// <param name="length">Decoded match length; overwritten with a sentinel value on special exits.</param>
+		/// <returns>true if the decode loop should break (end mark or error), false to continue.</returns>
 		private bool UpdateRepeatLength( ref CParameters parameters, ref uint32 length )
 		{
 			// Decode 6-Bit position slot
@@ -541,11 +627,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 			uint32 distance = parameters.Symbol - 64u;
 
 			// Fast path: small distances (0-3) need no footer
-			if( distance < Lzma.StartPositionModelIndex )
-			{
-				distance++;
-			}
-			else
+			if( distance >= Lzma.StartPositionModelIndex )
 			{
 				// Decode distance footer
 				uint32 pos_slot = distance;
@@ -584,7 +666,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 					} while( --num_direct_bits != 0 );
 
 					// Decode 4-Bit alignment
-					uint32 prob_align_offset = Lzma.NumFullDistancesSize + ( LzmaDecoder.NumStatePositionProbabilities << 1 ) + ( LzmaDecoder.NumLengthProbabilities << 1 );
+					const uint32 prob_align_offset = Lzma.NumFullDistancesSize + ( LzmaDecoder.NumStatePositionProbabilities << 1 ) + ( LzmaDecoder.NumLengthProbabilities << 1 );
 					distance <<= Lzma.NumAlignmentBits;
 
 					parameters.Symbol = 1u;
@@ -604,16 +686,16 @@ namespace Eternal.LZMA2SimpleCS.CS
 					distance |= parameters.Symbol;
 
 					// Check for end marker
-					if( distance == UInt32.MaxValue )
+					if( distance == uint32.MaxValue )
 					{
 						length = LzmaDecoder.MaxNormalMatchLength;
 						parameters.State -= Lzma.NumStates;
 						return true;
 					}
 				}
-
-				distance++;
 			}
+
+			distance++;
 
 			// Update repeat distance history
 			RepeatDistances[3] = RepeatDistances[2];
@@ -635,10 +717,19 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return false;
 		}
 
+		/// <summary>
+		/// Copies a back-reference match into the dictionary using RepeatDistances[0] as the source.
+		/// Selects the optimal copy strategy: bulk Array.Copy for non-overlapping regions,
+		/// Array.Fill for single-byte runs, or doubling-copy for short repeating patterns.
+		/// Falls back to a byte-by-byte loop when the source wraps the circular dictionary buffer.
+		/// </summary>
+		/// <param name="length">Total match length to copy.</param>
+		/// <param name="remaining">Bytes available in the dictionary before the limit.</param>
+		/// <returns>Remaining uncompleted length (non-zero only when the dictionary limit was hit first).</returns>
 		private uint32 FinishBlock( uint32 length, int64 remaining )
 		{
 			// Clamp length to available space
-			uint32 copy_length = ( remaining > UInt32.MaxValue ) ? length : Math.Min( ( uint32 )( remaining ), length );
+			uint32 copy_length = ( remaining > uint32.MaxValue ) ? length : Math.Min( ( uint32 )( remaining ), length );
 
 			// Calculate source position with wraparound
 			int64 src_pos = DictionaryPosition - RepeatDistances[0] + ( DictionaryPosition < RepeatDistances[0] ? DictionaryBufferSize : 0u );
@@ -649,28 +740,29 @@ namespace Eternal.LZMA2SimpleCS.CS
 			// Check if we can use fast path (no wraparound)
 			if( copy_length <= DictionaryBufferSize - src_pos )
 			{
+				// Fast path: single contiguous copy
 				int64 dest_start = DictionaryPosition;
 				DictionaryPosition += copy_length;
 
 				if( RepeatDistances[0] >= copy_length )
 				{
 					// No overlap — bulk copy
-					Array.Copy(  Dictionary, src_pos, Dictionary, dest_start, copy_length );
+					Array.Copy(  decompressed, src_pos, decompressed, dest_start, copy_length );
 				}
 				else if( RepeatDistances[0] == 1u )
 				{
 					// Run of one byte
-					Array.Fill( Dictionary, Dictionary[src_pos], ( int32 )dest_start, ( int32 )copy_length  );
+					Array.Fill( decompressed, decompressed[src_pos], ( int32 )dest_start, ( int32 )copy_length  );
 				}
 				else
 				{
 					// Short-period pattern: seed first period, then double-copy
 					uint32 written = RepeatDistances[0];
-					Array.Copy( Dictionary, src_pos, Dictionary, dest_start, written );
+					Array.Copy( decompressed, src_pos, decompressed, dest_start, written );
 					while( written < copy_length )
 					{
 						uint32 chunk = Math.Min( written, copy_length - written );
-						Array.Copy( Dictionary, dest_start, Dictionary, dest_start + written, chunk );
+						Array.Copy( decompressed, dest_start, decompressed, dest_start + written, chunk );
 						written += chunk;
 					}
 				}
@@ -683,7 +775,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 
 				do
 				{
-					Dictionary[DictionaryPosition++] = Dictionary[pos];
+					decompressed[DictionaryPosition++] = decompressed[pos];
 
 					if( ++pos == DictionaryBufferSize )
 					{
@@ -709,7 +801,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 				Probabilities[probability_offset] = ( CProbability )( probability + ( ( Lzma.BitModelTableSize - probability ) >> Lzma.NumMoveBits ) );
 
 				int64 src_pos = DictionaryPosition - RepeatDistances[0] + ( DictionaryPosition < RepeatDistances[0] ? DictionaryBufferSize : 0u );
-				Dictionary[DictionaryPosition] = Dictionary[src_pos];
+				decompressed[DictionaryPosition] = decompressed[src_pos];
 				DictionaryPosition++;
 				ProcessedPosition++;
 				parameters.State = Lzma.ShortRepNextStateLut[parameters.State];
@@ -841,7 +933,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 
 				// Check if we have space to copy
 				int64 remaining = limit - DictionaryPosition;
-				if( remaining == 0u )
+				if( remaining == 0 )
 				{
 					break;
 				}
@@ -866,6 +958,12 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return SevenZipResult.SevenZipOK;
 		}
 
+		/// <summary>
+		/// Flushes pending back-reference bytes from a partial match into the dictionary.
+		/// Drains RemainingLength into the dictionary using RepeatDistances[0], stopping at limit.
+		/// Called at the top of each DecodeToDict iteration before decoding new symbols.
+		/// </summary>
+		/// <param name="limit">Target dictionary position; writing stops when DictionaryPosition reaches this.</param>
 		private void WriteRemaining( int64 limit )
 		{
 			uint32 length = RemainingLength;
@@ -896,36 +994,41 @@ namespace Eternal.LZMA2SimpleCS.CS
 			int64 dic_buf_size = DictionaryBufferSize;
 			do
 			{
-				Dictionary[dic_pos] = Dictionary[dic_pos - rep0 + ( dic_pos < rep0 ? dic_buf_size : 0u )];
+				decompressed[dic_pos] = decompressed[dic_pos - rep0 + ( dic_pos < rep0 ? dic_buf_size : 0u )];
 				dic_pos++;
 			} while( --length != 0 );
 
 			DictionaryPosition = dic_pos;
 		}
 
-		/*
-		At staring of new stream we have one of the following symbols:
-		  - Literal        - is allowed
-		  - Non-Rep-Match  - is allowed only if it's end marker Symbol
-		  - Rep-Match      - is not allowed
-		We use early check of (RangeCoder:Code) over BadRepeatCode to simplify main decoding Code
-		*/
+		// At staring of new stream we have one of the following symbols:
+		//   - Literal        - is allowed
+		//   - Non-Rep-Match  - is allowed only if it's end marker Symbol
+		//   - Rep-Match      - is not allowed
+		// We use early check of (RangeCoder:Code) over BadRepeatCode to simplify main decoding Code
 
-		/*
-		LzmaDec_DecodeReal():
-		  It calls LzmaDec_DecodeRealInternal() and it adjusts limit according (p->CheckDictionarySize).
+		// LzmaDec_DecodeReal():
+		//   It calls LzmaDec_DecodeRealInternal() and it adjusts limit according (p->CheckDictionarySize).
+		//
+		// We correct (p->CheckDictionarySize) after LzmaDec_DecodeRealInternal() and in LzmaDec_WriteRemaining(),
+		// and we support the following State of (p->CheckDictionarySize):
+		//   if (total_processed < p->DecoderProperties.DictionarySize) then
+		//   {
+		//     (total_processed == p->ProcessedPosition)
+		//     (p->CheckDictionarySize == 0)
+		//   }
+		//   else
+		//     (p->CheckDictionarySize == p->DecoderProperties.DictionarySize)
 
-		We correct (p->CheckDictionarySize) after LzmaDec_DecodeRealInternal() and in LzmaDec_WriteRemaining(),
-		and we support the following State of (p->CheckDictionarySize):
-		  if (total_processed < p->DecoderProperties.DictionarySize) then
-		  {
-			(total_processed == p->ProcessedPosition)
-			(p->CheckDictionarySize == 0)
-		  }
-		  else
-			(p->CheckDictionarySize == p->DecoderProperties.DictionarySize)
-		*/
-
+		/// <summary>
+		/// Wrapper around DecodeRealInternal that enforces the dictionary-size boundary.
+		/// When CheckDictionarySize is zero (initial fill), tightens limit so ProcessedPosition
+		/// cannot exceed DecoderProperties.DictionarySize. After the inner call, promotes
+		/// CheckDictionarySize once the dictionary is fully filled.
+		/// </summary>
+		/// <param name="limit">Target dictionary position (may be tightened internally).</param>
+		/// <param name="bufLimitOffset">Input buffer limit forwarded to DecodeRealInternal.</param>
+		/// <returns>Result from DecodeRealInternal.</returns>
 		private SevenZipResult DecodeReal( int64 limit, int64 bufLimitOffset )
 		{
 			if( CheckDictionarySize == 0u )
@@ -947,13 +1050,21 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return result;
 		}
 
+		/// <summary>
+		/// Read-ahead probe for a literal LZMA symbol.
+		/// Decodes one full literal from a copy of the range-coder state without writing any output,
+		/// verifying that enough input bytes are present for the complete symbol.
+		/// </summary>
+		/// <param name="parameters">Copy of the range-coder state (the caller's state is not modified).</param>
+		/// <param name="bufOutOffset">Absolute input limit; reading is not permitted past this offset.</param>
+		/// <returns>DummyLiteral on success, DummyInputEof if insufficient input is available.</returns>
 		private ELzmaDummy TryDummyLit( ref CParameters parameters, int64 bufOutOffset )
 		{
 			int64 probability_offset = LzmaDecoder.IsRepeat + ( Lzma.NumStates * 4u ) + ( Lzma.NumLengthToPositionStates << Lzma.NumPositionSlotBits );
 			if( ( CheckDictionarySize != 0u ) || ( ProcessedPosition != 0u ) )
 			{
 				int64 a = ( ProcessedPosition & ( ( 1u << DecoderProperties.LiteralPositionBits ) - 1u ) ) << DecoderProperties.LiteralContextBits;
-				int64 b = ( Dictionary[( DictionaryPosition == 0u ? DictionaryBufferSize : DictionaryPosition ) - 1u] >> ( 8 - DecoderProperties.LiteralContextBits ) );
+				int64 b = ( decompressed[( DictionaryPosition == 0u ? DictionaryBufferSize : DictionaryPosition ) - 1u] >> ( 8 - DecoderProperties.LiteralContextBits ) );
 				probability_offset += Lzma.LiteralSize * ( a + b );
 			}
 
@@ -962,7 +1073,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 			{
 				do
 				{
-					if( DummyDecodeTreeBit( ref parameters, ref Probabilities[probability_offset + parameters.Symbol], bufOutOffset ) == ELzmaDummy.DummyInputEof )
+					if( DummyDecodeTreeBit( ref parameters, Probabilities[probability_offset + parameters.Symbol], bufOutOffset ) == ELzmaDummy.DummyInputEof )
 					{
 						return ELzmaDummy.DummyInputEof;
 					}
@@ -970,7 +1081,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 			}
 			else
 			{
-				uint32 match_byte = Dictionary[DictionaryPosition - RepeatDistances[0] + ( DictionaryPosition < RepeatDistances[0] ? DictionaryBufferSize : 0u )];
+				uint32 match_byte = decompressed[DictionaryPosition - RepeatDistances[0] + ( DictionaryPosition < RepeatDistances[0] ? DictionaryBufferSize : 0u )];
 				parameters.Offset = 0x100u;
 				do
 				{
@@ -978,7 +1089,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 					parameters.Bit = parameters.Offset;
 					parameters.Offset &= match_byte;
 
-					if( DummyDecodeMatchedLiteralBit( ref parameters, ref Probabilities[probability_offset + parameters.Symbol + parameters.Offset + parameters.Bit], bufOutOffset ) == ELzmaDummy.DummyInputEof )
+					if( DummyDecodeMatchedLiteralBit( ref parameters, Probabilities[probability_offset + parameters.Symbol + parameters.Offset + parameters.Bit], bufOutOffset ) == ELzmaDummy.DummyInputEof )
 					{
 						return ELzmaDummy.DummyInputEof;
 					}
@@ -988,6 +1099,16 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return ELzmaDummy.DummyLiteral;
 		}
 
+		/// <summary>
+		/// Read-ahead probe for a repeat-match LZMA symbol.
+		/// Classifies the repeat type (short REP0, long REP0, or REP1/REP2/REP3) and consumes
+		/// the relevant probability bits without modifying dictionary or probability state.
+		/// </summary>
+		/// <param name="parameters">Copy of the range-coder state.</param>
+		/// <param name="probOffset">Receives the probability-table offset for the follow-on length decode.</param>
+		/// <param name="bufOutOffset">Absolute input limit.</param>
+		/// <param name="posState">Position state for the short-repeat probability lookup.</param>
+		/// <returns>DummyRepeat, DummyRepeatShort, or DummyInputEof.</returns>
 		private ELzmaDummy TryDummyRep( ref CParameters parameters, ref int64 probOffset, int64 bufOutOffset, uint32 posState )
 		{
 			if( UpdateRangeDummy( ref parameters, bufOutOffset ) == ELzmaDummy.DummyInputEof )
@@ -995,14 +1116,14 @@ namespace Eternal.LZMA2SimpleCS.CS
 				return ELzmaDummy.DummyInputEof;
 			}
 
-			if( DummySimpleIterate( ref parameters, ref Probabilities[LzmaDecoder.IsRepeat + Lzma.NumStates + parameters.State] ) )
+			if( DummySimpleIterate( ref parameters, Probabilities[LzmaDecoder.IsRepeat + Lzma.NumStates + parameters.State] ) )
 			{
 				if( UpdateRangeDummy( ref parameters, bufOutOffset ) == ELzmaDummy.DummyInputEof )
 				{
 					return ELzmaDummy.DummyInputEof;
 				}
 
-				if( DummySimpleIterate( ref parameters, ref Probabilities[Lzma.NumFullDistancesSize + posState + parameters.State] ) )
+				if( DummySimpleIterate( ref parameters, Probabilities[Lzma.NumFullDistancesSize + posState + parameters.State] ) )
 				{
 					return ELzmaDummy.DummyRepeatShort;
 				}
@@ -1014,9 +1135,9 @@ namespace Eternal.LZMA2SimpleCS.CS
 					return ELzmaDummy.DummyInputEof;
 				}
 
-				if( !DummySimpleIterate( ref parameters, ref Probabilities[LzmaDecoder.IsRepeat + ( Lzma.NumStates * 2u ) + parameters.State] ) )
+				if( !DummySimpleIterate( ref parameters, Probabilities[LzmaDecoder.IsRepeat + ( Lzma.NumStates * 2u ) + parameters.State] ) )
 				{
-					if( DummyConsumeBit( ref parameters, ref Probabilities[LzmaDecoder.IsRepeat + ( Lzma.NumStates * 3u ) + parameters.State], bufOutOffset ) == ELzmaDummy.DummyInputEof )
+					if( DummyConsumeBit( ref parameters, Probabilities[LzmaDecoder.IsRepeat + ( Lzma.NumStates * 3u ) + parameters.State], bufOutOffset ) == ELzmaDummy.DummyInputEof )
 					{
 						return ELzmaDummy.DummyInputEof;
 					}
@@ -1029,6 +1150,15 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return ELzmaDummy.DummyRepeat;
 		}
 
+		/// <summary>
+		/// Read-ahead probe for the distance portion of a new MATCH symbol.
+		/// Decodes the position slot and any footer bits (position model, direct bits, or alignment)
+		/// without modifying dictionary or probability state.
+		/// </summary>
+		/// <param name="parameters">Copy of the range-coder state.</param>
+		/// <param name="bufOutOffset">Absolute input limit.</param>
+		/// <param name="length">Decoded match length used to select the length-to-position state.</param>
+		/// <returns>DummyOk on success, DummyInputEof if input is exhausted.</returns>
 		private ELzmaDummy TryDummyDistance( ref CParameters parameters, int64 bufOutOffset, uint32 length )
 		{
 			if( parameters.State < 4u )
@@ -1037,7 +1167,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 				parameters.Symbol = 1u;
 				do
 				{
-					if( DummyDecodeTreeBit( ref parameters, ref Probabilities[probability_offset + parameters.Symbol], bufOutOffset ) == ELzmaDummy.DummyInputEof )
+					if( DummyDecodeTreeBit( ref parameters, Probabilities[probability_offset + parameters.Symbol], bufOutOffset ) == ELzmaDummy.DummyInputEof )
 					{
 						return ELzmaDummy.DummyInputEof;
 					}
@@ -1074,7 +1204,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 					parameters.Offset = 1u;
 					do
 					{
-						if( DummyDecodePositionModelBit( ref parameters, ref Probabilities[probability_offset + parameters.Symbol], bufOutOffset ) == ELzmaDummy.DummyInputEof )
+						if( DummyDecodePositionModelBit( ref parameters, Probabilities[probability_offset + parameters.Symbol], bufOutOffset ) == ELzmaDummy.DummyInputEof )
 						{
 							return ELzmaDummy.DummyInputEof;
 						}
@@ -1085,6 +1215,16 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return ELzmaDummy.DummyOk;
 		}
 
+		/// <summary>
+		/// Probes the input stream to determine whether one complete LZMA symbol is available.
+		/// Operates on a temporary copy of the range-coder state, leaving the main decoder state unchanged.
+		/// On success, bufOutOffset is updated to the number of input bytes consumed.
+		/// </summary>
+		/// <param name="buffer">Input buffer to probe.</param>
+		/// <param name="bufferOffset">Starting byte offset within buffer.</param>
+		/// <param name="bufOutOffset">On entry: available byte count. On exit: bytes consumed by the symbol.</param>
+		/// <returns>The symbol type decoded (DummyLiteral, DummyMatch, DummyRepeat, DummyRepeatShort),
+		/// or DummyInputEof if insufficient data is available.</returns>
 		private ELzmaDummy TryDummy( uint8[] buffer, int64 bufferOffset, ref int64 bufOutOffset )
 		{
 			ELzmaDummy result;
@@ -1105,7 +1245,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 					return ELzmaDummy.DummyInputEof;
 				}
 
-				if( DummySimpleIterate( ref dummy, ref Probabilities[LzmaDecoder.IsMatchBase + pos_state + dummy.State] ) )
+				if( DummySimpleIterate( ref dummy, Probabilities[LzmaDecoder.IsMatchBase + pos_state + dummy.State] ) )
 				{
 					result = TryDummyLit( ref dummy, bufOutOffset );
 					if( result == ELzmaDummy.DummyInputEof )
@@ -1122,7 +1262,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 						return ELzmaDummy.DummyInputEof;
 					}
 
-					if( DummySimpleIterate( ref dummy, ref Probabilities[LzmaDecoder.IsRepeat + dummy.State] ) )
+					if( DummySimpleIterate( ref dummy, Probabilities[LzmaDecoder.IsRepeat + dummy.State] ) )
 					{
 						dummy.State = 0u;
 						prob_offset = Lzma.NumFullDistancesSize + LzmaDecoder.NumStatePositionProbabilities + LzmaDecoder.NumLengthProbabilities;
@@ -1151,7 +1291,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 					uint32 offset2;
 					int64 prob_len_offset;
 
-					if( DummySimpleIterate( ref dummy, ref Probabilities[prob_offset] ) )
+					if( DummySimpleIterate( ref dummy, Probabilities[prob_offset] ) )
 					{
 						prob_len_offset = prob_offset + pos_state;
 						offset2 = 0u;
@@ -1164,7 +1304,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 							return ELzmaDummy.DummyInputEof;
 						}
 
-						if( DummySimpleIterate( ref dummy, ref Probabilities[prob_offset + Lzma.LengthEncoderNumLowSymbols] ) )
+						if( DummySimpleIterate( ref dummy, Probabilities[prob_offset + Lzma.LengthEncoderNumLowSymbols] ) )
 						{
 							prob_len_offset = prob_offset + pos_state + Lzma.LengthEncoderNumLowSymbols;
 							offset2 = Lzma.LengthEncoderNumLowSymbols;
@@ -1181,7 +1321,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 					dummy.Symbol = 1u;
 					do
 					{
-						if( DummyDecodeTreeBit( ref dummy, ref Probabilities[prob_len_offset + dummy.Symbol], bufOutOffset ) == ELzmaDummy.DummyInputEof )
+						if( DummyDecodeTreeBit( ref dummy, Probabilities[prob_len_offset + dummy.Symbol], bufOutOffset ) == ELzmaDummy.DummyInputEof )
 						{
 							return ELzmaDummy.DummyInputEof;
 						}
@@ -1231,21 +1371,19 @@ namespace Eternal.LZMA2SimpleCS.CS
 			}
 		}
 
-		/*
-		LZMA supports optional end_marker.
-		So the decoder can lookahead for one additional LZMA-Symbol to check end_marker.
-		That additional LZMA-Symbol can require up to LzmaRequiredInput bytes in input stream.
-		When the decoder reaches dicLimit, it looks (finishMode) parameter:
-		  if (finishMode == LZMA_FINISH_ANY), the decoder doesn't lookahead
-		  if (finishMode != LZMA_FINISH_ANY), the decoder lookahead, if end_marker is possible for current position
-
-		When the decoder lookahead, and the lookahead Symbol is not end_marker, we have two ways:
-		  1) Strict mode (default) : the decoder returns SZ_ERROR_DATA.
-		  2) The relaxed mode (alternative mode) : we could return SZ_OK, and the caller
-			 must check (status) value. The caller can show the error,
-			 if the end of stream is expected, and the (status) is noit
-			 LzmaStatusFinishedWithMark or LzmaStatusMaybeFinishedWithoutMark.
-		*/
+		// LZMA supports optional end_marker.
+		// So the decoder can lookahead for one additional LZMA-Symbol to check end_marker.
+		// That additional LZMA-Symbol can require up to LzmaRequiredInput bytes in input stream.
+		// When the decoder reaches dicLimit, it looks (finishMode) parameter:
+		//   if (finishMode == LZMA_FINISH_ANY), the decoder doesn't lookahead
+		//   if (finishMode != LZMA_FINISH_ANY), the decoder lookahead, if end_marker is possible for current position
+		//
+		// When the decoder lookahead, and the lookahead Symbol is not end_marker, we have two ways:
+		//   1) Strict mode (default) : the decoder returns SZ_ERROR_DATA.
+		//   2) The relaxed mode (alternative mode) : we could return SevenZipOK, and the caller
+		//      must check (status) value. The caller can show the error,
+		//      if the end of stream is expected, and the (status) is noit
+		//      LzmaStatusFinishedWithMark or LzmaStatusMaybeFinishedWithoutMark.
 
 		/// <summary>
 		/// Decodes compressed LZMA data into the internal dictionary buffer.
@@ -1259,7 +1397,6 @@ namespace Eternal.LZMA2SimpleCS.CS
 		/// <returns>SevenZipOK, SevenZipErrorData, or SevenZipErrorFail.</returns>
 		public SevenZipResult DecodeToDict( int64 dicLimit, uint8[] compressed, int64 compressedOffset, ref int64 compressedLength, ELzmaFinishMode finishMode, ref ELzmaStatus status )
 		{
-			SevenZipResult result;
 			uint8[] temporary_buffer = new uint8[LzmaDecoder.LzmaRequiredInput];
 
 			int64 in_size = compressedLength;
@@ -1300,7 +1437,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 					return SevenZipResult.SevenZipErrorData;
 				}
 
-				Parameters.Range = UInt32.MaxValue;
+				Parameters.Range = uint32.MaxValue;
 				TempBufferSize = 0u;
 
 				if( RemainingLength > LzmaDecoder.MaxNormalMatchLength + 1u )
@@ -1363,6 +1500,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 				}
 
 				int32 dummy_processed = -1;
+				SevenZipResult result;
 				if( TempBufferSize == 0 )
 				{
 					int64 buf_limit_offset;
@@ -1538,7 +1676,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 				}
 			}
 
-			/* Some unexpected error: internal error of Code, memory corruption or hardware failure */
+			// Some unexpected error: internal error of Code, memory corruption or hardware failure
 			RemainingLength = LzmaDecoder.NormalMatchLengthErrorFail;
 			return SevenZipResult.SevenZipErrorFail;
 		}
@@ -1589,14 +1727,16 @@ namespace Eternal.LZMA2SimpleCS.CS
 		}
 
 		/// <summary>
-		/// Allocates the probability table sized to the current decoder properties.
+		/// Allocates (or reuses) the probability table required for LZMA decoding.
+		/// The required size is derived from the current DecoderProperties.
+		/// If the existing table already has the correct size it is reused without reallocation.
 		/// </summary>
 		/// <returns>SevenZipOK on success.</returns>
 		public SevenZipResult AllocateProbabilities()
 		{
 			uint32 num_probabilities = LzmaDecoder.IsRepeat + ( Lzma.NumStates * 4u ) + ( Lzma.NumLengthToPositionStates << Lzma.NumPositionSlotBits )
 			                           + ( Lzma.LiteralSize << ( DecoderProperties.LiteralContextBits + DecoderProperties.LiteralPositionBits ) );
-			if( ( Probabilities == null ) || ( num_probabilities != NumProbabilities ) )
+			if( num_probabilities != NumProbabilities )
 			{
 				FreeProbabilities();
 

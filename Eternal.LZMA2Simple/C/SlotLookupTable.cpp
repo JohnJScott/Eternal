@@ -1,5 +1,9 @@
-/* 7zTypes.h -- Basic types
-2021-12-25 : Igor Pavlov : Public domain */
+/**
+ * @file SlotLookupTable.cpp
+ * @brief Position-slot lookup table for LZMA block-size calculation.
+ *
+ * 2021-12-25 : Igor Pavlov : Public domain
+ */
 
 #include "7zTypes.h"
 

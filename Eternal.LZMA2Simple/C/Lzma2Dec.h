@@ -3,8 +3,6 @@
 
 #pragma once
 
-/* ---------- One Call Interface ---------- */
-
 /*
 finishMode:
   It has meaning only if the decoding reaches output limit (*destLen).
@@ -12,14 +10,14 @@ finishMode:
   LzmaFinishModeEnd - read EndOfStream marker after decoding
 
 Returns:
-  SZ_OK
+  SevenZipOK
 	status:
 	  LzmaStatusFinishedWithMark
 	  LzmaStatusNotFinished
-  SZ_ERROR_DATA - Data error
-  SZ_ERROR_MEM  - Memory allocation error
-  SZ_ERROR_UNSUPPORTED - Unsupported properties
-  SZ_ERROR_INPUT_EOF - It needs more bytes in input buffer (src).
+  SevenZipErrorData         - Data error
+  SevenZipErrorMem          - Memory allocation error
+  SevenZipErrorUnsupported  - Unsupported properties
+  SevenZipErrorInputEof     - It needs more bytes in input buffer (src).
 */
 
 SevenZipResult Lzma2Decode( uint8* decompressed, int64& decompressedLength, const uint8* compressed, int64& compressedLength, const uint8 prop, LzmaFinishMode finishMode, LzmaStatus& status, MemoryInterface* alloc );

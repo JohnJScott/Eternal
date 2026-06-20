@@ -10,45 +10,44 @@ namespace Eternal.LZMA2SimpleCS.CS
 	using uint64 = UInt64;
 	using uint8 = Byte;
 
-	public class MatchFinder
+	public static class MatchFinder
 	{
-		public static readonly uint32 BigHashSizeLimit = 1u << 24;
+		public const uint32 BigHashSizeLimit = 1u << 24;
 
-		public static readonly uint32 MatchFinderHash2Size = 1u << 10;
-		public static readonly uint32 MatchFinderHash2Mask = MatchFinderHash2Size - 1u;
-		public static readonly uint32 MatchFinderHash3Size = 1u << 16;
-		public static readonly uint32 MatchFinderHash3Mask = MatchFinderHash3Size - 1u;
+		// (HASH2_SIZE >= (1 <<  8)) : Required
+		// (HASH3_SIZE >= (1 << 16)) : Required
+		public const uint32 MatchFinderHash2Size = 1u << 10;
+		public const uint32 MatchFinderHash2Mask = MatchFinderHash2Size - 1u;
+		public const uint32 MatchFinderHash3Size = 1u << 16;
+		public const uint32 MatchFinderHash3Mask = MatchFinderHash3Size - 1u;
 
-		/*
-		  We use up to 3 crc values for hash:
-			crc0
-			crc1 << Shift_1
-			crc2 << Shift_2
-		  (Shift_1 = 5) and (Shift_2 = 10) is good tradeoff.
-		  Small values for Shift are not good for collision rate.
-		  Big value for Shift_2 increases the minimum size
-		  of hash table, that will be slow for small files.
-		*/
+		// We use up to 3 crc values for hash:
+		//   crc0
+		//   crc1 << Shift_1
+		//   crc2 << Shift_2
+		// (Shift_1 = 5) and (Shift_2 = 10) is good tradeoff.
+		// Small values for Shift are not good for collision rate.
+		// Big value for Shift_2 increases the minimum size
+		// of hash table, that will be slow for small files.
+		public const int8 HashCrcShift1 = 5;
 
-		public static readonly int8 HashCrcShift1 = 5;
+		private const int8 NumRefAlignmentBits = 4;
+		private const int64 NumRefAlignmentTableSize = 1u << NumRefAlignmentBits;
+		public const int64 NumRefAlignmentTableMask = NumRefAlignmentTableSize - 1;
+		public const int64 NumRefAlignmentTableTruncate = ~NumRefAlignmentTableMask;
 
-		private static readonly int8 NumRefAlignmentBits = 4;
-		private static readonly int64 NumRefAlignmentTableSize = 1u << NumRefAlignmentBits;
-		public static readonly int64 NumRefAlignmentTableMask = NumRefAlignmentTableSize - 1;
-		public static readonly int64 NumRefAlignmentTableTruncate = ~NumRefAlignmentTableMask;
+		// Alignment for memmove()
+		public const uint32 BlockMoveAlignSize = 1u << 7;
+		public const uint32 BlockMoveAlignMask = BlockMoveAlignSize - 1u;
+		public const uint32 BlockMoveAlignTruncate = ~BlockMoveAlignMask;
 
-		// alignment for memmove()
-		public static readonly uint32 BlockMoveAlignSize = 1u << 7;
-		public static readonly uint32 BlockMoveAlignMask = BlockMoveAlignSize - 1u;
-		public static readonly uint32 BlockMoveAlignTruncate = ~BlockMoveAlignMask;
+		// Alignment for block allocation
+		public const uint32 BlockSizeAlignSize = 1u << 16;
+		public const uint32 BlockSizeAlignMask = BlockSizeAlignSize - 1u;
+		public const uint32 BlockSizeAlignTruncate = ~BlockSizeAlignMask;
 
-		// alignment for block allocation
-		public static readonly uint32 BlockSizeAlignSize = 1 << 16;
-		public static readonly uint32 BlockSizeAlignMask = BlockSizeAlignSize - 1u;
-		public static readonly uint32 BlockSizeAlignTruncate = ~BlockSizeAlignMask;
-
-		// it's 1/256 from 4 GB dictinary
-		public static readonly uint32 MinBlockSizeReserve = ( 1u << 24 );
+		// It's 1/256 from 4 GB dictionary
+		public const uint32 MinBlockSizeReserve = 1u << 24;
 	}
 
 	public abstract class CMatchFinder
@@ -61,8 +60,8 @@ namespace Eternal.LZMA2SimpleCS.CS
 		public int64 ExpectedDataSize = int64.MaxValue;
 		public int64 DirectInputRemaining = 0;
 
-		public uint32 Position = 0;
-		public uint32 StreamPosition = 0;
+		public uint32 Position = 0u;
+		public uint32 StreamPosition = 0u;
 		public uint32 CutValue = 32u;
 		public SevenZipResult Result = SevenZipResult.SevenZipOK;
 
@@ -70,24 +69,24 @@ namespace Eternal.LZMA2SimpleCS.CS
 
 		// Protected fields
 		protected CLzRef[] Hash = [];
-		protected uint32 PositionLimit = 0;
+		protected uint32 PositionLimit = 0u;
 
-		/* wrap over Zero is allowed (StreamPosition < Position). Use ( uint32 )( StreamPosition - Position ) */
-		protected uint32 LengthLimit = 0;
-		protected uint32 CyclicBufferPosition = 0;
+		// Wrap over Zero is allowed (StreamPosition < Position). Use ( uint32 )( StreamPosition - Position )
+		protected uint32 LengthLimit = 0u;
+		protected uint32 CyclicBufferPosition = 0u;
 
-		/* it must be = (HistorySize + 1) */
-		protected uint32 CyclicBufferSize = 0;
-		protected uint32 SonOffset = 0;
+		// It must be = (HistorySize + 1)
+		protected uint32 CyclicBufferSize = 0u;
+		protected uint32 SonOffset = 0u;
 
-		private uint32 HashMask = 0;
-		private uint32 HashSizeSum = 0;
+		private uint32 HashMask = 0u;
+		private uint32 HashSizeSum = 0u;
 
-		private uint32 MatchMaxLength = 0; 
-		private uint32 FixedHashSize = 0;
-		private uint32 KeepSizeBefore = 0;
-		private uint32 KeepSizeAfter = 0;
-		private uint32 BlockSize = 0;
+		private uint32 MatchMaxLength = 0u; 
+		private uint32 FixedHashSize = 0u;
+		private uint32 KeepSizeBefore = 0u;
+		private uint32 KeepSizeAfter = 0u;
+		private uint32 BlockSize = 0u;
 
 		private int64 NumRefs = 0;
 		private bool StreamEndWasReached = false;
@@ -112,19 +111,11 @@ namespace Eternal.LZMA2SimpleCS.CS
 			0xBDBDF21Cu, 0xCABAC28Au, 0x53B39330u, 0x24B4A3A6u, 0xBAD03605u, 0xCDD70693u, 0x54DE5729u, 0x23D967BFu, 0xB3667A2Eu, 0xC4614AB8u, 0x5D681B02u, 0x2A6F2B94u, 0xB40BBE37u, 0xC30C8EA1u, 0x5A05DF1Bu, 0x2D02EF8Du
 		];
 
-		public CMatchFinder()
-		{
-		}
-
-		~CMatchFinder()
-		{
-		}
-
 		/// <summary>
 		/// Returns true if this match finder uses a binary tree structure; false for hash chain.
 		/// </summary>
 		/// <returns>true for binary tree mode, false for hash chain mode.</returns>
-		public abstract bool IsBinaryTreeMode();
+		protected abstract bool IsBinaryTreeMode();
 
 		/// <summary>
 		/// Finds all matches at the current stream position and advances one position.
@@ -175,12 +166,11 @@ namespace Eternal.LZMA2SimpleCS.CS
 		/// <returns>true on success, false if allocation failed.</returns>
 		public bool Create( uint32 inHistorySize, uint32 keepAddBufferBefore, uint32 inMatchMaxLen, uint32 keepAddBufferAfter )
 		{
-			/* we need one additional byte in (mf->KeepSizeBefore),
-			   since we use MoveBlock() after (mf->Position++) and before dictionary using */
+			// We need one additional byte in (mf->KeepSizeBefore), since we use MoveBlock() after (mf->Position++) and before dictionary using
 			KeepSizeBefore = inHistorySize + keepAddBufferBefore + 1u;
 
 			keepAddBufferAfter += inMatchMaxLen;
-			/* we need (mf->KeepSizeAfter >= mf->NumHashBytes) */
+			// We need (mf->KeepSizeAfter >= mf->NumHashBytes)
 			keepAddBufferAfter = Math.Max( keepAddBufferAfter, 4u );
 
 			bool buffer_created = false;
@@ -197,12 +187,10 @@ namespace Eternal.LZMA2SimpleCS.CS
 
 			if( DirectInput || buffer_created )
 			{
-				// do not change it
+				// Do not change it
 				uint32 new_cyclic_buffer_size = inHistorySize + 1u;
 				MatchMaxLength = inMatchMaxLen;
 
-				// uint32 hs4;
-				FixedHashSize = 0u;
 				uint32 history_size = inHistorySize;
 				if( history_size > ExpectedDataSize )
 				{
@@ -219,25 +207,25 @@ namespace Eternal.LZMA2SimpleCS.CS
 				history_size |= ( history_size >> 4 );
 				history_size |= ( history_size >> 8 );
 
-				// we propagated 16 bits in (hs). Low 16 bits must be set later
+				// We propagated 16 bits in (hs). Low 16 bits must be set later
 				history_size >>= 1;
 				if( history_size >= MatchFinder.BigHashSizeLimit )
 				{
 					history_size >>= 1;
 				}
 
-				// (hash_size >= (1 << 16)) : Required for (NumHashBytes > 2)
-				history_size |= MatchFinder.BlockSizeAlignMask; /* don't change it! */
+				// (hash_size >= (1 << 16)) : Required for (NumHashBytes > 2) - don't change it!
+				history_size |= MatchFinder.BlockSizeAlignMask;
 
 				HashMask = history_size;
 				history_size++;
 
-				FixedHashSize += MatchFinder.MatchFinderHash2Size + MatchFinder.MatchFinderHash3Size;
+				FixedHashSize = MatchFinder.MatchFinderHash2Size + MatchFinder.MatchFinderHash3Size;
 
 				history_size += FixedHashSize;
 
 				HashSizeSum = history_size;
-				// it must be = (HistorySize + 1)
+				// It must be = (HistorySize + 1)
 				CyclicBufferSize = new_cyclic_buffer_size;
 
 				int64 son_count = new_cyclic_buffer_size;
@@ -274,10 +262,10 @@ namespace Eternal.LZMA2SimpleCS.CS
 
 			BufferOffset = 0;
 
-			/* EMPTY_HASH_VALUE = 0 (Zero) is used in hash tables as NO-VALUE marker.
-			   the code in CMatchFinderMt expects (Position = 1) */
+			// EMPTY_HASH_VALUE = 0 (Zero) is used in hash tables as NO-VALUE marker.
+			// The code in CMatchFinderMt expects (Position = 1)
 			Position = 1u;
-			// it's smallest optimal value. do not change it
+			// It's smallest optimal value. do not change it
 			StreamPosition = 1u;
 
 			Result = SevenZipResult.SevenZipOK;
@@ -285,20 +273,22 @@ namespace Eternal.LZMA2SimpleCS.CS
 
 			ReadBlock();
 
-			/* if we init (CyclicBufferPosition = Position), then we can use one variable
-			   instead of both (CyclicBufferPosition) and (Position) : only before (CyclicBufferPosition) wrapping */
-			CyclicBufferPosition = Position; // init with relation to (Position)
+			// If we init (CyclicBufferPosition = Position), then we can use one variable
+			// instead of both (CyclicBufferPosition) and (Position) : only before (CyclicBufferPosition) wrapping.
+			// Init with relation to (Position)
+			CyclicBufferPosition = Position; 
 			SetLimits();
 		}
 
-
-		// Call MatchFinder.CheckLimits() only after (p->Position++) update
-
+		/// <summary>
+		/// Refills input data and resets limits when the current position has reached PositionLimit.
+		/// </summary>
+		/// <remarks>Call this only after incrementing Position</remarks>
 		protected void CheckLimits()
 		{
 			if( KeepSizeAfter == StreamPosition - Position )
 			{
-				// we try to read only in exact state (mf->KeepSizeAfter == GetNumAvailableBytes( mf ))
+				// We try to read only in exact state (mf->KeepSizeAfter == GetNumAvailableBytes( mf ))
 				if( NeedMove() )
 				{
 					MoveBlock();
@@ -315,16 +305,14 @@ namespace Eternal.LZMA2SimpleCS.CS
 			SetLimits();
 		}
 
+		/// <summary>
+		/// Advances all position counters by one and calls CheckLimits() if PositionLimit is reached.
+		/// </summary>
 		protected void MovePos()
 		{
-			/* we go here at the end of stream data, when (avail < num_hash_bytes)
-			   We don't update sons[CyclicBufferPosition << BinaryTreeMode].
-			   So (sons) record will contain junk. And we cannot resume match searching
-			   to normal operation, even if we will provide more input data in buffer.
-			   p->sons[p->CyclicBufferPosition << p->BinaryTreeMode] = 0;  // EMPTY_HASH_VALUE
-			   if (p->BinaryTreeMode)
-				  p->sons[(p->CyclicBufferPosition << p->BinaryTreeMode) + 1] = 0;  // EMPTY_HASH_VALUE
-			*/
+			// We go here at the end of stream data, when (avail < num_hash_bytes).
+			// We don't update sons[CyclicBufferPosition << BinaryTreeMode].
+			// So (sons) record will contain junk. And we cannot resume match searching to normal operation, even if we will provide more input data in buffer.
 			++CyclicBufferPosition;
 			BufferOffset++;
 			Position++;
@@ -335,6 +323,15 @@ namespace Eternal.LZMA2SimpleCS.CS
 			}
 		}
 
+		/// <summary>
+		/// Checks the 2-byte and 3-byte hash distances for short matches and records any found.
+		/// </summary>
+		/// <param name="d2">On entry: distance to the previous 2-byte match. May be updated to d3 if d2 misses but d3 hits.</param>
+		/// <param name="d3">Distance to the previous 3-byte match.</param>
+		/// <param name="maxDistance">Maximum valid distance (capped to CyclicBufferSize and Position).</param>
+		/// <param name="distances">Output array receiving (length, distance-1) pairs.</param>
+		/// <param name="matchCount">Number of elements already in distances; incremented for each match recorded.</param>
+		/// <returns>true if no short match was found and the caller should continue to longer-match search; false if a match was confirmed.</returns>
 		protected bool FindDistances( ref uint32 d2, uint32 d3, uint32 maxDistance, uint32[] distances, ref uint32 matchCount )
 		{
 			// Fast path: Check d2 match first (most common case)
@@ -376,6 +373,12 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return true;
 		}
 
+		/// <summary>
+		/// Extends a short match at distance d2 as far as possible up to LengthLimit.
+		/// </summary>
+		/// <param name="d2">Distance in bytes to the candidate match position.</param>
+		/// <param name="maxLength">Starting match length; the search begins at this offset.</param>
+		/// <returns>The longest confirmed match length, capped at LengthLimit.</returns>
 		protected uint32 UpdateMaxLen( uint32 d2, uint32 maxLength )
 		{
 			int64 index = BufferOffset + maxLength;
@@ -395,24 +398,33 @@ namespace Eternal.LZMA2SimpleCS.CS
 		}
 
 
+		/// <summary>
+		/// Computes hashes for the current position, updates the hash tables, and returns the previous main match.
+		/// </summary>
+		/// <param name="d2">Receives the distance to the previous 2-byte match.</param>
+		/// <param name="d3">Receives the distance to the previous 3-byte match.</param>
+		/// <returns>The previous match position recorded in the main hash table.</returns>
 		protected uint32 CalcHash( out uint32 d2, out uint32 d3 )
 		{
-			uint32 h2, h3, hv;
-
-			uint32 current_match = HashCalcInternal( out h2, out h3, out hv );
+			uint32 current_match = HashCalcInternal( out uint32 h2, out uint32 h3, out uint32 hv );
 			HashUpdate( h2, h3, hv, out d2, out d3 );
 			return current_match;
 		}
 
+		/// <summary>
+		/// Computes hashes for the current position, updates the hash tables without recording distances, and returns the previous main match.
+		/// </summary>
+		/// <returns>The previous match position recorded in the main hash table.</returns>
 		protected uint32 CalcHashSkip()
 		{
-			uint32 h2, h3, hv;
-
-			uint32 current_match = HashCalcInternal( out h2, out h3, out hv );
+			uint32 current_match = HashCalcInternal( out uint32 h2, out uint32 h3, out uint32 hv );
 			HashSkip( h2, h3, hv );
 			return current_match;
 		}
 
+		/// <summary>
+		/// Frees the input buffer if it was internally allocated.
+		/// </summary>
 		private void FreeBuffer()
 		{
 			if( !DirectInput )
@@ -421,6 +433,11 @@ namespace Eternal.LZMA2SimpleCS.CS
 			}
 		}
 
+		/// <summary>
+		/// Allocates or reuses the input buffer for the given block size.
+		/// </summary>
+		/// <param name="newBlockSize">Desired buffer size in bytes; 0 causes immediate failure.</param>
+		/// <returns>true if the buffer is allocated and ready; false if newBlockSize is 0.</returns>
 		private bool CreateBuffer( uint32 newBlockSize )
 		{
 			if( newBlockSize == 0u )
@@ -437,11 +454,19 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return true;
 		}
 
+		/// <summary>
+		/// Frees the combined hash and son array.
+		/// </summary>
 		private void FreeHashes()
 		{
 			Hash = [];
 		}
 
+		/// <summary>
+		/// Allocates or reuses the combined hash and son array.
+		/// </summary>
+		/// <param name="num">Total number of CLzRef elements required.</param>
+		/// <returns>true if the array was allocated successfully; false if the array is empty after allocation.</returns>
 		private bool AllocHashes( int64 num )
 		{
 			if( Hash.LongLength == 0 || NumRefs != num )
@@ -454,6 +479,9 @@ namespace Eternal.LZMA2SimpleCS.CS
 		}
 
 
+		/// <summary>
+		/// Reads the next chunk of input data from the stream into the buffer.
+		/// </summary>
 		private void ReadBlock()
 		{
 			if( StreamEndWasReached || Result != SevenZipResult.SevenZipOK )
@@ -464,13 +492,13 @@ namespace Eternal.LZMA2SimpleCS.CS
 			// Handle direct input mode
 			if( DirectInput )
 			{
-				uint32 max_size = UInt32.MaxValue - StreamPosition - Position;
+				uint32 max_size = uint32.MaxValue - StreamPosition - Position;
 				uint32 current_size = ( max_size < DirectInputRemaining ) ? max_size : ( uint32 )DirectInputRemaining;
 
 				DirectInputRemaining -= current_size;
 				StreamPosition += current_size;
 
-				if( DirectInputRemaining == 0u )
+				if( DirectInputRemaining == 0 )
 				{
 					StreamEndWasReached = true;
 				}
@@ -484,7 +512,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 			int64 size = BlockSize - BufferOffset - available_bytes;
 
 			// Check if buffer has space (should always be true in normal operation)
-			if( size == 0u )
+			if( size == 0 )
 			{
 				// This shouldn't happen if NeedMove() and MoveBlock() were called properly
 				return;
@@ -498,7 +526,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 			}
 
 			// Check for end of stream
-			if( size == 0u )
+			if( size == 0 )
 			{
 				StreamEndWasReached = true;
 				return;
@@ -507,6 +535,9 @@ namespace Eternal.LZMA2SimpleCS.CS
 			StreamPosition += ( uint32 )size;
 		}
 
+		/// <summary>
+		/// Shifts unprocessed data to the start of the buffer to make room for more input.
+		/// </summary>
 		private void MoveBlock()
 		{
 			uint32 offset = ( uint32 )BufferOffset - KeepSizeBefore;
@@ -518,13 +549,16 @@ namespace Eternal.LZMA2SimpleCS.CS
 			Array.Copy( BufferBase, offset & MatchFinder.BlockMoveAlignTruncate, BufferBase, 0, move_size );
 		}
 
-		/* We call MoveBlock() before ReadBlock().
-		   So MoveBlock() can be wasteful operation, if the whole input data
-		   can fit in current block even without calling MoveBlock().
-		   in important case where (dataSize <= HistorySize)
-			 condition (p->BlockSize > dataSize + p->KeepSizeAfter) is met
-			 So there is no MoveBlock() in that case case.
-		*/
+		/// <summary>
+		/// Returns true if the buffer is nearly exhausted and MoveBlock() should be called before ReadBlock().
+		/// </summary>
+		/// <returns>true if a move is needed; false in direct-input mode or when stream has ended.</returns>
+		/// <remarks>
+		/// We call MoveBlock() before ReadBlock().
+		/// So MoveBlock() can be wasteful operation, if the whole input data can fit in current block even without calling MoveBlock().
+		/// In important case where (dataSize <= HistorySize) condition (p->BlockSize > dataSize + p->KeepSizeAfter) is met
+		/// So there is no MoveBlock() in that case.
+		/// </remarks>
 		private bool NeedMove()
 		{
 			if( DirectInput )
@@ -540,29 +574,33 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return ( BlockSize - BufferOffset ) <= KeepSizeAfter;
 		}
 
+		/// <summary>
+		/// Computes the total buffer size required for the given history size.
+		/// </summary>
+		/// <param name="inHistorySize">Requested history (dictionary) size in bytes.</param>
+		/// <returns>Required buffer size aligned to BlockSizeAlignSize, or 0 if the request would overflow.</returns>
 		private uint32 GetBlockSize( uint32 inHistorySize )
 		{
 			uint32 block_size = KeepSizeBefore + KeepSizeAfter;
 
-			// if 32-bit overflow
+			// If 32-bit overflow
 			if( KeepSizeBefore < inHistorySize || block_size < KeepSizeBefore )
 			{
 				return 0u;
 			}
 
-			uint32 max_block_size = MatchFinder.BlockSizeAlignTruncate;
-			uint32 remaining = max_block_size - block_size;
-			// do not overflow 32-bit here
+			uint32 remaining = MatchFinder.BlockSizeAlignTruncate - block_size;
+			// Do not overflow 32-bit here
 			uint32 reserve = ( block_size >> ( block_size < ( 1u << 30 ) ? 1 : 2 ) ) + ( 1u << 12 ) + MatchFinder.BlockMoveAlignSize + MatchFinder.BlockSizeAlignSize;
-			// we reject settings that will be slow
-			if( block_size >= max_block_size || remaining < MatchFinder.MinBlockSizeReserve )
+			// We reject settings that will be slow
+			if( block_size >= MatchFinder.BlockSizeAlignTruncate || remaining < MatchFinder.MinBlockSizeReserve )
 			{
 				return 0u;
 			}
 
 			if( reserve >= remaining )
 			{
-				block_size = max_block_size;
+				block_size = MatchFinder.BlockSizeAlignTruncate;
 			}
 			else
 			{
@@ -573,12 +611,15 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return block_size;
 		}
 
+		/// <summary>
+		/// Recalculates PositionLimit and LengthLimit based on the current stream state.
+		/// </summary>
 		private void SetLimits()
 		{
 			uint32 length = 0u - Position;
 			if( length == 0u )
 			{
-				length = UInt32.MaxValue;
+				length = uint32.MaxValue;
 			}
 
 			length = Math.Min( length, CyclicBufferSize - CyclicBufferPosition );
@@ -588,16 +629,15 @@ namespace Eternal.LZMA2SimpleCS.CS
 			uint32 max_length = MatchMaxLength;
 			if( num_available_bytes > keep_size_after )
 			{
-				// we must limit exactly to KeepSizeAfter for ReadBlock
+				// We must limit exactly to KeepSizeAfter for ReadBlock
 				num_available_bytes -= keep_size_after;
 			}
 			else if( num_available_bytes >= max_length )
 			{
-				// the limitation for (mf->LengthLimit) update
-				// optimization : to reduce the number of checks
+				// The limitation for (mf->LengthLimit) update
+				// Optimization : to reduce the number of checks
 				num_available_bytes -= max_length;
 				num_available_bytes++;
-				// k = 1; // non-optimized version : for debug
 			}
 			else
 			{
@@ -615,6 +655,13 @@ namespace Eternal.LZMA2SimpleCS.CS
 			PositionLimit = Position + length;
 		}
 
+		/// <summary>
+		/// Computes all three hash values for the four bytes at the current buffer position.
+		/// </summary>
+		/// <param name="h2">Receives the 2-byte hash index.</param>
+		/// <param name="h3">Receives the 3-byte hash index.</param>
+		/// <param name="hv">Receives the full 4-byte hash index into the main hash table.</param>
+		/// <returns>The previous match position stored in the main hash table at hv.</returns>
 		private uint32 HashCalcInternal( out uint32 h2, out uint32 h3, out uint32 hv )
 		{
 			// Load all bytes once
@@ -635,6 +682,14 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return Hash[hv + MatchFinder.MatchFinderHash2Size + MatchFinder.MatchFinderHash3Size];
 		}
 
+		/// <summary>
+		/// Updates all three hash table entries to the current position and returns the previous distances.
+		/// </summary>
+		/// <param name="h2">2-byte hash index.</param>
+		/// <param name="h3">3-byte hash index.</param>
+		/// <param name="hv">Full hash index.</param>
+		/// <param name="d2">Receives the distance to the previous 2-byte match.</param>
+		/// <param name="d3">Receives the distance to the previous 3-byte match.</param>
 		private void HashUpdate( uint32 h2, uint32 h3, uint32 hv, out uint32 d2, out uint32 d3 )
 		{
 			d2 = Position - Hash[h2];
@@ -645,6 +700,12 @@ namespace Eternal.LZMA2SimpleCS.CS
 			Hash[hv + MatchFinder.MatchFinderHash2Size + MatchFinder.MatchFinderHash3Size] = Position;
 		}
 
+		/// <summary>
+		/// Updates all three hash table entries to the current position without returning old distances.
+		/// </summary>
+		/// <param name="h2">2-byte hash index.</param>
+		/// <param name="h3">3-byte hash index.</param>
+		/// <param name="hv">Full hash index.</param>
 		private void HashSkip( uint32 h2, uint32 h3, uint32 hv )
 		{
 			Hash[h2] = Hash[h3 + MatchFinder.MatchFinderHash2Size]
@@ -656,51 +717,40 @@ namespace Eternal.LZMA2SimpleCS.CS
 	public class CMatchFinderHashChain
 		: CMatchFinder
 	{
-		public CMatchFinderHashChain()
-		{
-		}
-
 		/// <inheritdoc/>
-		public override bool IsBinaryTreeMode()
+		/// <remarks>Uses a hash chain to search for matches longer than the short-match threshold.</remarks>
+		public override void GetMatches( uint32[] baseDistances, ref uint32 pairCount )
 		{
-			return false;
-		}
-
-		/// <inheritdoc/>
-		public override void GetMatches( uint32[] distances, ref uint32 pairCount )
-		{
-			if( LengthLimit < 4u )
+			if( LengthLimit >= 4u )
 			{
-				MovePos();
-				return;
-			}
+				uint32 current_match = CalcHash( out uint32 d2, out uint32 d3 );
+				uint32 max_distance = Math.Min( CyclicBufferSize, Position );
+				uint32 max_length = 3u;
 
-			uint32 current_match = CalcHash( out uint32 d2, out uint32 d3 );
-			uint32 max_distance = Math.Min( CyclicBufferSize, Position );
-			uint32 max_length = 3u;
-
-			// Try to find short distance matches
-			if( !FindDistances( ref d2, d3, max_distance, distances, ref pairCount ) )
-			{
-				// HC: just update max_length
-				max_length = UpdateMaxLen( d2, max_length );
-				distances[pairCount - 2] = max_length;
-
-				if( max_length == LengthLimit )
+				// Try to find short distance matches
+				if( !FindDistances( ref d2, d3, max_distance, baseDistances, ref pairCount ) )
 				{
-					Hash[SonOffset + CyclicBufferPosition] = current_match;
-					MovePos();
-					return;
-				}
-			}
+					// HC: just update max_length
+					max_length = UpdateMaxLen( d2, max_length );
+					baseDistances[pairCount - 2] = max_length;
 
-			// Search for longer matches using hash chain
-			pairCount += GetMatchesSpec( current_match, distances, pairCount, max_length );
+					if( max_length == LengthLimit )
+					{
+						Hash[SonOffset + CyclicBufferPosition] = current_match;
+						MovePos();
+						return;
+					}
+				}
+
+				// Search for longer matches using hash chain
+				pairCount += GetMatchesSpec( current_match, baseDistances, pairCount, max_length );
+			}
 
 			MovePos();
 		}
 
 		/// <inheritdoc/>
+		/// <remarks>Updates the hash chain for each skipped position without recording matches.</remarks>
 		public override void Skip( uint32 length )
 		{
 			while( length > 0u )
@@ -737,9 +787,20 @@ namespace Eternal.LZMA2SimpleCS.CS
 			}
 		}
 
-		/*
-		  (LengthLimit > maxLength)
-		*/
+		/// <inheritdoc/>
+		protected override bool IsBinaryTreeMode()
+		{
+			return false;
+		}
+		
+		/// <summary>
+		/// Walks the hash chain from currentMatch to find all matches longer than maxLength.
+		/// </summary>
+		/// <param name="currentMatch">Previous match position from the main hash table.</param>
+		/// <param name="distances">Output array receiving (length, distance-1) pairs for each new match found.</param>
+		/// <param name="pairCount">Number of elements already in distances; new entries are appended from this index.</param>
+		/// <param name="maxLength">Minimum match length to record; only matches strictly longer than this are appended.</param>
+		/// <returns>Number of new (length, distance-1) pairs appended to distances.</returns>
 		private uint32 GetMatchesSpec( uint32 currentMatch, uint32[] distances, uint32 pairCount, uint32 maxLength )
 		{
 			uint32 cut_value = CutValue;
@@ -797,73 +858,70 @@ namespace Eternal.LZMA2SimpleCS.CS
 	public class CMatchFinderBinaryTree
 		: CMatchFinder
 	{
-		public CMatchFinderBinaryTree()
-		{
-		}
-
 		/// <inheritdoc/>
-		public override bool IsBinaryTreeMode()
+		/// <remarks>Uses a binary tree to search for matches longer than the short-match threshold.</remarks>
+		public override void GetMatches( uint32[] baseDistances, ref uint32 pairCount )
 		{
-			return true;
-		}
-
-		/// <inheritdoc/>
-		public override void GetMatches( uint32[] distances, ref uint32 pairCount )
-		{
-			if( LengthLimit < 4u )
+			if( LengthLimit >= 4u )
 			{
-				MovePos();
-				return;
-			}
+				uint32 current_match = CalcHash( out uint32 d2, out uint32 d3 );
+				uint32 max_distance = Math.Min( CyclicBufferSize, Position );
+				uint32 max_length = 3u;
 
-			uint32 current_match = CalcHash( out uint32 d2, out uint32 d3 );
-			uint32 max_distance = Math.Min( CyclicBufferSize, Position );
-			uint32 max_length = 3u;
-
-			// Try to find short distance matches
-			if( !FindDistances( ref d2, d3, max_distance, distances, ref pairCount ) )
-			{
-				// BT4: just update max_length
-				max_length = UpdateMaxLen( d2, max_length );
-				distances[pairCount - 2] = max_length;
-
-				if( max_length == LengthLimit )
+				// Try to find short distance matches
+				if( !FindDistances( ref d2, d3, max_distance, baseDistances, ref pairCount ) )
 				{
-					SkipMatchesSpec( current_match );
-					MovePos();
-					return;
-				}
-			}
+					// BT: just update max_length
+					max_length = UpdateMaxLen( d2, max_length );
+					baseDistances[pairCount - 2] = max_length;
 
-			// Search for longer matches using binary tree
-			pairCount += BinaryTreeTraverse( current_match, distances, pairCount, max_length, true );
+					if( max_length == LengthLimit )
+					{
+						SkipMatchesSpec( current_match );
+						MovePos();
+						return;
+					}
+				}
+
+				// Search for longer matches using binary tree
+				pairCount += BinaryTreeTraverse( current_match, baseDistances, pairCount, max_length, true );
+			}
 
 			MovePos();
 		}
 
 		/// <inheritdoc/>
+		/// <remarks>Updates the binary tree for each skipped position without recording matches.</remarks>
 		public override void Skip( uint32 length )
 		{
 			do
 			{
-				if( LengthLimit < 4u )
+				if( LengthLimit >= 4u )
 				{
-					MovePos();
+					SkipMatchesSpec( CalcHashSkip() );
 				}
-				else
-				{
-					uint32 current_match = CalcHashSkip();
-					SkipMatchesSpec( current_match );
 
-					MovePos();
-				}
+				MovePos();
 
 			} while( --length != 0u );
 		}
 
-		/*
-		  (LengthLimit > maxLength)
-		*/
+		/// <inheritdoc/>
+		protected override bool IsBinaryTreeMode()
+		{
+			return true;
+		}
+
+		
+		/// <summary>
+		/// Traverses the binary match tree from currentMatch, recording or skipping matches.
+		/// </summary>
+		/// <param name="currentMatch">Starting match position from the main hash table.</param>
+		/// <param name="distances">Output array for (length, distance-1) pairs; may be empty when recordMatches is false.</param>
+		/// <param name="pairCount">Number of elements already in distances; new entries are appended from this index.</param>
+		/// <param name="maxLength">Minimum match length to record; only matches strictly longer than this are appended.</param>
+		/// <param name="recordMatches">If true, appends matching pairs to distances; if false, only updates the tree.</param>
+		/// <returns>Number of new (length, distance-1) pairs appended to distances (0 when recordMatches is false).</returns>
 		private uint32 BinaryTreeTraverse( uint32 currentMatch, uint32[] distances, uint32 pairCount, uint32 maxLength, bool recordMatches )
 		{
 			uint32 cut_value = CutValue;
@@ -951,6 +1009,10 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return match_count;
 		}
 
+		/// <summary>
+		/// Traverses the binary tree from currentMatch to keep it consistent without recording any matches.
+		/// </summary>
+		/// <param name="currentMatch">Starting match position from the main hash table.</param>
 		private void SkipMatchesSpec( uint32 currentMatch )
 		{
 			BinaryTreeTraverse( currentMatch, [], 0u, 0u, false );

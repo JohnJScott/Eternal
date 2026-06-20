@@ -1,7 +1,5 @@
 ﻿// Copyright Eternal Developments, LLC. All Rights Reserved.
 
-using System.Diagnostics;
-
 namespace Eternal.LZMA2SimpleCS.CS
 {
 	using CExtra = UInt16;
@@ -17,31 +15,27 @@ namespace Eternal.LZMA2SimpleCS.CS
 	using uint64 = UInt64;
 	using uint8 = Byte;
 
-	public class LzmaEncoder
+	public static class LzmaEncoder
 	{
-		LzmaEncoder()
-		{
-		}
+		public const int8 NumMoveReducingBits = 4;
+		public const int8 NumBitPriceShiftBits = 4;
 
-		public static readonly int8 NumMoveReducingBits = 4;
-		public static readonly int8 NumBitPriceShiftBits = 4;
+		public const uint8 EncodeStateStart = 0;
+		public const uint8 EncodeStateLiteralAfterMatch = 4;
+		public const uint8 EncodeStateLiteralAfterRepeat = 5;
+		public const uint8 EncodeStateMatchAfterLiteral = 7;
+		public const uint8 EncodeStateRepeatAfterLiteral = 8;
 
-		public static readonly uint8 EncodeStateStart = 0;
-		public static readonly uint8 EncodeStateLiteralAfterMatch = 4;
-		public static readonly uint8 EncodeStateLiteralAfterRepeat = 5;
-		public static readonly uint8 EncodeStateMatchAfterLiteral = 7;
-		public static readonly uint8 EncodeStateRepeatAfterLiteral = 8;
+		public const uint32 InfinityPrice = 1u << 30;
+		public const int64 RangeEncoderBufferSize = 1 << 16;
 
-		public static readonly uint32 InfinityPrice = 1u << 30;
-		public static readonly int64 RangeEncoderBufferSize = 1 << 16;
+		public const uint32 NumOptimals = 1u << 11;
+		public const uint32 PackReserveSize = NumOptimals << 3;
+		public const int32 RepeatLengthCount = 64;
+		public const uint32 MarkLiteral = uint32.MaxValue;
 
-		public static readonly uint32 NumOptimals = 1u << 11;
-		public static readonly uint32 PackReserveSize = NumOptimals << 3;
-		public static readonly int32 RepeatLengthCount = 64;
-		public static readonly uint32 MarkLiteral = UInt32.MaxValue;
-
-		public static readonly uint32 MaxDictionarySizeBits = 32;
-		public static readonly uint32 DistanceTableSize = MaxDictionarySizeBits << 1;
+		public const uint32 MaxDictionarySizeBits = 32;
+		public const uint32 DistanceTableSize = MaxDictionarySizeBits << 1;
 	}
 
 	public partial class CLzmaEncoderProperties
@@ -113,9 +107,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 		}
 	}
 
-	/**
-	 * The class containing the parameters used for compression.
-	 */
+	/// <summary>The class containing the parameters used for compression.</summary>
 	public class CLzma1EncoderProperties
 		: CLzmaEncoderProperties
 	{
@@ -193,10 +185,10 @@ namespace Eternal.LZMA2SimpleCS.CS
 		private uint32 MatchPrice;
 		private uint32 RepeatMatchPrice;
 
-		// we want {len, dist} pairs to be 8-bytes aligned in matches array
+		// We want {len, dist} pairs to be 8-bytes aligned in matches array
 		private readonly uint32[] Matches = new uint32[( Lzma.MaxMatchLength << 1 ) + 2];
 
-		// we want 8-bytes alignment here
+		// We want 8-bytes alignment here
 		private readonly uint32[] AlignPrices = new uint32[Lzma.AlignmentTableSize];
 
 		// Array of NumLengthToPositionStates arrays of NumFullDistancesSize prices
@@ -226,7 +218,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 			new CProbability[1 << Lzma.NumPositionSlotBits]
 		];
 
-		// Array of NUM_STATES arrays of MaxPositionBitsStates probabilities
+		// Array of NumStates arrays of MaxPositionBitsStates probabilities
 		private readonly CProbability[][] IsMatch =
 		[
 			new CProbability[Lzma.MaxPositionBitsStates],
@@ -243,7 +235,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 			new CProbability[Lzma.MaxPositionBitsStates]
 		];
 
-		// Array of NUM_STATES arrays of MaxPositionBitsStates probabilities
+		// Array of NumStates arrays of MaxPositionBitsStates probabilities
 		private readonly CProbability[][] IsRep0Long =
 		[
 			new CProbability[Lzma.MaxPositionBitsStates],
@@ -280,12 +272,19 @@ namespace Eternal.LZMA2SimpleCS.CS
 		private bool WriteEndMark;
 		private SevenZipResult Result;
 
-		// The lookup table is 5% faster than calculating the value each time, but requires the 16KB table.
-		// Function defined here so the compiler can inline it.
+		/// <summary>
+		/// Maps a position index to the binary-tree block-size slot used for distance coding.
+		/// </summary>
+		/// <remarks>
+		/// Uses the <c>SlotLookupTable</c> when compiled with <c>USE_BLOCK_SIZE_LOOKUP</c> for
+		/// ~5% speed gain; otherwise computes the slot from the MSB position.
+		/// </remarks>
+		/// <param name="position">Distance value or half-distance index to map.</param>
+		/// <returns>The position-slot index for <paramref name="position"/>.</returns>
 		static uint8 GetBlockSizeFromPosition( uint32 position )
 		{
 #if USE_BLOCK_SIZE_LOOKUP
-			return BlockSizeLookup[position];
+			return SlotLookupTable.BlockSizeLookup[position];
 #else
 			if( position < 5u )
 			{
@@ -310,16 +309,16 @@ namespace Eternal.LZMA2SimpleCS.CS
 			public CProbability[] LiteralProbabilities = [];
 
 			private uint32 State;
-			private uint32[] Repeats = new uint32[Lzma.NumRepeats];
+			private readonly uint32[] Repeats = new uint32[Lzma.NumRepeats];
 
-			private CProbability[] PositionAlignEncoder = new CProbability[1 << Lzma.NumAlignmentBits];
-			private CProbability[] IsRep = new CProbability[Lzma.NumStates];
-			private CProbability[] IsRepG0 = new CProbability[Lzma.NumStates];
-			private CProbability[] IsRepG1 = new CProbability[Lzma.NumStates];
-			private CProbability[] IsRepG2 = new CProbability[Lzma.NumStates];
+			private readonly CProbability[] PositionAlignEncoder = new CProbability[1 << Lzma.NumAlignmentBits];
+			private readonly CProbability[] IsRep = new CProbability[Lzma.NumStates];
+			private readonly CProbability[] IsRepG0 = new CProbability[Lzma.NumStates];
+			private readonly CProbability[] IsRepG1 = new CProbability[Lzma.NumStates];
+			private readonly CProbability[] IsRepG2 = new CProbability[Lzma.NumStates];
 
 			// Array of NUM_STATES arrays of MaxPositionBitsStates probabilities
-			private CProbability[][] IsMatch =
+			private readonly CProbability[][] IsMatch =
 			[
 				new CProbability[Lzma.MaxPositionBitsStates],
 				new CProbability[Lzma.MaxPositionBitsStates],
@@ -336,7 +335,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 			];
 
 			// Array of NUM_STATES arrays of MaxPositionBitsStates probabilities
-			private CProbability[][] IsRep0Long =
+			private readonly CProbability[][] IsRep0Long =
 			[
 				new CProbability[Lzma.MaxPositionBitsStates],
 				new CProbability[Lzma.MaxPositionBitsStates],
@@ -352,7 +351,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 				new CProbability[Lzma.MaxPositionBitsStates]
 			];
 
-			private CProbability[][] PositionSlotEncoder =
+			private readonly CProbability[][] PositionSlotEncoder =
 			[
 				new CProbability[1 << Lzma.NumPositionSlotBits],
 				new CProbability[1 << Lzma.NumPositionSlotBits],
@@ -360,7 +359,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 				new CProbability[1 << Lzma.NumPositionSlotBits]
 			];
 
-			private CProbability[] PositionEncoders = new CProbability[Lzma.NumFullDistancesSize];
+			private readonly CProbability[] PositionEncoders = new CProbability[Lzma.NumFullDistancesSize];
 
 			private CLengthEncoder LengthProbabilities = new CLengthEncoder();
 			private CLengthEncoder RepeatLengthProbabilities = new CLengthEncoder();
@@ -448,7 +447,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 			// > 1 : MATCH (extra-1) : LIT : REP0 (len)
 			public uint32 Length;
 			public uint32 Distance;
-			public uint32[] Repeats = new uint32[Lzma.NumRepeats];
+			public readonly uint32[] Repeats = new uint32[Lzma.NumRepeats];
 		}
 
 		private class CheckedOutStreamInterface
@@ -462,6 +461,13 @@ namespace Eternal.LZMA2SimpleCS.CS
 				Overflow = false;
 			}
 
+			/// <summary>
+			/// Copies bytes into the output buffer, capping the write if the buffer would overflow.
+			/// </summary>
+			/// <param name="data">Source data array.</param>
+			/// <param name="offset">Byte offset within <paramref name="data"/> to begin copying from.</param>
+			/// <param name="blockSize">Number of bytes requested; may be reduced if the buffer is nearly full.</param>
+			/// <returns>Number of bytes actually written.</returns>
 			public override int64 Write( uint8[] data, int64 offset, int64 blockSize )
 			{
 				int64 remaining = WorkBufferSize - WorkBufferOffset;
@@ -489,9 +495,12 @@ namespace Eternal.LZMA2SimpleCS.CS
 
 		private class CLengthEncoder
 		{
-			public CProbability[] Low = new CProbability[Lzma.MaxPositionBitsStates << ( Lzma.LengthEncoderNumLowBits + 1 )];
-			public CProbability[] High = new CProbability[Lzma.LengthEncoderNumHighSymbols];
+			public readonly CProbability[] Low = new CProbability[Lzma.MaxPositionBitsStates << ( Lzma.LengthEncoderNumLowBits + 1 )];
+			public readonly CProbability[] High = new CProbability[Lzma.LengthEncoderNumHighSymbols];
 
+			/// <summary>
+			/// Resets all probability entries in the Low and High arrays to their initial value.
+			/// </summary>
 			public void Init()
 			{
 				Array.Fill<CProbability>( Low, Lzma.InitProbabilityValue );
@@ -518,12 +527,15 @@ namespace Eternal.LZMA2SimpleCS.CS
 
 			public SevenZipResult Result = SevenZipResult.SevenZipOK;
 
-			private uint8[] RangeEncoderBuffer = new uint8[LzmaEncoder.RangeEncoderBufferSize];
+			private readonly uint8[] RangeEncoderBuffer = new uint8[LzmaEncoder.RangeEncoderBufferSize];
 			private uint32 Cache = 0;
 
+			/// <summary>
+			/// Resets all range-coder state to prepare for a new encoding session.
+			/// </summary>
 			public void Init()
 			{
-				Range = UInt32.MaxValue;
+				Range = uint32.MaxValue;
 				Cache = 0u;
 				Low = 0u;
 				CacheSize = 0u;
@@ -532,6 +544,9 @@ namespace Eternal.LZMA2SimpleCS.CS
 				Result = SevenZipResult.SevenZipOK;
 			}
 
+			/// <summary>
+			/// Writes any bytes remaining in the internal buffer to the output stream.
+			/// </summary>
 			public void FlushStream()
 			{
 				if( Result == SevenZipResult.SevenZipOK )
@@ -547,7 +562,10 @@ namespace Eternal.LZMA2SimpleCS.CS
 			}
 
 
-			public void CheckFlush()
+			/// <summary>
+			/// Flushes the internal buffer to the stream when it is full.
+			/// </summary>
+			private void CheckFlush()
 			{
 				if( BufferOffset >= LzmaEncoder.RangeEncoderBufferSize )
 				{
@@ -555,10 +573,14 @@ namespace Eternal.LZMA2SimpleCS.CS
 				}
 			}
 
-			public void ShiftLow()
+			/// <summary>
+			/// Propagates carry from the low accumulator into the output stream, emitting deferred
+			/// bytes and handling carry propagation through the cache.
+			/// </summary>
+			private void ShiftLow()
 			{
 				uint32 low32 = ( uint32 )( Low & uint32.MaxValue );
-				uint32 high32 = ( uint32 )( ( Low >> 32 ) & UInt32.MaxValue );
+				uint32 high32 = ( uint32 )( ( Low >> 32 ) & uint32.MaxValue );
 				Low = low32 << 8;
 				if( low32 < 0xFF000000u || high32 != 0u )
 				{
@@ -585,6 +607,9 @@ namespace Eternal.LZMA2SimpleCS.CS
 				}
 			}
 
+			/// <summary>
+			/// Finalises the range-coded output by flushing the last five bytes of state.
+			/// </summary>
 			public void FlushData()
 			{
 				for( int32 i = 0; i < 5; i++ )
@@ -593,6 +618,10 @@ namespace Eternal.LZMA2SimpleCS.CS
 				}
 			}
 
+			/// <summary>
+			/// Renormalises the range by shifting it left 8 bits when it falls below the threshold,
+			/// emitting one output byte via <see cref="ShiftLow"/>.
+			/// </summary>
 			public void UpdateRange()
 			{
 				if( Range < Lzma.MaxRangeValue )
@@ -602,7 +631,11 @@ namespace Eternal.LZMA2SimpleCS.CS
 				}
 			}
 
-			public void UpdateNewBoundUpdateRange( uint32 bound )
+			/// <summary>
+			/// Encodes a 1-bit by selecting the upper sub-range and renormalising.
+			/// </summary>
+			/// <param name="bound">Pre-computed split point from <see cref="CalcNewBound"/>.</param>
+			private void UpdateNewBoundUpdateRange( uint32 bound )
 			{
 				Range -= bound;
 				Low += bound;
@@ -610,17 +643,30 @@ namespace Eternal.LZMA2SimpleCS.CS
 				UpdateRange();
 			}
 
+			/// <summary>
+			/// Encodes a 0-bit by selecting the lower sub-range and renormalising.
+			/// </summary>
+			/// <param name="bound">Pre-computed split point from <see cref="CalcNewBound"/>.</param>
 			public void SetNewBoundUpdateRange( uint32 bound )
 			{
 				Range = bound;
 				UpdateRange();
 			}
 
+			/// <summary>
+			/// Computes the probability-weighted range split point for the given probability value.
+			/// </summary>
+			/// <param name="probability">Current probability estimate for bit 0.</param>
+			/// <returns>The boundary that divides the current range into the 0 and 1 sub-ranges.</returns>
 			public uint32 CalcNewBound( uint32 probability )
 			{
 				return ( Range >> Lzma.NumBitModelTotalBits ) * probability;
 			}
 
+			/// <summary>
+			/// Encodes a single 0-bit and updates the probability model toward 0.
+			/// </summary>
+			/// <param name="probability">Probability entry to update; passed by reference.</param>
 			public void EncodeBit0( ref CProbability probability )
 			{
 				Range = CalcNewBound( probability );
@@ -629,6 +675,12 @@ namespace Eternal.LZMA2SimpleCS.CS
 				UpdateRange();
 			}
 
+			/// <summary>
+			/// Encodes a single bit and updates the corresponding probability entry.
+			/// </summary>
+			/// <param name="probabilities">Probability table.</param>
+			/// <param name="offset">Index of the probability entry to use and update.</param>
+			/// <param name="bit">Bit value to encode (0 or 1).</param>
 			public void Iterate( CProbability[] probabilities, uint32 offset, uint32 bit )
 			{
 				CProbability probability = probabilities[offset];
@@ -636,13 +688,13 @@ namespace Eternal.LZMA2SimpleCS.CS
 
 				if( bit == 0u )
 				{
-					/* bit == 0: encode lower half of range */
+					// bit == 0: encode lower half of range
 					Range = new_bound;
 					probabilities[offset] = ( CProbability )( probability + ( ( Lzma.BitModelTableSize - probability ) >> Lzma.NumMoveBits ) );
 				}
 				else
 				{
-					/* bit == 1: encode upper half of range */
+					// bit == 1: encode upper half of range
 					Range -= new_bound;
 					Low += new_bound;
 					probabilities[offset] = ( CProbability )( probability - ( probability >> Lzma.NumMoveBits ) );
@@ -651,6 +703,12 @@ namespace Eternal.LZMA2SimpleCS.CS
 				UpdateRange();
 			}
 
+			/// <summary>
+			/// Encodes an 8-bit symbol through an 8-deep binary probability tree.
+			/// </summary>
+			/// <param name="probabilities">Probability table.</param>
+			/// <param name="arrayOffset">Base offset into <paramref name="probabilities"/> for this tree.</param>
+			/// <param name="symbol">The 8-bit symbol to encode.</param>
 			public void Encode( CProbability[] probabilities, uint32 arrayOffset, uint32 symbol )
 			{
 				symbol |= 0x100u;
@@ -665,6 +723,14 @@ namespace Eternal.LZMA2SimpleCS.CS
 				} while( symbol < 0x10000u );
 			}
 
+			/// <summary>
+			/// Encodes an 8-bit literal using a match-context binary tree, blending literal and
+			/// match-offset probability tables based on how much the match byte agrees with the symbol.
+			/// </summary>
+			/// <param name="probabilities">Probability table.</param>
+			/// <param name="arrayOffset">Base offset into <paramref name="probabilities"/>.</param>
+			/// <param name="symbol">The 8-bit literal byte to encode.</param>
+			/// <param name="matchByte">The byte at the same offset in the most recent match (REP0).</param>
 			public void EncodeMatched( CProbability[] probabilities, uint32 arrayOffset, uint32 symbol, uint32 matchByte )
 			{
 				uint32 offset = 0x100u;
@@ -682,6 +748,13 @@ namespace Eternal.LZMA2SimpleCS.CS
 				} while( symbol < 0x10000u );
 			}
 
+			/// <summary>
+			/// Encodes a multi-bit symbol LSB-first through a binary probability tree.
+			/// </summary>
+			/// <param name="probabilities">Probability table.</param>
+			/// <param name="arrayOffset">Base offset into <paramref name="probabilities"/>.</param>
+			/// <param name="numBits">Number of bits to encode.</param>
+			/// <param name="symbol">Value whose least-significant <paramref name="numBits"/> bits are encoded.</param>
 			public void ReverseEncode( CProbability[] probabilities, uint32 arrayOffset, int8 numBits, uint32 symbol )
 			{
 				uint32 offset = 1u;
@@ -697,6 +770,13 @@ namespace Eternal.LZMA2SimpleCS.CS
 				} while( --numBits != 0u );
 			}
 
+			/// <summary>
+			/// Encodes a match-length symbol using the three-tier length-encoder probability tree
+			/// (low 0–7, mid 8–15, high 16+).
+			/// </summary>
+			/// <param name="le">Length-encoder probability tables to use and update.</param>
+			/// <param name="symbol">Length value offset by the minimum match length.</param>
+			/// <param name="posState">Position state index selecting the low/mid sub-tree.</param>
 			public void LengthEncode( CLengthEncoder le, uint32 symbol, uint32 posState )
 			{
 				uint32 le_offset = 0u;
@@ -706,7 +786,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 				// Check if symbol is in low range (0-7)
 				if( symbol >= Lzma.LengthEncoderNumLowSymbols )
 				{
-					// Update probability and move to mid range
+					// Update probability and move to mid-range
 					le.Low[le_offset] = ( CProbability )( probability - ( probability >> Lzma.NumMoveBits ) );
 					UpdateNewBoundUpdateRange( new_bound );
 
@@ -725,11 +805,11 @@ namespace Eternal.LZMA2SimpleCS.CS
 						return;
 					}
 
-					// Symbol is in mid range (8-15)
+					// Symbol is in mid-range (8-15)
 					symbol -= Lzma.LengthEncoderNumLowSymbols;
 				}
 
-				// Encode symbol in low/mid range
+				// Encode symbol in low/mid-range
 				SetNewBoundUpdateRange( new_bound );
 				le.Low[le_offset] = ( CProbability )( probability + ( ( Lzma.BitModelTableSize - probability ) >> Lzma.NumMoveBits ) );
 
@@ -745,6 +825,11 @@ namespace Eternal.LZMA2SimpleCS.CS
 				}
 			}
 
+			/// <summary>
+			/// Encodes a 1-bit (end-marker style) and updates the probability toward 1,
+			/// equivalent to <see cref="UpdateNewBoundUpdateRange"/> followed by a probability decrease.
+			/// </summary>
+			/// <param name="probability">Probability entry to update; passed by reference.</param>
 			public void IterateEndMark( ref CProbability probability )
 			{
 				uint32 new_bound = CalcNewBound( probability );
@@ -756,7 +841,12 @@ namespace Eternal.LZMA2SimpleCS.CS
 				probability = ( CProbability )( probability - ( probability >> Lzma.NumMoveBits ) );
 			}
 
-			// Helper function to encode a tree symbol with all bits set to 1
+			/// <summary>
+			/// Encodes a binary-tree symbol in which every bit is 1, traversing the tree right at
+			/// each level via <see cref="IterateEndMark"/>.
+			/// </summary>
+			/// <param name="probabilities">Probability table for the binary tree.</param>
+			/// <param name="numBits">Depth of the tree (number of bits to encode).</param>
 			public void EncodeTreeAllOnes( CProbability[] probabilities, int8 numBits )
 			{
 				uint32 offset = 1u;
@@ -788,18 +878,24 @@ namespace Eternal.LZMA2SimpleCS.CS
 
 		~Lzma1Enc()
 		{
-			FreeLits();
+			FreeLiterals();
 		}
 
 		/// <summary>
 		/// Hints the encoder about the total expected input size so the dictionary can be sized accordingly.
 		/// </summary>
-		/// <param name="expectedDataSize">Expected number of bytes to encode; pass Int64.MaxValue if unknown.</param>
+		/// <param name="expectedDataSize">Expected number of bytes to encode; pass int64.MaxValue if unknown.</param>
 		public void SetDataSize( int64 expectedDataSize )
 		{
 			MatchFinder.ExpectedDataSize = expectedDataSize;
 		}
 
+		/// <summary>
+		/// Computes the bit-price for encoding a literal byte in the given literal-context state.
+		/// </summary>
+		/// <param name="literalContext">Combined position/previous-byte context index.</param>
+		/// <param name="symbol">The literal byte value to price.</param>
+		/// <returns>Price in probability-price units.</returns>
 		private uint32 GetPrice( uint32 literalContext, uint32 symbol )
 		{
 			uint32 base_offset = 3u * ( literalContext << LiteralContextBits );
@@ -817,6 +913,13 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return price;
 		}
 
+		/// <summary>
+		/// Computes the bit-price for encoding a literal byte using the match-context probability tree.
+		/// </summary>
+		/// <param name="literalContext">Combined position/previous-byte context index.</param>
+		/// <param name="symbol">The literal byte value to price.</param>
+		/// <param name="matchByte">The byte at the same offset in the most recent match (REP0).</param>
+		/// <returns>Price in probability-price units.</returns>
 		private uint32 MatchedGetPrice( uint32 literalContext, uint32 symbol, uint32 matchByte )
 		{
 			uint32 base_offset = 3u * ( literalContext << LiteralContextBits );
@@ -836,6 +939,16 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return price;
 		}
 
+		/// <summary>
+		/// Fills eight price entries (four length pairs) in the price table for a single position state,
+		/// starting from a given probability array base and initial price.
+		/// </summary>
+		/// <param name="baseArray">Probability array containing the tree nodes.</param>
+		/// <param name="baseOffset">Index of the first node in the sub-tree within <paramref name="baseArray"/>.</param>
+		/// <param name="startPrice">Base price to add to each computed entry.</param>
+		/// <param name="prices">2-D price table to update (indexed by [posState, symbol]).</param>
+		/// <param name="posState">Position state row to fill.</param>
+		/// <param name="priceOffset">Column offset within the row at which to start writing.</param>
 		private void SetPrices( CProbability[] baseArray, uint32 baseOffset, uint32 startPrice, ref uint32[,] prices, uint32 posState, uint32 priceOffset )
 		{
 			for( uint32 i = 0u; i < 8u; i += 2u )
@@ -851,6 +964,12 @@ namespace Eternal.LZMA2SimpleCS.CS
 			}
 		}
 
+		/// <summary>
+		/// Recomputes all price entries in a length-price encoder from the current probability model.
+		/// </summary>
+		/// <param name="lpe">Length-price encoder whose price table is to be refreshed.</param>
+		/// <param name="numPosStates">Number of position states to update (1 &lt;&lt; PositionBits).</param>
+		/// <param name="le">Source length-encoder probability tables.</param>
 		private void UpdateTables( CLengthPriceEncoder lpe, uint32 numPosStates, CLengthEncoder le )
 		{
 			//Debug.Print( $"Event {++EventNumber:D6}: ---UpdateTables" );
@@ -905,6 +1024,11 @@ namespace Eternal.LZMA2SimpleCS.CS
 			}
 		}
 
+		/// <summary>
+		/// Advances the match finder by one position and retrieves new match candidates.
+		/// </summary>
+		/// <param name="numPairs">Set to the number of (length, distance) pairs returned by the match finder.</param>
+		/// <returns>Length of the longest match found, extended to its full run if it equals <see cref="Lzma1Enc.FastBytes"/>.</returns>
 		private uint32 ReadMatchDistances( ref uint32 numPairs )
 		{
 			numPairs = 0u;
@@ -941,6 +1065,14 @@ namespace Eternal.LZMA2SimpleCS.CS
 		}
 
 
+		/// <summary>
+		/// Computes the price (in bits) of encoding the repeat-distance selection flags for a given
+		/// repeat slot, independent of the match length.
+		/// </summary>
+		/// <param name="repIndex">Repeat slot (0 = REP0, 1 = REP1, 2 = REP2, 3 = REP3).</param>
+		/// <param name="state">Current encoder state.</param>
+		/// <param name="posState">Current position state.</param>
+		/// <returns>Price contribution from the repeat-index selection bits.</returns>
 		private uint32 GetPricePureRep( uint32 repIndex, uint64 state, uint64 posState )
 		{
 			uint32 price;
@@ -969,6 +1101,13 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return price;
 		}
 
+		/// <summary>
+		/// Traces the optimal-parse chain backwards from position <paramref name="cur"/> to position 0,
+		/// writing the reversed decision sequence into <see cref="Optimals"/> and setting
+		/// <see cref="OptimalCurrent"/> to the first decision.
+		/// </summary>
+		/// <param name="cur">Index of the last optimal-parse entry to trace back from.</param>
+		/// <returns>Length of the first symbol in the optimal sequence.</returns>
 		private uint32 Backward( uint32 cur )
 		{
 			//Debug.Print( $"Event {++EventNumber:D6}: ---Backward" );
@@ -1020,6 +1159,13 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return length;
 		}
 
+		/// <summary>
+		/// Scans the optimal-parse array near the end of its window and skips ahead to the
+		/// lowest-price entry when the parser is close to overflowing.
+		/// </summary>
+		/// <param name="curRef">Current parser position; updated to the best-price position when skipping.</param>
+		/// <param name="last">Index of the last valid optimal entry.</param>
+		/// <returns><see langword="true"/> if the parser should stop and emit the best decision; <see langword="false"/> to continue.</returns>
 		private bool GetBestPrice( ref uint32 curRef, uint32 last )
 		{
 			// 18.06
@@ -1054,6 +1200,13 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return false;
 		}
 
+		/// <summary>
+		/// Derives the four repeat-distance registers that will be in effect after encoding the
+		/// symbol at the given previous position with the given distance.
+		/// </summary>
+		/// <param name="repeats">Output array to receive the updated repeat-distance registers.</param>
+		/// <param name="previous">Index of the previous optimal-parse entry whose distances are used as source.</param>
+		/// <param name="distance">Distance value of the symbol being encoded (raw index, not offset).</param>
 		private void GetOptimalRepeats( uint32[] repeats, uint32 previous, uint32 distance )
 		{
 			if( distance < Lzma.NumRepeats )
@@ -1091,7 +1244,14 @@ namespace Eternal.LZMA2SimpleCS.CS
 			}
 		}
 
-		// Initialize repeat distance lengths
+		/// <summary>
+		/// Measures the match length at each of the four repeat distances and records the longest one.
+		/// </summary>
+		/// <param name="reps">Output array to receive the current repeat distances copied from <see cref="Repeats"/>.</param>
+		/// <param name="repLens">Output array to receive the match length at each repeat distance (0 if no 2-byte match).</param>
+		/// <param name="dataOffset">Buffer offset of the current byte being encoded.</param>
+		/// <param name="numAvail">Number of bytes available from the current position.</param>
+		/// <param name="repeatMaxIndex">Set to the index of the repeat slot with the longest match.</param>
 		private void InitRepeatLengths( uint32[] reps, uint32[] repLens, int64 dataOffset, uint32 numAvail, ref uint32 repeatMaxIndex )
 		{
 			repeatMaxIndex = 0u;
@@ -1129,7 +1289,15 @@ namespace Eternal.LZMA2SimpleCS.CS
 			}
 		}
 
-		// Check for immediate fast matches
+		/// <summary>
+		/// Returns the length of an immediately usable fast match (repeat or main) when one reaches
+		/// the fast-bytes threshold, skipping the full optimal parser.
+		/// </summary>
+		/// <param name="mainLength">Length of the best main match found by the match finder.</param>
+		/// <param name="pairCount">Number of (length, distance) pairs in <see cref="Matches"/>.</param>
+		/// <param name="repeatLengths">Array of match lengths at each repeat distance.</param>
+		/// <param name="repeatMaxIndex">Index of the repeat slot with the longest match.</param>
+		/// <returns>Non-zero fast-match length if one was found and selected; 0 to continue to optimal parsing.</returns>
 		private uint32 CheckFastMatches( uint32 mainLength, uint32 pairCount, uint32[] repeatLengths, uint32 repeatMaxIndex )
 		{
 			uint32 best_rep_len = repeatLengths[repeatMaxIndex];
@@ -1156,7 +1324,15 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return 0u;
 		}
 
-		// Initialize first optimal entry (literal)
+		/// <summary>
+		/// Populates <see cref="Optimals"/>[0] and [1] with the literal cost at the start of a new
+		/// optimal-parse window, seeding the parser with the initial state.
+		/// </summary>
+		/// <param name="position">Current absolute encoding position (used to select the literal context).</param>
+		/// <param name="dataOffset">Buffer offset of the current byte.</param>
+		/// <param name="curByte">The byte to be encoded as a literal.</param>
+		/// <param name="matchByte">The byte at the REP0 distance (used for matched-literal pricing).</param>
+		/// <param name="positionState">Current position state (position modulo position-bits period).</param>
 		private void InitFirstOptimal( uint32 position, int64 dataOffset, uint32 curByte, uint32 matchByte, uint32 positionState )
 		{
 			// Set initial state
@@ -1177,7 +1353,16 @@ namespace Eternal.LZMA2SimpleCS.CS
 			//Debug.Print( $"Event {++EventNumber:D6}: InitFirstOptimal: {Optimals[1].Price}" );
 		}
 
-		// Try short repeat (REP0 with length 1)
+		/// <summary>
+		/// Prices and, if better, records a REP0-length-1 (short repeat) at position 1 of the
+		/// optimal-parse window, and returns immediately when it is the only candidate.
+		/// </summary>
+		/// <param name="curByte">Current byte being encoded.</param>
+		/// <param name="matchByte">Byte at the REP0 distance (must equal <paramref name="curByte"/> to qualify).</param>
+		/// <param name="repLens">Match lengths at each repeat distance.</param>
+		/// <param name="repeatMatchPrice">Base price for entering a repeat-match sequence.</param>
+		/// <param name="positionState">Current position state.</param>
+		/// <param name="last">Furthest valid optimal entry; set to 1 when the short-repeat is the only path.</param>
 		private void TryShortRepeat( uint32 curByte, uint32 matchByte, uint32[] repLens, uint32 repeatMatchPrice, uint32 positionState, ref uint32 last )
 		{
 			// Only process if bytes match and REP0 distance is valid
@@ -1210,7 +1395,13 @@ namespace Eternal.LZMA2SimpleCS.CS
 			}
 		}
 
-		// Process repeat matches
+		/// <summary>
+		/// Prices each repeat-distance match at the start of an optimal-parse window and updates
+		/// <see cref="Optimals"/> entries for all viable lengths.
+		/// </summary>
+		/// <param name="repLens">Match lengths at each repeat distance (from <see cref="InitRepeatLengths"/>).</param>
+		/// <param name="repeatMatchPrice">Base price for entering a repeat-match sequence.</param>
+		/// <param name="positionState">Current position state.</param>
 		private void ProcessRepeatMatches( uint32[] repLens, uint32 repeatMatchPrice, uint32 positionState )
 		{
 			//Debug.Print( $"Event {++EventNumber:D6}: ---ProcessRepeatMatches" );
@@ -1243,7 +1434,15 @@ namespace Eternal.LZMA2SimpleCS.CS
 			}
 		}
 
-		// Process main matches
+		/// <summary>
+		/// Prices each new (non-repeat) match at the start of an optimal-parse window and updates
+		/// <see cref="Optimals"/> entries for all viable lengths.
+		/// </summary>
+		/// <param name="mainLength">Longest match length from the match finder.</param>
+		/// <param name="pairCount">Number of (length, distance) pairs in <see cref="Matches"/>.</param>
+		/// <param name="repLens">Match lengths at each repeat distance (used to skip lengths already covered by repeats).</param>
+		/// <param name="matchPrice">Base price for entering a new-match sequence.</param>
+		/// <param name="positionState">Current position state.</param>
 		private void ProcessMainMatches( uint32 mainLength, uint32 pairCount, uint32[] repLens, uint32 matchPrice, uint32 positionState )
 		{
 			// Early exit if no main matches to process
@@ -1321,7 +1520,16 @@ namespace Eternal.LZMA2SimpleCS.CS
 			}
 		}
 
-		// Try literal followed by REP0
+		/// <summary>
+		/// Considers the two-symbol sequence LIT : REP0 at the current optimal-parser position and
+		/// records a combined price entry when it beats the current best.
+		/// </summary>
+		/// <param name="cur">Current position within the optimal-parse window.</param>
+		/// <param name="last">Furthest valid optimal entry; extended when new entries are priced.</param>
+		/// <param name="nextIsLiteral"><see langword="true"/> if position cur+1 is already priced as a literal.</param>
+		/// <param name="bytesMatch"><see langword="true"/> when the current byte equals the REP0 byte (short-repeat guard).</param>
+		/// <param name="literalPrice">Pre-computed price of encoding the literal at cur+1 (0 when not applicable).</param>
+		/// <param name="numAvailFull">Number of bytes available from position cur+1.</param>
 		private void TryLiteralRep0( uint32 cur, ref uint32 last, bool nextIsLiteral, bool bytesMatch, uint32 literalPrice, uint32 numAvailFull )
 		{
 			// Early exit checks - skip if any condition fails
@@ -1379,7 +1587,17 @@ namespace Eternal.LZMA2SimpleCS.CS
 			}
 		}
 
-		// Try REP : LIT : REP0 sequence
+		/// <summary>
+		/// Considers the three-symbol sequence REP : LIT : REP0 at the current optimal-parser
+		/// position and records a combined price entry when it beats the current best.
+		/// </summary>
+		/// <param name="cur">Current position within the optimal-parse window.</param>
+		/// <param name="last">Furthest valid optimal entry; extended when new entries are priced.</param>
+		/// <param name="repIndex">Repeat slot index (0–3) for the leading REP symbol.</param>
+		/// <param name="length">Length of the leading REP match.</param>
+		/// <param name="price">Base price for the leading REP (excluding length encoding).</param>
+		/// <param name="dataOffset">Distance value corresponding to <paramref name="repIndex"/>.</param>
+		/// <param name="numAvailFull">Number of bytes available from the current position.</param>
 		private void TryRepLitRep0( uint32 cur, ref uint32 last, uint32 repIndex, uint32 length, uint32 price, int64 dataOffset, uint32 numAvailFull )
 		{
 			// Calculate initial limit and check viability
@@ -1409,13 +1627,12 @@ namespace Eternal.LZMA2SimpleCS.CS
 	         MatchedGetPrice( literal_context, MatchFinder.BufferBase[literal_buffer_offset], MatchFinder.BufferBase[literal_buffer_offset - dataOffset] );
 
 			// Add price for the final REP0
-			uint32 final_state = LzmaEncoder.EncodeStateLiteralAfterRepeat;
 			uint32 final_position_state = ( position_state2 + 1u ) & PositionMask;
 
-			price += ProbabilityPrices[( IsMatch[final_state][final_position_state] ^ Lzma.BitModelTableMask ) >> LzmaEncoder.NumMoveReducingBits] +
-			         ProbabilityPrices[( IsRep0Long[final_state][final_position_state] ^ Lzma.BitModelTableMask ) >> LzmaEncoder.NumMoveReducingBits] +
-			         ProbabilityPrices[( IsRep[final_state] ^ Lzma.BitModelTableMask ) >> LzmaEncoder.NumMoveReducingBits] +
-			         ProbabilityPrices[IsRepG0[final_state] >> LzmaEncoder.NumMoveReducingBits];
+			price += ProbabilityPrices[( IsMatch[LzmaEncoder.EncodeStateLiteralAfterRepeat][final_position_state] ^ Lzma.BitModelTableMask ) >> LzmaEncoder.NumMoveReducingBits] +
+			         ProbabilityPrices[( IsRep0Long[LzmaEncoder.EncodeStateLiteralAfterRepeat][final_position_state] ^ Lzma.BitModelTableMask ) >> LzmaEncoder.NumMoveReducingBits] +
+			         ProbabilityPrices[( IsRep[LzmaEncoder.EncodeStateLiteralAfterRepeat] ^ Lzma.BitModelTableMask ) >> LzmaEncoder.NumMoveReducingBits] +
+			         ProbabilityPrices[IsRepG0[LzmaEncoder.EncodeStateLiteralAfterRepeat] >> LzmaEncoder.NumMoveReducingBits];
 
 			// Find full REP0 match length
 			uint32 repeat0_length = start_position;
@@ -1448,7 +1665,15 @@ namespace Eternal.LZMA2SimpleCS.CS
 			}
 		}
 
-		// Process repeat distances in optimal parsing loop
+		/// <summary>
+		/// Prices all four repeat-distance matches at position <paramref name="cur"/> inside the main
+		/// optimal-parsing loop, updates <see cref="Optimals"/>, and attempts REP : LIT : REP0 extensions.
+		/// </summary>
+		/// <param name="cur">Current position within the optimal-parse window.</param>
+		/// <param name="last">Furthest valid optimal entry; updated when new entries extend the window.</param>
+		/// <param name="startLength">Minimum match length to consider for subsequent main matches; set to
+		/// REP0 match length + 1 after processing repeat slot 0.</param>
+		/// <param name="numAvailFull">Number of bytes available from the current position.</param>
 		private void ProcessRepeatsInLoop( uint32 cur, ref uint32 last, ref uint32 startLength, uint32 numAvailFull )
 		{
 			//Debug.Print( $"Event {++EventNumber:D6}: ---ProcessRepeatsInLoop" );
@@ -1503,7 +1728,16 @@ namespace Eternal.LZMA2SimpleCS.CS
 			}
 		}
 
-		// Try MATCH : LIT : REP0 sequence
+		/// <summary>
+		/// Considers the three-symbol sequence MATCH : LIT : REP0 at the current optimal-parser
+		/// position and records a combined price entry when it beats the current best.
+		/// </summary>
+		/// <param name="cur">Current position within the optimal-parse window.</param>
+		/// <param name="last">Furthest valid optimal entry; extended when new entries are priced.</param>
+		/// <param name="matchLength">Length of the leading MATCH.</param>
+		/// <param name="matchDistance">Distance of the leading MATCH (raw, before adding NumRepeats offset).</param>
+		/// <param name="price">Pre-computed price of the leading MATCH symbol (slot + length).</param>
+		/// <param name="numAvailFull">Number of bytes available from the current position.</param>
 		private void TryMatchLitRep0( uint32 cur, ref uint32 last, uint32 matchLength, uint32 matchDistance, uint32 price, uint32 numAvailFull )
 		{
 			//Debug.Print( $"Event {++EventNumber:D6}: ---TryMatchLitRep0" );
@@ -1545,13 +1779,12 @@ namespace Eternal.LZMA2SimpleCS.CS
 			         MatchedGetPrice( literal_context, MatchFinder.BufferBase[literal_position + MatchFinder.BufferOffset - 1u], MatchFinder.BufferBase[literal_position + MatchFinder.BufferOffset - matchDistance - 2u] );
 
 			// Add price for the final REP0
-			uint32 final_state = LzmaEncoder.EncodeStateLiteralAfterMatch;
 			uint32 final_position_state = ( position_state2 + 1u ) & PositionMask;
 
-			price += ProbabilityPrices[( IsMatch[final_state][final_position_state] ^ Lzma.BitModelTableMask ) >> LzmaEncoder.NumMoveReducingBits] +
-			         ProbabilityPrices[( IsRep0Long[final_state][final_position_state] ^ Lzma.BitModelTableMask ) >> LzmaEncoder.NumMoveReducingBits] +
-			         ProbabilityPrices[( IsRep[final_state] ^ Lzma.BitModelTableMask ) >> LzmaEncoder.NumMoveReducingBits] +
-			         ProbabilityPrices[IsRepG0[final_state] >> LzmaEncoder.NumMoveReducingBits];
+			price += ProbabilityPrices[( IsMatch[LzmaEncoder.EncodeStateLiteralAfterMatch][final_position_state] ^ Lzma.BitModelTableMask ) >> LzmaEncoder.NumMoveReducingBits] +
+			         ProbabilityPrices[( IsRep0Long[LzmaEncoder.EncodeStateLiteralAfterMatch][final_position_state] ^ Lzma.BitModelTableMask ) >> LzmaEncoder.NumMoveReducingBits] +
+			         ProbabilityPrices[( IsRep[LzmaEncoder.EncodeStateLiteralAfterMatch] ^ Lzma.BitModelTableMask ) >> LzmaEncoder.NumMoveReducingBits] +
+			         ProbabilityPrices[IsRepG0[LzmaEncoder.EncodeStateLiteralAfterMatch] >> LzmaEncoder.NumMoveReducingBits];
 
 			// Update last position if this extends it
 			uint32 end_position = cur + matchLength + rep0_length;
@@ -1574,7 +1807,17 @@ namespace Eternal.LZMA2SimpleCS.CS
 			}
 		}
 
-		// Process main matches in optimal parsing loop
+		/// <summary>
+		/// Prices all new (non-repeat) matches at position <paramref name="cur"/> inside the main
+		/// optimal-parsing loop, updates <see cref="Optimals"/>, and attempts MATCH : LIT : REP0
+		/// extensions at each match boundary.
+		/// </summary>
+		/// <param name="cur">Current position within the optimal-parse window.</param>
+		/// <param name="last">Furthest valid optimal entry; updated when new entries extend the window.</param>
+		/// <param name="newLength">Longest match length returned by the match finder at this position.</param>
+		/// <param name="pairCount">Number of (length, distance) pairs in <see cref="Matches"/>.</param>
+		/// <param name="startLength">Minimum match length to price (skips lengths already covered by repeats).</param>
+		/// <param name="numAvailFull">Number of bytes available from the current position.</param>
 		private void ProcessMainMatchesInLoop( uint32 cur, ref uint32 last, uint32 newLength, uint32 pairCount, uint32 startLength, uint32 numAvailFull )
 		{
 			// Early exit if new length doesn't extend past start length
@@ -1655,7 +1898,13 @@ namespace Eternal.LZMA2SimpleCS.CS
 			}
 		}
 
-		// Main optimal parsing function (now much shorter!)
+		/// <summary>
+		/// Selects the optimal symbol to emit at the given encoding position using a full
+		/// optimal-parser (Viterbi-like dynamic-programming search over the probability model).
+		/// </summary>
+		/// <param name="position">Current absolute encoding position.</param>
+		/// <returns>Length of the first symbol in the optimal sequence; <see cref="BackRes"/> is set
+		/// to the corresponding distance (or <see cref="LzmaEncoder.MarkLiteral"/> for a literal).</returns>
 		private uint32 GetOptimum( uint32 position )
 		{
 			uint32[] reps = new uint32[Lzma.NumRepeats];
@@ -1728,10 +1977,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 			}
 
 			// Copy initial repeat distances
-			Optimals[0].Repeats[0] = reps[0];
-			Optimals[0].Repeats[1] = reps[1];
-			Optimals[0].Repeats[2] = reps[2];
-			Optimals[0].Repeats[3] = reps[3];
+			Array.Copy( reps, Optimals[0].Repeats, Lzma.NumRepeats );
 
 			// Process initial repeat matches
 			ProcessRepeatMatches( repeat_lengths, repeat_match_price, position_state );
@@ -1907,6 +2153,12 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return Backward( cur );
 		}
 
+		/// <summary>
+		/// Selects a symbol to emit using the fast (greedy) encoder path, which avoids the full
+		/// optimal parser by applying simple heuristics to choose between repeat and new matches.
+		/// </summary>
+		/// <returns>Length of the selected symbol; <see cref="BackRes"/> is set to the corresponding
+		/// distance (or <see cref="LzmaEncoder.MarkLiteral"/> for a literal).</returns>
 		private uint32 GetOptimumFast()
 		{
 			// Get match distances from match finder
@@ -2095,6 +2347,10 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return main_length;
 		}
 
+		/// <summary>
+		/// Writes the LZMA end-of-stream (EOS) marker sequence into the range coder.
+		/// </summary>
+		/// <param name="posState">Current position state (selects the IsMatch probability context).</param>
 		private void WriteEndMarker( uint32 posState )
 		{
 			// Encode isMatch = 1 (this is a match, not a literal)
@@ -2116,7 +2372,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 			RangeCoder.EncodeTreeAllOnes( PositionSlotEncoder[0], Lzma.NumPositionSlotBits );
 
 			// Encode direct bits (30 - NumAlignmentBits) with all bits set to 1
-			int32 num_direct_bits = 30 - Lzma.NumAlignmentBits;
+			const int32 num_direct_bits = 30 - Lzma.NumAlignmentBits;
 			for( uint32 i = 0u; i < num_direct_bits; i++ )
 			{
 				RangeCoder.Range >>= 1;
@@ -2128,6 +2384,10 @@ namespace Eternal.LZMA2SimpleCS.CS
 			RangeCoder.EncodeTreeAllOnes( PositionAlignEncoder, Lzma.NumAlignmentBits );
 		}
 
+		/// <summary>
+		/// Checks the range coder and match finder for I/O errors and sets <see cref="Finished"/> on failure.
+		/// </summary>
+		/// <returns>Current result code.</returns>
 		private SevenZipResult CheckErrors()
 		{
 			if( Result != SevenZipResult.SevenZipOK )
@@ -2153,6 +2413,10 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return Result;
 		}
 
+		/// <summary>
+		/// Finalises the stream: optionally writes the EOS marker, then flushes range-coder and stream buffers.
+		/// </summary>
+		/// <param name="nowPos">Current encoding position (used to derive the EOS position state).</param>
 		private void Flush( uint32 nowPos )
 		{
 			Finished = true;
@@ -2165,7 +2429,12 @@ namespace Eternal.LZMA2SimpleCS.CS
 			RangeCoder.FlushStream();
 		}
 
-		// Helper function to calculate price for encoding a symbol through binary tree
+		/// <summary>
+		/// Computes the bit-price for the first three alignment bits of a symbol.
+		/// </summary>
+		/// <param name="symbol">Alignment symbol (lower 3 bits are consumed).</param>
+		/// <param name="m">Binary-tree node index, updated in place as bits are consumed.</param>
+		/// <returns>Price in probability-price units.</returns>
 		private uint32 CalcTreeAlignPrice( uint32 symbol, ref uint32 m )
 		{
 			uint32 price = 0u;
@@ -2184,6 +2453,14 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return price;
 		}
 
+		/// <summary>
+		/// Computes the bit-price for the footer bits of a position-model distance.
+		/// </summary>
+		/// <param name="positionIndex">Distance index within the position-model block.</param>
+		/// <param name="positionOffset">Offset into <see cref="PositionEncoders"/> for this block.</param>
+		/// <param name="footerBits">Number of footer bits to price.</param>
+		/// <param name="m">Binary-tree node index, updated in place.</param>
+		/// <returns>Price in probability-price units.</returns>
 		private uint32 GetPositionModelPrice( uint32 positionIndex, uint32 positionOffset, int8 footerBits, ref uint32 m )
 		{
 			uint32 price = 0;
@@ -2206,6 +2483,12 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return price;
 		}
 
+		/// <summary>
+		/// Computes the price for a position-slot symbol through the binary tree.
+		/// </summary>
+		/// <param name="lps">Length-to-position state index.</param>
+		/// <param name="symbol">Position slot index to price.</param>
+		/// <returns>Price in probability-price units.</returns>
 		private uint32 CalcTreeDistancePrice( uint32 lps, uint32 symbol )
 		{
 			CProbability[] probabilities = PositionSlotEncoder[lps];
@@ -2226,6 +2509,9 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return price;
 		}
 
+		/// <summary>
+		/// Precomputes <see cref="AlignPrices"/> for all 16 alignment bit values.
+		/// </summary>
 		private void FillAlignPrices()
 		{
 			//Debug.Print( $"Event {++EventNumber:D6}: ---FillAlignPrices" );
@@ -2245,6 +2531,10 @@ namespace Eternal.LZMA2SimpleCS.CS
 			}
 		}
 
+		/// <summary>
+		/// Precomputes <see cref="DistancesPrices"/> and <see cref="PositionSlotPrices"/> for all
+		/// length-to-position states.
+		/// </summary>
 		private void FillDistancesPrices()
 		{
 			//Debug.Print( $"Event {++EventNumber:D6}: ---FillDistancesPrices" );
@@ -2311,12 +2601,19 @@ namespace Eternal.LZMA2SimpleCS.CS
 			}
 		}
 
-		private void FreeLits()
+		/// <summary>
+		/// Releases the live and saved-state literal probability arrays.
+		/// </summary>
+		private void FreeLiterals()
 		{
 			LiteralProbabilities = [];
 			SavedState.LiteralProbabilities = [];
 		}
 
+		/// <summary>
+		/// Encodes the literal byte at the current match-finder offset.
+		/// </summary>
+		/// <param name="nowPos32">Current 32-bit encoding position (selects the literal probability context).</param>
 		private void Lit( uint32 nowPos32 )
 		{
 			int64 data_offset = MatchFinder.BufferOffset - AdditionalOffset;
@@ -2334,6 +2631,11 @@ namespace Eternal.LZMA2SimpleCS.CS
 			}
 		}
 
+		/// <summary>
+		/// Returns the optimal match length for the current encoding position.
+		/// </summary>
+		/// <param name="nowPos32">Current 32-bit encoding position.</param>
+		/// <returns>Optimal match length selected by the parser.</returns>
 		private uint32 GetLength( uint32 nowPos32 )
 		{
 			uint32 length;
@@ -2360,6 +2662,14 @@ namespace Eternal.LZMA2SimpleCS.CS
 		}
 
 
+		/// <summary>
+		/// Handles the first-byte special case and returns the current 32-bit position.
+		/// At position 0, if no data is available, flushes the stream. Otherwise, reads the first
+		/// match distance and encodes the first byte as a literal before returning 1. For all later
+		/// positions, simply returns the low 32 bits of <see cref="NowPos64"/>.
+		/// </summary>
+		/// <param name="re">Range encoder used to emit the initial literal bits at position 0.</param>
+		/// <returns>1 if the first byte was encoded, or the low 32 bits of the current position otherwise.</returns>
 		private uint32 LiteralBit( CRangeEncoder re )
 		{
 			if( NowPos64 == 0 )
@@ -2379,10 +2689,19 @@ namespace Eternal.LZMA2SimpleCS.CS
 				return 1u;
 			}
 
-			return ( uint32 )( NowPos64 & UInt32.MaxValue );
+			return ( uint32 )( NowPos64 & uint32.MaxValue );
 		}
 
-		private SevenZipResult CodeOneBlock( uint32 maxPackSize, uint32 maxUnpackSize )
+		/// <summary>
+		/// Encodes one block of data, stopping when a pack or unpack size limit is reached.
+		/// Initialises the match finder on the first call, then loops encoding symbols (literals,
+		/// repeat matches, and new matches) until the input is exhausted or a size limit fires.
+		/// Price tables are refreshed periodically during the loop.
+		/// </summary>
+		/// <param name="maxPackSize">Maximum compressed bytes to emit before yielding (0 = no limit).</param>
+		/// <param name="maxUnpackSize">Maximum uncompressed bytes to consume before yielding.</param>
+		/// <returns>SevenZipOK, or a read/write error code if an I/O failure was detected.</returns>
+		private SevenZipResult CodeOneBlock( uint32 maxPackSize, int64 maxUnpackSize )
 		{
 			if( NeedInit )
 			{
@@ -2401,8 +2720,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 				return result;
 			}
 
-			uint32 start_pos_32 = ( uint32 )( NowPos64 & UInt32.MaxValue );
-
+			uint32 start_pos_32 = ( uint32 )( NowPos64 & uint32.MaxValue );
 			uint32 now_pos_32 = LiteralBit( RangeCoder );
 
 			result = CheckErrors();
@@ -2525,7 +2843,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 							}
 							else
 							{
-								uint32 dist_limit = ( 1u << ( Lzma.NumLogBits + 6 ) );
+								const uint32 dist_limit = 1u << ( Lzma.NumLogBits + 6 ) ;
 								int8 shift = ( dist < dist_limit ) ? ( int8 )6 : ( int8 )( 5 + Lzma.NumLogBits );
 								pos_slot = GetBlockSizeFromPosition( dist >> shift ) + ( uint32 )( shift << 1 );
 							}
@@ -2628,13 +2946,19 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return CheckErrors();
 		}
 
+		/// <summary>
+		/// Allocates the literal probability tables, match-finder window, and optimal-parser array.
+		/// </summary>
+		/// <param name="keepWindowSize">Number of bytes at the beginning of the dictionary window to preserve
+		/// across re-initialisation (passed to the match finder).</param>
+		/// <returns>SevenZipOK on success, or SevenZipErrorMemory if any allocation fails.</returns>
 		private SevenZipResult AllocateMemory( uint32 keepWindowSize )
 		{
 			// Allocate or reallocate literal probability tables if needed
 			int32 lclp = LiteralContextBits + LiteralPositionBits;
 			if( LiteralProbabilities.LongLength == 0 || SavedState.LiteralProbabilities.LongLength == 0 || TotalLiteralBits != lclp )
 			{
-				FreeLits();
+				FreeLiterals();
 
 				uint32 prob_array_size = ( 0x300u << lclp );
 				LiteralProbabilities = new CProbability[prob_array_size];
@@ -2673,47 +2997,40 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return SevenZipResult.SevenZipOK;
 		}
 
+		/// <summary>
+		/// Resets all encoder state to its initial values.
+		/// Zeroes the LZ state, repeat distances, all probability models, position masks,
+		/// literal mask, and the optimal-parser queue.
+		/// </summary>
 		private void Init()
 		{
 			State = 0u;
-			Repeats[0] = 1u;
-			Repeats[1] = 1u;
-			Repeats[2] = 1u;
-			Repeats[3] = 1u;
+			Array.Fill( Repeats, 1u );
 
 			RangeCoder.Init();
 
 			Array.Fill( PositionAlignEncoder, Lzma.InitProbabilityValue );
 
+			Array.Fill( IsRep, Lzma.InitProbabilityValue );
+			Array.Fill( IsRepG0, Lzma.InitProbabilityValue );
+			Array.Fill( IsRepG1, Lzma.InitProbabilityValue );
+			Array.Fill( IsRepG2, Lzma.InitProbabilityValue );
+
 			for( uint32 i = 0u; i < Lzma.NumStates; i++ )
 			{
-				for( uint32 j = 0u; j < Lzma.MaxPositionBitsStates; j++ )
-				{
-					IsMatch[i][j] = Lzma.InitProbabilityValue;
-					IsRep0Long[i][j] = Lzma.InitProbabilityValue;
-				}
-
-				IsRep[i] = Lzma.InitProbabilityValue;
-				IsRepG0[i] = Lzma.InitProbabilityValue;
-				IsRepG1[i] = Lzma.InitProbabilityValue;
-				IsRepG2[i] = Lzma.InitProbabilityValue;
+				Array.Fill( IsMatch[i], Lzma.InitProbabilityValue );
+				Array.Fill( IsRep0Long[i], Lzma.InitProbabilityValue );
 			}
 
 			for( uint32 i = 0u; i < Lzma.NumLengthToPositionStates; i++ )
 			{
-				for( uint32 j = 0u; j < ( 1 << Lzma.NumPositionSlotBits ); j++ )
-				{
-					PositionSlotEncoder[i][j] = Lzma.InitProbabilityValue;
-				}
+				Array.Fill( PositionSlotEncoder[i], Lzma.InitProbabilityValue );
 			}
 
 			Array.Fill( PositionEncoders, Lzma.InitProbabilityValue );
 
-			uint32 count = Lzma.LiteralSize << ( LiteralPositionBits + LiteralContextBits );
-			for( uint32 i = 0; i < count; i++ )
-			{
-				LiteralProbabilities[i] = Lzma.InitProbabilityValue;
-			}
+			int32 count = ( int32 )( Lzma.LiteralSize << ( LiteralPositionBits + LiteralContextBits ) );
+			Array.Fill( LiteralProbabilities, Lzma.InitProbabilityValue, 0, count );
 
 			LengthProbabilities.Init();
 			RepeatLengthProbabilities.Init();
@@ -2721,10 +3038,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 			OptimalEnd = 0u;
 			OptimalCurrent = 0u;
 
-			for( uint32 optimal_index = 0; optimal_index < LzmaEncoder.NumOptimals; optimal_index++ )
-			{
-				Optimals[optimal_index].Price = LzmaEncoder.InfinityPrice;
-			}
+			Array.ForEach( Optimals, o => o.Price = LzmaEncoder.InfinityPrice );
 
 			AdditionalOffset = 0u;
 
@@ -2732,6 +3046,11 @@ namespace Eternal.LZMA2SimpleCS.CS
 			LiteralMask = ( 0x100u << LiteralPositionBits ) - ( 0x100u >> LiteralContextBits );
 		}
 
+		/// <summary>
+		/// Initialises price tables and length-encoder counters after <see cref="Init"/>.
+		/// Fills distance and alignment price caches when not in fast mode, sets the
+		/// length-table sizes, and seeds both length encoders with initial prices.
+		/// </summary>
 		private void InitPrices()
 		{
 			if( !FastMode )
@@ -2749,6 +3068,11 @@ namespace Eternal.LZMA2SimpleCS.CS
 			UpdateTables( RepeatLenEnc, 1u << PositionBits, RepeatLengthProbabilities );
 		}
 
+		/// <summary>
+		/// Computes the distance table size, then allocates and fully initialises the encoder.
+		/// </summary>
+		/// <param name="keepWindowSize">Number of dictionary bytes to preserve across re-initialisation.</param>
+		/// <returns>SevenZipOK on success, or a memory-allocation error code.</returns>
 		private SevenZipResult AllocAndInit( uint32 keepWindowSize )
 		{
 			int32 shift;
@@ -2791,6 +3115,15 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return AllocAndInit( keepWindowSize );
 		}
 
+		/// <summary>
+		/// Prepares the encoder to compress an in-memory buffer.
+		/// Configures the match finder to read directly from the supplied byte array instead of
+		/// a stream, then calls <see cref="AllocAndInit"/> to reset and allocate all encoder state.
+		/// </summary>
+		/// <param name="src">Array containing the uncompressed input data.</param>
+		/// <param name="srcLen">Length of the input data in bytes.</param>
+		/// <param name="keepWindowSize">Number of dictionary bytes to preserve across re-initialisation.</param>
+		/// <returns>SevenZipOK on success, or a memory-allocation error code.</returns>
 		private SevenZipResult MemPrepare( uint8[] src, int64 srcLen, uint32 keepWindowSize )
 		{
 			MatchFinder.DirectInput = true;
@@ -2820,6 +3153,11 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return MatchFinder.BufferOffset - AdditionalOffset;
 		}
 
+		/// <summary>
+		/// Reports the current compress progress to the optional progress callback.
+		/// </summary>
+		/// <returns>SevenZipOK if no callback is registered or the callback succeeded;
+		/// SevenZipErrorProgress if the callback signalled cancellation.</returns>
 		private SevenZipResult ReportProgress()
 		{
 			if( Progress != null )
@@ -2848,7 +3186,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 			size = Lzma.LzmaPropertiesSize;
 
 			// Encode properties byte (LiteralContextBits, LiteralPositionBits, PositionBits)
-			int32 full_properties = ( PositionBits * 5 + LiteralPositionBits ) * 9 + LiteralContextBits;
+			int32 full_properties = ( ( ( PositionBits * 5 ) + LiteralPositionBits ) * 9 ) + LiteralContextBits;
 			properties[0] = ( uint8 )( full_properties & 0xff );
 
 			// Encode aligned dictionary size for decoder
@@ -2856,7 +3194,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 			if( DictionarySize >= ( 1u << 21 ) )
 			{
 				// For large dictionaries (>= 2MB), align to 1MB boundary
-				uint32 alignment_mask = ( 1u << 20 ) - 1u;
+				const uint32 alignment_mask = ( 1u << 20 ) - 1u;
 				encoded_dict_size = ( DictionarySize + alignment_mask ) & ~alignment_mask;
 
 				// Prevent overflow from alignment
@@ -2892,7 +3230,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 		/// <param name="desiredPackSize">Maximum number of compressed bytes to produce.</param>
 		/// <param name="unpackSize">On exit: number of uncompressed bytes consumed.</param>
 		/// <returns>SevenZipOK on success, or SevenZipErrorOutputEof if the output buffer is full.</returns>
-		public SevenZipResult CodeOneMemBlock( bool reInit, uint8[] baseDest, int64 offset, ref int64 destLen, uint32 desiredPackSize, ref uint32 unpackSize )
+		public SevenZipResult CodeOneMemBlock( bool reInit, uint8[] baseDest, int64 offset, ref int64 destLen, uint32 desiredPackSize, ref int64 unpackSize )
 		{
 			CheckedOutStreamInterface out_stream_interface = new CheckedOutStreamInterface( baseDest, offset, destLen );
 
@@ -2918,7 +3256,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 
 			SevenZipResult result = CodeOneBlock( desiredPackSize, unpackSize );
 
-			unpackSize = ( uint32 )( NowPos64 - now_pos_64 );
+			unpackSize = NowPos64 - now_pos_64;
 			destLen = out_stream_interface.WorkBufferOffset - offset;
 			if( out_stream_interface.Overflow )
 			{
@@ -2928,6 +3266,14 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return result;
 		}
 
+		/// <summary>
+		/// Compresses an in-memory buffer and writes the result to another buffer.
+		/// </summary>
+		/// <param name="compressed">Output buffer to receive the compressed data.</param>
+		/// <param name="compressedLength">On entry: capacity of <paramref name="compressed"/>. On exit: bytes written.</param>
+		/// <param name="decompressed">Input buffer containing the data to compress.</param>
+		/// <param name="decompressedLength">Number of bytes in <paramref name="decompressed"/> to compress.</param>
+		/// <returns>SevenZipOK on success, SevenZipErrorOutputEof if the output buffer overflowed, or another error code.</returns>
 		private SevenZipResult MemEncode( uint8[] compressed, ref int64 compressedLength, uint8[] decompressed, int64 decompressedLength )
 		{
 			CheckedOutStreamInterface out_stream_interface = new CheckedOutStreamInterface( compressed, 0, compressedLength );

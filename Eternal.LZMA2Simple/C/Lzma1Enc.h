@@ -8,14 +8,14 @@
 
 /* ---------- Lzma1Enc Interface ---------- */
 
-/* LzmaEnc* functions can return the following exit codes:
-  SZ_OK           - OK
-  SZ_ERROR_MEM    - Memory allocation error
-  SZ_ERROR_PARAM  - Incorrect parameter in EncoderProperties
-  SZ_ERROR_WRITE  - ISeqOutStream write callback error
-  SZ_ERROR_OUTPUT_EOF - output buffer overflow - version with (uint8*) output
-  SZ_ERROR_PROGRESS - some break from progress callback
-  SZ_ERROR_THREAD - error in multithreading functions (only for Mt version)
+/** LzmaEnc* functions can return the following exit codes:
+  SevenZipOK             - OK
+  SevenZipErrorMem       - Memory allocation error
+  SevenZipErrorParam     - Incorrect parameter in EncoderProperties
+  SevenZipErrorWrite     - ISeqOutStream write callback error
+  SevenZipErrorOutputEof - output buffer overflow - version with (uint8*) output
+  SevenZipErrorProgress  - some break from progress callback
+  SevenZipErrorThread    - error in multithreading functions (only for Mt version)
 */
 
 typedef uint16 CState;
@@ -106,7 +106,7 @@ public:
 	void EncodeMatched( CProbability* probabilities, uint32 arrayOffset, uint32 symbol, uint32 matchByte );
 	void ReverseEncode( CProbability* probabilities, uint32 arrayOffset, int8 numBits, uint32 symbol );
 
-	OutStreamInterface* outStream = nullptr;
+	OutStreamInterface* OutStream = nullptr;
 
 	int64 Low = 0;
 	int64 Processed = 0;
@@ -153,7 +153,7 @@ public:
 
 	const uint8* GetBufferBase() const;
 	int64 GetCurrentOffset() const;
-	SevenZipResult CodeOneMemBlock( bool reInit, uint8* baseDest, int64 offset, int64& destLen, uint32 desiredPackSize, uint32& unpackSize );
+	SevenZipResult CodeOneMemBlock( const bool reInit, uint8* baseDest, const int64 offset, int64& destLen, const uint32 desiredPackSize, int64& unpackSize );
 	void SaveState();
 	void RestoreState();
 	SevenZipResult GetCodedProperties( uint8* properties, uint64& size ) const;
@@ -170,7 +170,7 @@ private:
 	static void SetPrices( const CProbability* baseArray, const uint32 baseOffset, const uint32 startPrice, uint32* prices, uint32 priceOffset );
 	static void UpdateTables( CLengthPriceEncoder* lpe, const uint32 numPosStates, const CLengthEncoder* le );
 
-	void FreeLits();
+	void FreeLiterals();
 	void Lit( const uint32 nowPos32 );
 	bool GetBestPrice( uint32& curRef, const uint32 last );
 	uint32 GetPricePureRep( const uint32 repIndex, const uint64 state, const uint64 posState ) const;
@@ -195,7 +195,7 @@ private:
 	void TryLiteralRep0( const uint32 cur, uint32& last, const bool nextIsLiteral, const bool bytesMatch, const uint32 literalPrice, const uint32 numAvailFull ) const;
 	void TryMatchLitRep0( const uint32 cur, uint32& last, const uint32 matchLength, const uint32 matchDistance, uint32 price, const uint32 numAvailFull ) const;
 	uint32 CheckFastMatches( const uint32 mainLength, const uint32 pairCount, const uint32* repeatLengths, const uint32 repeatMaxIndex );
-	SevenZipResult CodeOneBlock( uint32 maxPackSize, const uint32 maxUnpackSize );
+	SevenZipResult CodeOneBlock( const uint32 maxPackSize, const int64 maxUnpackSize );
 	SevenZipResult AllocateMemory( uint32 keepWindowSize );
 	void InitPrices();
 	SevenZipResult AllocAndInit( uint32 keepWindowSize );

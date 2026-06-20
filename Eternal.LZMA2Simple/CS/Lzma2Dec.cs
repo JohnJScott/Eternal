@@ -25,7 +25,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 		  S - Props
 		*/
 
-		enum ELzma2State
+		private enum ELzma2State
 			: int8
 		{
 			Lzma2StateControl = 0,
@@ -40,17 +40,17 @@ namespace Eternal.LZMA2SimpleCS.CS
 			Lzma2StateError
 		};
 
-		Lzma2Dec( uint8[] decompressed )
+		private Lzma2Dec( uint8[] decompressed )
 		{
 			Decoder = new Lzma1Dec( decompressed );
 		}
 
-		private Lzma1Dec Decoder;
+		private readonly Lzma1Dec Decoder;
 
 		private ELzma2State StateControl = ELzma2State.Lzma2StateControl;
 		private uint8 Control = 0;
 		private uint8 NeedInitLevel = 224;
-		private uint32 PackSize = 0;
+		private uint32 PackSize = 0u;
 		private uint32 UnpackSize = 0u;
 
 		/// <summary>
@@ -59,14 +59,14 @@ namespace Eternal.LZMA2SimpleCS.CS
 		/// <param name="prop">One-byte LZMA2 property summary encoding the dictionary size (0–40).</param>
 		/// <param name="decoderProperties">Output array of at least 5 bytes to receive the LZMA1 properties.</param>
 		/// <returns>SevenZipOK on success, or SevenZipErrorUnsupported if prop is out of range.</returns>
-		public SevenZipResult DecodeLegacyProperties( uint8 prop, uint8[] decoderProperties )
+		public static SevenZipResult DecodeLegacyProperties( uint8 prop, uint8[] decoderProperties )
 		{
-			if( prop > 40 )
+			if( prop > 40u )
 			{
 				return SevenZipResult.SevenZipErrorUnsupported;
 			}
 
-			uint32 dict_size = ( prop == 40u ) ? UInt32.MaxValue : ( ( 2u | ( prop & 1u ) ) << ( prop / 2 + 11 ) );
+			uint32 dict_size = ( prop == 40u ) ? uint32.MaxValue : ( ( 2u | ( prop & 1u ) ) << ( prop / 2 + 11 ) );
 			decoderProperties[0] = ( uint8 )( Lzma.MaxCombinedLiteralBits );
 			decoderProperties[1] = ( uint8 )( ( dict_size >> 0 ) & 0xff );
 			decoderProperties[2] = ( uint8 )( ( dict_size >> 8 ) & 0xff );
@@ -76,6 +76,12 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return SevenZipResult.SevenZipOK;
 		}
 
+		/// <summary>
+		/// Decodes a single LZMA2 properties byte into the decoder's PositionBits, LiteralContextBits,
+		/// and LiteralPositionBits fields, and updates PositionMask and LiteralMask.
+		/// </summary>
+		/// <param name="stateByte">The LZMA2 properties byte encoding lc, pb, and lp as (pb * 5 + lp) * 9 + lc.</param>
+		/// <returns>Lzma2StateData on success, or Lzma2StateError if the byte is out of range or lc + lp exceeds MaxCombinedLiteralBits.</returns>
 		private ELzma2State DecodeProperties( uint8 stateByte )
 		{
 			if( stateByte >= 9u * 5u * 5u )
@@ -101,7 +107,12 @@ namespace Eternal.LZMA2SimpleCS.CS
 			return ELzma2State.Lzma2StateData;
 		}
 
-		// ELzma2State
+		/// <summary>
+		/// Advances the LZMA2 block-header state machine by one byte, driving through
+		/// Control → Unpack0 → Unpack1 → Pack0 → Pack1 → Properties → Data transitions.
+		/// </summary>
+		/// <param name="stateByte">The next byte of the LZMA2 block header.</param>
+		/// <returns>The next ELzma2State, or Lzma2StateFinished / Lzma2StateError as appropriate.</returns>
 		private ELzma2State UpdateState( uint8 stateByte )
 		{
 			switch( StateControl )
@@ -235,8 +246,8 @@ namespace Eternal.LZMA2SimpleCS.CS
 
 					if( StateControl == ELzma2State.Lzma2StateData )
 					{
-						bool initDic = ( Control == Lzma.Lzma2ControlCopyResetDict );
-						Decoder.InitDictAndState( initDic, false );
+						bool init_dic = ( Control == Lzma.Lzma2ControlCopyResetDict );
+						Decoder.InitDictAndState( init_dic, false );
 					}
 
 					in_current = Math.Min( in_current, out_current );
@@ -327,7 +338,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 			uint8[] decoder_properties = new uint8[Lzma.LzmaPropertiesSize];
 
 			// Decode Lzma2 byte summary to 5 byte array of Lzma1 properties
-			SevenZipResult result = dec2.DecodeLegacyProperties( prop, decoder_properties );
+			SevenZipResult result = DecodeLegacyProperties( prop, decoder_properties );
 			if( result != SevenZipResult.SevenZipOK )
 			{
 				return result;
@@ -347,7 +358,7 @@ namespace Eternal.LZMA2SimpleCS.CS
 				return result;
 			}
 
-			// Allocate the probabitilies based on the decompression parameters.
+			// Allocate the probabilities based on the decompression parameters.
 			result = dec2.Decoder.AllocateProbabilities();
 			if( result != SevenZipResult.SevenZipOK )
 			{
