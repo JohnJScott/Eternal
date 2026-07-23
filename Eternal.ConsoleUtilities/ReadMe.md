@@ -31,6 +31,10 @@ A set of functions to read and write Xml files.
 
 A set of functions to read and write Yaml files.
 
+# Changes 23rd July 2026
+
+Added SBOM creation. Updated Yaml library.
+
 # Changes 5th June 2026
 
 The only functional change is the text encoding of Json and Yaml files is now UTF-8 and not UTF-16. Not sure how that slipped through! 
