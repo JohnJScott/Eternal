@@ -5,13 +5,14 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <GenerateSbom>true</GenerateSbom>
     <Description>Some Perforce helper functions.</Description>
     <Copyright>Copyright Eternal Developments, LLC . All rights reserved.</Copyright>
     <PackageProjectUrl>http://eternaldevelopments.com/docs/</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Version>$(VersionPrefix)</Version>
     <PackageTags>Perforce</PackageTags>
-    <VersionPrefix>1.0.14</VersionPrefix>
+    <VersionPrefix>1.0.15</VersionPrefix>
     <PackageReadmeFile>ReadMe.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/JohnJScott/Eternal</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>	
@@ -26,8 +27,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Eternal.ConsoleUtilities" Version="1.0.12" />
-    <PackageReference Include="p4api.net" Version="2025.2.287.2434" />
+    <PackageReference Include="Eternal.ConsoleUtilities" Version="1.0.13" />
+    <PackageReference Include="p4api.net" Version="2026.1.299.3959" />
   </ItemGroup>
 
   <ItemGroup>

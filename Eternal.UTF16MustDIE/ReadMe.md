@@ -97,6 +97,10 @@ using System.Reflection;
 ਍嬀愀猀猀攀洀戀氀礀㨀 䄀猀猀攀洀戀氀礀䌀漀渀昀椀最甀爀愀琀椀漀渀⠀∀∀⤀崀ഀഀ
 ```
 
+# Changes 24th July 2026
+
+Added SBOM. Updated packages.
+
 # Changes 6th June 2026
 
 Updated packages.

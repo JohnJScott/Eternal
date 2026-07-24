@@ -7,13 +7,15 @@
     <BaseOutputPath>$(SolutionDir)\Binaries\$(Platform)\</BaseOutputPath>
     <Description>A cut down LZMA2 implementation for C#</Description>
     <Copyright>Copyright Eternal Developments, LLC. All Rights Reserved.</Copyright>
-	<VersionPrefix>1.0.2</VersionPrefix>
+	<VersionPrefix>1.0.3</VersionPrefix>
     <AssemblyVersion>2.5.0.1</AssemblyVersion>
     <FileVersion>2.5.0.1</FileVersion>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Title>A simplified  implementation of the 7-Zip SDK for C#</Title>
     <AssemblyTitle>Lzam2Simple</AssemblyTitle>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <GenerateSbom>true</GenerateSbom>
+    <SbomSolutionPath>$(MSBuildProjectFullPath)</SbomSolutionPath>
     <Company>Eternal Developments, LLC</Company>
     <Authors />
     <PackageProjectUrl>https://eternaldevelopments.com/</PackageProjectUrl>

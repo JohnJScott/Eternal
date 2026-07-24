@@ -5,7 +5,7 @@
     <TargetFramework>net10.0-windows10.0.22000.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <VersionPrefix>1.0.6</VersionPrefix>
+    <VersionPrefix>1.0.7</VersionPrefix>
     <Copyright>Copyright Eternal Developments, LLC. All Rights Reserved.</Copyright>
     <PackageProjectUrl>http://eternaldevelopments.com/docs/index.html</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -13,6 +13,7 @@
     <PackageReadmeFile>ReadMe.md</PackageReadmeFile>
     <Description></Description>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <GenerateSbom>true</GenerateSbom>
     <RepositoryUrl>https://github.com/JohnJScott/Eternal</RepositoryUrl>
     <PackageTags>Perforce;SourceServer</PackageTags>
     <Title>A tool to source index symbol files for Perforce</Title>	
@@ -27,7 +28,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Eternal.PerforceUtilities" Version="1.0.14" />
+    <PackageReference Include="Eternal.PerforceUtilities" Version="1.0.15" />
   </ItemGroup>
 
   <ItemGroup>

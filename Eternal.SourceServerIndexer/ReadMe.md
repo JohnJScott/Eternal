@@ -28,6 +28,11 @@ To test, enable source server support and diagnostics in Visual Studio in Option
 
 ``` SRCSRV:  p4.exe -p server:1666 print -o "C:\\Users\\john.scott\\AppData\\Local\\SourceServer\\REPOSITORY\\Folder\\Folder\\FileName.cpp\\3\\FileName.cpp" -q "//stream/tasks/branch/Folder/Folder/FileName.cpp#3" ```
 
+# Changes 24th July 2026
+
+Added SBOM. 
+Updated packages.
+
 # Changes 6th June 2026
 
 Updated packages.

@@ -16,6 +16,10 @@ A set of helper functions to find the default Perforce connection, user, and wor
 
 A container to store the pertinent connection information to a Perforce server.
 
+# Changes 24th July 2026
+
+Add SBOM. Updated dependencies.
+
 # Changes 26th June 2026
 
 Updated dependencies.
@@ -39,5 +43,4 @@ I have no intention of maintaining backwards compatability, but will endeavor to
 mention if I do. 
 
 This utility appeals to the most niche aspects of development, but if you feel like making a donation, please send DOGE to DFbEt36Qg2s2CVAdk5hZgRJfH8p1g6tW9i or buy a [#programmerlife t-shirt](https://www.bonfire.com/store/programmer-life/)
-
 

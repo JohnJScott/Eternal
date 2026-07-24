@@ -62,6 +62,10 @@ I need to rethink my testing.
 
 Run the test TestCompareExhaustiveBC3 to get test output in a CSV format.
 
+# Changes 24th July 2026
+
+Added SBOM. Updated packages.
+
 # Changes 21st April 2026
 
 Initial release
