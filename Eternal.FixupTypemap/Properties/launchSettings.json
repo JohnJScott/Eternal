@@ -2,7 +2,7 @@
   "profiles": {
     "Eternal.FixupTypemap": {
       "commandName": "Project",
-      "commandLineArgs": "fix //....gif",
+      "commandLineArgs": "report",
       "workingDirectory": "D:\\Eternal-Alt"
     }
   }

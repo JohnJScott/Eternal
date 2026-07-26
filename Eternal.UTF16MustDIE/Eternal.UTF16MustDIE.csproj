@@ -13,9 +13,11 @@
     <RepositoryUrl>https://github.com/JohnJScott/Eternal</RepositoryUrl>
     <PackageTags>Perforce;utf-16;ANSI</PackageTags>
     <PackAsTool>True</PackAsTool>
-    <Title>A Perforce utility to fix malformed UTF-16 files and convert all UTF-16 files to UTF-8</Title>
+    <Title>A Perforce utility to fix malformed UTF-16 files and convert all UTF-16, Unicode (ANSI), and text files to UTF-8</Title>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <GenerateSbom>true</GenerateSbom>
+    <Authors>JohnJScott</Authors>
+    <Company>Eternal Developments, LLC</Company>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

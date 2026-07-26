@@ -2,7 +2,7 @@
   "profiles": {
     "Eternal.UTF16MustDIE": {
       "commandName": "Project",
-      "commandLineArgs": "-v",
+      "commandLineArgs": "report",
       "workingDirectory": "D:\\ISILDUR-UE5.5-Master"
     }
   }

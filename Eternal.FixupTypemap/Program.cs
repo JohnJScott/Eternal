@@ -3,16 +3,175 @@
 using Eternal.ConsoleUtilities;
 using Eternal.PerforceUtilities;
 using Perforce.P4;
-using System.Collections.Immutable;
+
+// [Flags]
+// public enum BaseFileType
+// {
+// 	Unspecified = 0,
+// 	Text = 1,
+// 	Binary = 2,
+// 	Symlink = 4,
+// 	Apple = 8,
+// 	Resource = 0x10,
+// 	Unicode = 0x20,
+// 	UTF16 = 0x40,
+// 	UTF8 = 0x80
+// }
+
+// [Flags]
+// public enum FileTypeModifier
+// {
+// 	None = 0,
+// 	ModTime = 1,
+// 	Writable = 2,
+// 	Exec = 4,
+// 	KeywordsAll = 8,
+// 	KeywordsLimited = 0x10,
+// 	ExclusiveOpen = 0x20,
+// 	CompressedFiles = 0x40,
+// 	RCSDeltaFiles = 0x80,
+// 	FullRevisions = 0x100,
+// 	HeadrevOnly = 0x200,
+// 	NRevsOnly = 0x400,
+// 	ArchiveTrigger = 0x800
+// }
 
 namespace Eternal.FixupTypemap
 {
 	internal class FixupTypemap
 	{
+		private enum FileTypeChangeSafety
+		{
+			Unknown = -1,
+			Safe,
+			Unsafe,
+			Warning,
+			Invalid
+		}
+
 		/// <summary>Whether to check out files with mismatched types.</summary>
 		private static bool CheckoutFiles = false;
 		/// <summary>Whether to check for files without a type specified in the typemap.</summary>
 		private static bool CheckForUntyped = false;
+
+		private static FileTypeChangeSafety CheckChange( FileType source, FileType destination )
+		{
+			FileTypeChangeSafety result = FileTypeChangeSafety.Unknown;
+
+			// Changing the file type modifier (e.g. +w) is safe
+			if( source.BaseType == destination.BaseType )
+			{
+				result = FileTypeChangeSafety.Safe;
+			}
+			else
+			{
+				switch( source.BaseType )
+				{
+					case BaseFileType.Text:
+						{
+							switch( destination.BaseType )
+							{
+								case BaseFileType.Binary:
+									result = FileTypeChangeSafety.Safe;
+									break;
+
+								case BaseFileType.Symlink:
+								case BaseFileType.Apple:
+								case BaseFileType.Resource:
+									result = FileTypeChangeSafety.Warning;
+									break;
+
+								case BaseFileType.UTF16:
+									result = FileTypeChangeSafety.Invalid;
+									break;
+
+								case BaseFileType.Unicode:
+								case BaseFileType.UTF8:
+									result = FileTypeChangeSafety.Unsafe;
+									break;
+							}
+						}
+					break;
+
+					case BaseFileType.Binary:
+						{
+							switch( destination.BaseType )
+							{
+								case BaseFileType.Text:
+								case BaseFileType.UTF16:
+								case BaseFileType.Unicode:
+								case BaseFileType.UTF8:
+									result = FileTypeChangeSafety.Invalid;
+									break;
+
+								case BaseFileType.Symlink:
+								case BaseFileType.Apple:
+								case BaseFileType.Resource:
+									result = FileTypeChangeSafety.Warning;
+									break;
+							}
+						}
+					break;
+
+					case BaseFileType.Symlink:
+					case BaseFileType.Apple:
+					case BaseFileType.Resource:
+						{
+							result = FileTypeChangeSafety.Warning;
+						}
+						break;
+
+					case BaseFileType.UTF16:
+						{
+							switch( destination.BaseType )
+							{
+								case BaseFileType.Binary:
+									result = FileTypeChangeSafety.Safe;
+									break;
+
+								case BaseFileType.Text:
+								case BaseFileType.Unicode:
+								case BaseFileType.UTF8:
+									result = FileTypeChangeSafety.Invalid;
+									break;
+
+								case BaseFileType.Symlink:
+								case BaseFileType.Apple:
+								case BaseFileType.Resource:
+									result = FileTypeChangeSafety.Warning;
+									break;
+							}
+						}
+						break;
+
+					case BaseFileType.UTF8:
+					case BaseFileType.Unicode:
+					{
+						switch( destination.BaseType )
+						{
+							case BaseFileType.Text:
+							case BaseFileType.Unicode:
+							case BaseFileType.UTF8:
+								result = FileTypeChangeSafety.Unsafe;
+								break;
+
+							case BaseFileType.Symlink:
+							case BaseFileType.Apple:
+							case BaseFileType.Resource:
+								result = FileTypeChangeSafety.Warning;
+								break;
+
+							case BaseFileType.UTF16:
+								result = FileTypeChangeSafety.Invalid;
+								break;
+						}
+						}
+					break;
+				}
+			}
+
+			return result;
+		}
 
 		/// <summary>
 		/// Creates a new changelist with the description passed in.
@@ -50,32 +209,33 @@ namespace Eternal.FixupTypemap
 			// Get all the files matching the typemap entry with their file types
 			FileSpec depot_path = new FileSpec( new DepotPath( depot_file_path ), null );
 			GetFileMetaDataCmdOptions opts = new GetFileMetaDataCmdOptions( GetFileMetadataCmdFlags.None, "^headAction=delete ^headAction=move/delete", null, 0, null, null, null );
-			IList<FileMetaData> file_meta_datas = connectionInfo.PerforceRepository!.GetFileMetaData( opts, depot_path );
+			IList<FileMetaData> files_meta_data = connectionInfo.PerforceRepository!.GetFileMetaData( opts, depot_path );
 
-			if( file_meta_datas != null )
+			if( files_meta_data != null )
 			{
-				ConsoleLogger.Log( $" .. found {file_meta_datas.Count} files matching typemap entry: {typeMapEntry.Path}." );
+				ConsoleLogger.Log( $" .. found {files_meta_data.Count} files matching typemap entry: '{typeMapEntry.Path}'." );
 
 				// If any of the files don't match the typemap entry, checkout and update them to match the typemap entry
-				int change_id = -1;
+				int[] change_id = [ -1, -1, -1, -1 ];
 				Client client = connectionInfo.GetWorkspace()!;
 
-				foreach( FileMetaData file_meta_data in file_meta_datas )
+				foreach( FileMetaData file_meta_data in files_meta_data )
 				{
 					if( !file_meta_data.Type.Equals( typeMapEntry.FileType ) )
 					{
-						ConsoleLogger.Log( $" .... type mismatch for {file_meta_data.DepotPath} - is '{file_meta_data.Type}' should be '{typeMapEntry.FileType}'" );
+						FileTypeChangeSafety safety = CheckChange( typeMapEntry.FileType, file_meta_data.Type );
+						ConsoleLogger.Log( $" .... type mismatch for '{file_meta_data.DepotPath}' - is '{file_meta_data.Type}' should be '{typeMapEntry.FileType}' - conversion '{safety}'." );
 
 						if( CheckoutFiles )
 						{
 							// If changelist null, create new one
-							if( change_id < 0 )
+							if( change_id[( int )safety] < 0 )
 							{
-								change_id = CreateChangelist( connectionInfo, $"FixupTypemap - updating the file types of '{typeMapEntry.Path}' to '{typeMapEntry.FileType}' to match the type map entry" );
+								change_id[( int )safety] = CreateChangelist( connectionInfo, $"FixupTypemap (Conversion: {safety}) - updating the file types of '{typeMapEntry.Path}' to '{typeMapEntry.FileType}' to match the type map entry" );
 							}
 
 							// Add this file with new file type to the changelist
-							client.EditFiles( new EditCmdOptions( EditFilesCmdFlags.None, change_id, typeMapEntry.FileType ), file_meta_data.DepotPath );
+							client.EditFiles( new EditCmdOptions( EditFilesCmdFlags.None, change_id[( int )safety], typeMapEntry.FileType ), file_meta_data.DepotPath );
 						}
 					}
 				}
@@ -91,24 +251,79 @@ namespace Eternal.FixupTypemap
 		/// <param name="typeMap">A list of type map entries that define the file types to match against files in the stream.</param>
 		private static void FindUntypedFiles( PerforceConnectionInfo connectionInfo, IList<TypeMapEntry> typeMap )
 		{
+			string temp_folder = Path.GetTempPath();
 			string stream = connectionInfo.PerforceRepository!.Connection.Client.Stream;
-			GetFileMetaDataCmdOptions opts = new GetFileMetaDataCmdOptions( GetFileMetadataCmdFlags.None, "^headAction=delete ^headAction=move/delete", null, 0, null, null, null );
+			string client_name = "temp-exclusion-client";
 
-			List<FileSpec> depot_paths = [ new FileSpec( new DepotPath( $"{stream}/..." ) ) ];
+			Client client = new Client
+			{
+				Name = client_name,
+				OwnerName = "john.scott",
+				Root = Path.Combine( temp_folder, client_name ),
+				ViewMap = []
+			};
 
-			IEnumerable<FileSpec> exclude_paths = typeMap.Select( x => new FileSpec( new DepotPath( "-" + x.Path ) ) );
-			depot_paths.AddRange( exclude_paths );
+			client.ViewMap.Add( new MapEntry(
+				MapType.Include,
+				new DepotPath( $"{stream}/..." ),
+				new ClientPath( $"//{client_name}/..." ) ) );
 
-			// This call doesn't seem to respect the exclude patterns.
-			IList <FileMetaData> filtered_files = connectionInfo.PerforceRepository!.GetFileMetaData( opts, depot_paths.ToArray() );
-			ConsoleLogger.Log( $" .. found {filtered_files.Count} files in the depot." );
+			foreach( TypeMapEntry type_map_entry in typeMap )
+			{
+				string depot_path = type_map_entry.Path;
+				if( depot_path.StartsWith( "//..." ) )
+				{
+					depot_path = depot_path.Replace( "//", $"{stream}/" );
+					string client_path = type_map_entry.Path.Insert( 2, $"{client_name}/" );
+
+					client.ViewMap.Add( new MapEntry(
+						MapType.Exclude,
+						new DepotPath( depot_path ),
+						new ClientPath( client_path ) ) );
+				}
+				else
+				{
+					ConsoleLogger.Warning( $"Unprocessed typemap entry '{type_map_entry}'" );
+				}
+			}
+
+			connectionInfo.PerforceRepository.CreateClient( client );
+			connectionInfo.PerforceRepository.Connection.SetClient( client_name );
+
+			// Must use CLIENT syntax here, not depot syntax, for the exclusion to take effect.
+			FileSpec spec = new FileSpec( new ClientPath( $"//{client_name}/..." ), VersionSpec.Head );
+			GetDepotFilesCmdOptions options = new GetDepotFilesCmdOptions( GetDepotFilesCmdFlags.None, -1 );
+			IList<FileSpec>? filtered_files = connectionInfo.PerforceRepository.GetDepotFiles( new List<FileSpec> { spec }, options );
+
+			// Delete the temporary client
+			connectionInfo.PerforceRepository.DeleteClient( client, null );
+
+			Dictionary<string, int> extensions = new Dictionary<string, int>();
+			ConsoleLogger.Log( $" .. found {filtered_files.Count} file names without a typemap entry in the stream '{stream}'." );
 
 			foreach( FileMetaData file_meta_data in filtered_files )
 			{
-				ConsoleLogger.Log( $" .... untyped file: '{file_meta_data.DepotPath}' with type '{file_meta_data.Type}'" );
+				ConsoleLogger.Log( $" .... file name with no typemap entry: '{file_meta_data.DepotPath}'" );
+				string extension = Path.GetExtension( file_meta_data.DepotPath.Path );
+				if( !string.IsNullOrEmpty( extension ) )
+				{
+					if( !extensions.TryAdd( extension, 1 ) )
+					{
+						extensions[extension]++;
+					}
+				}
 			}
 
-			ConsoleLogger.Error( $" .. the filtering code does not seem to respect the exclude patterns." );
+			ConsoleLogger.Log( $" .. found {extensions.Count} file extensions without a typemap entry in the stream '{stream}'." );
+
+			List<KeyValuePair<string, int>> sorted_descending = extensions
+				.OrderByDescending( pair => pair.Value )
+				.ToList();
+
+			foreach( KeyValuePair<string, int> pair in sorted_descending )
+			{
+				ConsoleLogger.Log( $" .... found {pair.Value} files with a file extension not in the typemap for extension: '{pair.Key}'" );
+			}
 		}
 
 		/// <summary>
@@ -128,7 +343,7 @@ namespace Eternal.FixupTypemap
 			if( args.Length < 1 )
 			{
 				ConsoleLogger.Error( "Not enough arguments provided." );
-				ConsoleLogger.Log( "Usage: Eternal.FixupTypemap [report | fix | untyped] <type to check>" );
+				ConsoleLogger.Log( "Usage: Eternal.FixupTypemap [report | fix | untyped] <type to check> [-v]" );
 				ConsoleLogger.Log( " .. 'report' - just reports any mismatches between the typemap and the file types in Perforce." );
 				ConsoleLogger.Log( " .. 'fix' - checks out and updates the type of any files that don't match the file type in the typemap" );
 				ConsoleLogger.Log( " .. 'untyped' - reports any files that don't have a matching path in the typemap" );
@@ -159,7 +374,7 @@ namespace Eternal.FixupTypemap
 				typeEntry = typeMap.FirstOrDefault( x => x.Path.Equals( args[1], StringComparison.OrdinalIgnoreCase ) );
 				if( typeEntry == null )
 				{
-					ConsoleLogger.Error( $"No typemap entry found for {args[1]}." );
+					ConsoleLogger.Error( $"No typemap entry found for '{args[1]}'." );
 					return false;
 				}
 			}
