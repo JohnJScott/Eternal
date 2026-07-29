@@ -15,6 +15,7 @@ MIT
 	* -v - enables verbose logging
 	* -skipUtf16 - skips processing files of type utf16
 	* -skipANSI - skips processing files of type unicode
+	* -skipText - skips processing files of type text
 
 ### Connects to the Perforce server.
 * Finds the local Perforce workspace based on the local folder and P4PORT
@@ -34,6 +35,15 @@ MIT
 
 * Iterates only all files that are the filetype Unicode, syncs to \#head, and checks them out to a named changelist
 * All pending changes (bar the default) are iterated over and any Unicode files are moved to another named changelist
+* All files in the above changelists are iterated over
+    * The file is converted to UTF-8
+    * The file type is changed to UTF-8
+* Nothing is submitted
+
+### Fixes all Text files
+
+* Iterates only all files that are the filetype text, syncs to \#head, and checks them out to a named changelist
+* All pending changes (bar the default) are iterated over and any text files are moved to another named changelist
 * All files in the above changelists are iterated over
     * The file is converted to UTF-8
     * The file type is changed to UTF-8
@@ -96,6 +106,11 @@ using System.Reflection;
 [assembly: AssemblyDescription("library for BZip2 compression, for Compact Framework. http://www.codeplex.com/DotNetZip")]
 ਍嬀愀猀猀攀洀戀氀礀㨀 䄀猀猀攀洀戀氀礀䌀漀渀昀椀最甀爀愀琀椀漀渀⠀∀∀⤀崀ഀഀ
 ```
+
+# Changes 28th July 2026
+
+Updated to process text files.
+Updated packages.
 
 # Changes 24th July 2026
 

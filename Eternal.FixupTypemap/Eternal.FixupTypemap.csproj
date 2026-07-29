@@ -5,7 +5,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <VersionPrefix>1.0.2</VersionPrefix>	
+    <VersionPrefix>1.0.3</VersionPrefix>	
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>A utility to audit and fix the Perforce typemap.</Title>
     <GenerateSbom>true</GenerateSbom>
@@ -21,7 +21,7 @@
     <RepositoryUrl>https://github.com/JohnJScott/Eternal</RepositoryUrl>
     <PackageTags>Perforce;Typemap</PackageTags>
     <PackAsTool>True</PackAsTool>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>	
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

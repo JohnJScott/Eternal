@@ -12,7 +12,7 @@ using File = Perforce.P4.File;
 
 [assembly: Parallelize( Scope = ExecutionScope.MethodLevel )]
 
-namespace Eternal.Utf16MustDieTestTest
+namespace Eternal.Utf16MustDieTest
 {
 	/// <summary>
 	/// A class to test various elements of the UTF16MustDIE utility.

@@ -11,6 +11,7 @@ namespace Eternal.Utf16MustDie
 	{
 		private static bool ProcessUtf16 = true;
 		private static bool ProcessAnsi = true;
+		private static bool ProcessText = true;
 
 		/// <summary>A generic catchall for all unhandled exceptions.</summary>
 		/// <param name="sender">The object that created the exception.</param>
@@ -40,9 +41,10 @@ namespace Eternal.Utf16MustDie
 					    ConsoleLogger.Log( " -v - displays verbose logging." );
 					    ConsoleLogger.Log( " -skipUTF16 - does not process files of type UTF-16 in the depot." );
 					    ConsoleLogger.Log( " -skipANSI - does not process files of type Unicode (ANSI files) in the depot." );
+					    ConsoleLogger.Log( " -skipText - does not process files of type Text in the depot." );
 					    ConsoleLogger.Log( "" );
-					    ConsoleLogger.Log( "Iterates over all files of type UTF-16 and Unicode in the local depot, fixes any broken UTF-16 files," );
-					    ConsoleLogger.Log( "and converts all files to UTF-8 with the correct file type" );
+					    ConsoleLogger.Log( "Iterates over all files of type UTF-16, Unicode, and Text in the local depot, fixes any broken UTF-16 files," );
+					    ConsoleLogger.Log( "and converts all files to UTF-8 and sets the UTF-8 file type" );
 					    ConsoleLogger.Log( "" );
 					    result = false;
 					    break;
@@ -55,7 +57,11 @@ namespace Eternal.Utf16MustDie
 					    ProcessAnsi = false;
 					    break;
 
-				    default:
+				    case "-skiptext":
+					    ProcessText = false;
+					    break;
+
+					default:
 					    break;
 			    }
 		    }
@@ -91,31 +97,32 @@ namespace Eternal.Utf16MustDie
 		    }
 		}
 
-	    private static void FixAnsiFiles( PerforceConnectionInfo connectionInfo )
+	    private static void FixFiles( PerforceConnectionInfo connectionInfo, BaseFileType baseFileType )
 	    {
-		    IList<FileSpec> unicode_files = Perforce.GetFilesOfBaseFileType( connectionInfo, BaseFileType.Unicode );
-		    if( unicode_files.Count > 0 )
+		    IList<FileSpec> text_files = Perforce.GetFilesOfBaseFileType( connectionInfo, baseFileType );
+		    if( text_files.Count > 0 )
 		    {
-			    ConsoleLogger.Log( $"... found {unicode_files.Count} of file type Unicode (ANSI) files in local workspace." );
+			    ConsoleLogger.Log( $"... found {text_files.Count} of file type {baseFileType} in local workspace." );
 
-			    ConsoleLogger.Log( $" .. syncing all ANSI files to #head." );
-			    Perforce.SyncFiles( connectionInfo, unicode_files );
+			    ConsoleLogger.Log( $" .. syncing all {baseFileType} files to #head." );
+			    Perforce.SyncFiles( connectionInfo, text_files );
 
-			    Perforce.ProcessDepotAnsiFiles( connectionInfo, unicode_files );
-		    }
+			    Perforce.ProcessDepotFiles( connectionInfo, text_files, baseFileType );
+
+			}
 		    else
 		    {
-			    ConsoleLogger.Log( $"No ANSI files found in depot." );
+			    ConsoleLogger.Log( $"No {baseFileType} files found in depot." );
 		    }
 
-		    IList<FileSpec> pending_files = Perforce.GetPendingFilesOfBaseFileType( connectionInfo, BaseFileType.Unicode );
+		    IList<FileSpec> pending_files = Perforce.GetPendingFilesOfBaseFileType( connectionInfo, baseFileType );
 		    if( pending_files.Count > 0 )
 		    {
-			    Perforce.ProcessPendingAnsiFiles( connectionInfo, pending_files );
+			    Perforce.ProcessPendingFiles( connectionInfo, pending_files, baseFileType );
 		    }
 		    else
 		    {
-			    ConsoleLogger.Log( $"No ANSI files found in pending changelists." );
+			    ConsoleLogger.Log( $"No {baseFileType} files found in pending changelists." );
 		    }
 		}
 
@@ -164,10 +171,15 @@ namespace Eternal.Utf16MustDie
 
 	        if( ProcessAnsi && unicode_enabled )
 	        {
-		        FixAnsiFiles( connection_info );
+		        FixFiles( connection_info, BaseFileType.Unicode );
 	        }
 
-	        PerforceUtilities.PerforceUtilities.Disconnect( connection_info );
+	        if( ProcessText )
+	        {
+		        FixFiles( connection_info, BaseFileType.Text );
+	        }
+
+			PerforceUtilities.PerforceUtilities.Disconnect( connection_info );
 
 	        ConsoleLogger.Success( $"Completed conversion in {ConsoleLogger.TimeString( DateTime.UtcNow - start_time )}" );
         }

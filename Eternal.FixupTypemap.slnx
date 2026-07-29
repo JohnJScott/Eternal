@@ -1,5 +1,6 @@
 <Solution>
   <Project Path="Eternal.FixupTypemap/Eternal.FixupTypemap.csproj" />
+  <Project Path="Eternal.FixupTypemapTest/Eternal.FixupTypemapTest.csproj" Id="383e407f-77a1-411f-8443-d7858be123a0" />
   <Properties Name="PerforceSourceControlProviderSolutionProperties">
     <Property Name="SolutionIsControlled" Value="True" />
   </Properties>

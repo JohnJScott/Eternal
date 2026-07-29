@@ -38,9 +38,9 @@ using Perforce.P4;
 
 namespace Eternal.FixupTypemap
 {
-	internal class FixupTypemap
+	public class FixupTypemap
 	{
-		private enum FileTypeChangeSafety
+		public enum FileTypeChangeSafety
 		{
 			Unknown = -1,
 			Safe,
@@ -54,7 +54,7 @@ namespace Eternal.FixupTypemap
 		/// <summary>Whether to check for files without a type specified in the typemap.</summary>
 		private static bool CheckForUntyped = false;
 
-		private static FileTypeChangeSafety CheckChange( FileType source, FileType destination )
+		public static FileTypeChangeSafety CheckChange( FileType source, FileType destination )
 		{
 			FileTypeChangeSafety result = FileTypeChangeSafety.Unknown;
 
@@ -149,6 +149,10 @@ namespace Eternal.FixupTypemap
 					{
 						switch( destination.BaseType )
 						{
+							case BaseFileType.Binary:
+								result = FileTypeChangeSafety.Safe;
+								break;
+
 							case BaseFileType.Text:
 							case BaseFileType.Unicode:
 							case BaseFileType.UTF8:
@@ -292,7 +296,7 @@ namespace Eternal.FixupTypemap
 
 			// Must use CLIENT syntax here, not depot syntax, for the exclusion to take effect.
 			FileSpec spec = new FileSpec( new ClientPath( $"//{client_name}/..." ), VersionSpec.Head );
-			GetDepotFilesCmdOptions options = new GetDepotFilesCmdOptions( GetDepotFilesCmdFlags.None, -1 );
+			GetDepotFilesCmdOptions options = new GetDepotFilesCmdOptions( GetDepotFilesCmdFlags.NotDeleted, -1 );
 			IList<FileSpec>? filtered_files = connectionInfo.PerforceRepository.GetDepotFiles( new List<FileSpec> { spec }, options );
 
 			// Delete the temporary client
@@ -304,7 +308,7 @@ namespace Eternal.FixupTypemap
 			foreach( FileMetaData file_meta_data in filtered_files )
 			{
 				ConsoleLogger.Log( $" .... file name with no typemap entry: '{file_meta_data.DepotPath}'" );
-				string extension = Path.GetExtension( file_meta_data.DepotPath.Path );
+				string extension = Path.GetExtension( file_meta_data.DepotPath.Path ).ToLower();
 				if( !string.IsNullOrEmpty( extension ) )
 				{
 					if( !extensions.TryAdd( extension, 1 ) )
@@ -405,7 +409,7 @@ namespace Eternal.FixupTypemap
 			return type_map;
 		}
 
-		/// <summary>A generic catch all for all unhandled exceptions.</summary>
+		/// <summary>A generic catch-all for all unhandled exceptions.</summary>
 		/// <param name="sender">The object that created the exception.</param>
 		/// <param name="arguments">Details about the exception.</param>
 		private static void GenericExceptionHandler( object sender, UnhandledExceptionEventArgs arguments )
