@@ -12,8 +12,6 @@
     <PackAsTool>False</PackAsTool>
     <PackageReadmeFile>ReadMe.md</PackageReadmeFile>
     <Description></Description>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <GenerateSbom>true</GenerateSbom>
     <RepositoryUrl>https://github.com/JohnJScott/Eternal</RepositoryUrl>
     <PackageTags>Perforce;SourceServer</PackageTags>
     <Title>A tool to source index symbol files for Perforce</Title>	
@@ -25,6 +23,8 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <WarningLevel>9999</WarningLevel>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <GenerateSbom>true</GenerateSbom>	
   </PropertyGroup>
 
   <ItemGroup>

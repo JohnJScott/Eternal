@@ -6,8 +6,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <GenerateSbom>true</GenerateSbom>
     <Title>TheSwizzler</Title>
     <Description>A command line utility to rearrange the color components of a 32 bit PNG image</Description>
     <Copyright>Eternal Developments LLC. All Rights Reserved.</Copyright>
@@ -28,6 +26,8 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <WarningLevel>9999</WarningLevel>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <GenerateSbom>true</GenerateSbom>	
   </PropertyGroup>
 
   <ItemGroup>

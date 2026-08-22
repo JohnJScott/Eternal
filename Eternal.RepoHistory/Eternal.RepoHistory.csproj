@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <VersionPrefix>1.0.1</VersionPrefix>
+    <Title>A utility to detect file histories over multiple repos.</Title>
+    <SbomSolutionPath>$(MSBuildThisFileDirectory)../Eternal.RepoHistory.slnx</SbomSolutionPath>
+    <Authors>JohnJScott</Authors>
+    <Company>Eternal Developments, LLC.</Company>
+    <Copyright>Copyright Eternal Developments, LLC. All Rights Reserved.</Copyright>
+    <PackageProjectUrl>http://eternaldevelopments.com/docs/index.html</PackageProjectUrl>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/JohnJScott/Eternal</RepositoryUrl>
+    <PackageTags>Perforce;Branching</PackageTags>
+    <PackAsTool>True</PackAsTool>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <WarningLevel>9999</WarningLevel>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <WarningLevel>9999</WarningLevel>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <GenerateSbom>true</GenerateSbom>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Eternal.ConsoleUtilities" Version="1.0.13" />
+    <PackageReference Include="Eternal.PerforceUtilities" Version="1.0.15" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="readme.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>

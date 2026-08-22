@@ -6,15 +6,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <VersionPrefix>1.0.3</VersionPrefix>	
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>A utility to audit and fix the Perforce typemap.</Title>
-    <GenerateSbom>true</GenerateSbom>
-    <!-- This project's solution is Eternal.FixupTypemap.slnx (the newer XML
-         solution format), not the "$(MSBuildProjectName).sln" the shared
-         Directory.Build.targets default assumes - override it explicitly. -->
     <SbomSolutionPath>$(MSBuildThisFileDirectory)../Eternal.FixupTypemap.slnx</SbomSolutionPath>
     <Authors>JohnJScott</Authors>
-    <Company>Eternal Developments, LLC</Company>
+    <Company>Eternal Developments, LLC.</Company>
     <Copyright>Copyright Eternal Developments, LLC. All Rights Reserved.</Copyright>
     <PackageProjectUrl>http://eternaldevelopments.com/docs/index.html</PackageProjectUrl>
     <PackageReadmeFile>ReadMe.md</PackageReadmeFile>
@@ -30,12 +25,13 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <WarningLevel>9999</WarningLevel>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>    
+    <GenerateSbom>true</GenerateSbom> 
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Eternal.ConsoleUtilities" Version="1.0.13" />
     <PackageReference Include="Eternal.PerforceUtilities" Version="1.0.15" />
-    <PackageReference Include="p4api.net" Version="2026.1.299.3959" />
   </ItemGroup>
 
   <ItemGroup>

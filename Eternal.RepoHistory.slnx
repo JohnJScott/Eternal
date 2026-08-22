@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="Eternal.RepoHistory/Eternal.RepoHistory.csproj" />
+  <Properties Name="PerforceSourceControlProviderSolutionProperties">
+    <Property Name="SolutionIsControlled" Value="True" />
+  </Properties>
+</Solution>
