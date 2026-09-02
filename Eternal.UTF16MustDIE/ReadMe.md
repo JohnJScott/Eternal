@@ -1,7 +1,7 @@
 # Eternal UTF16MustDie 
 
 ## Eternal.UTF16MustDie utility
-Copyright 2025 Eternal Developments, LLC. All Rights Reserved.
+Copyright Eternal Developments, LLC. All Rights Reserved.
 
 ## License
 
@@ -106,6 +106,10 @@ using System.Reflection;
 [assembly: AssemblyDescription("library for BZip2 compression, for Compact Framework. http://www.codeplex.com/DotNetZip")]
 ਍嬀愀猀猀攀洀戀氀礀㨀 䄀猀猀攀洀戀氀礀䌀漀渀昀椀最甀爀愀琀椀漀渀⠀∀∀⤀崀ഀഀ
 ```
+
+# Changes 2nd September 2026
+
+Updated packages and metadata.
 
 # Changes 28th July 2026
 

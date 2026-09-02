@@ -1,7 +1,7 @@
 # Eternal Console Utilities 
 
 ## Eternal.ConsoleUtilies NuGet library package
-Copyright 2025 Eternal Developments, LLC. All Rights Reserved.
+Copyright Eternal Developments, LLC. All Rights Reserved.
 
 ## License
 
@@ -30,6 +30,11 @@ A set of functions to read and write Xml files.
 ## YamlHelper
 
 A set of functions to read and write Yaml files.
+
+# Changes 1st September 2026
+
+Updated meta data.
+Updated MSTest packages.
 
 # Changes 23rd July 2026
 

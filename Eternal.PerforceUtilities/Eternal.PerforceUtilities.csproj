@@ -4,16 +4,18 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Description>Some Perforce helper functions.</Description>
-    <Copyright>Copyright Eternal Developments, LLC . All rights reserved.</Copyright>
+    <Description>A library to find the current Perforce server connection, user, and local workspace from the current directory.</Description>
+    <Copyright>Copyright Eternal Developments, LLC. All Rights Reserved.</Copyright>
     <PackageProjectUrl>http://eternaldevelopments.com/docs/</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Version>$(VersionPrefix)</Version>
     <PackageTags>Perforce</PackageTags>
-    <VersionPrefix>1.0.15</VersionPrefix>
+    <VersionPrefix>1.0.16</VersionPrefix>
     <PackageReadmeFile>ReadMe.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/JohnJScott/Eternal</RepositoryUrl>
-    <RepositoryType>Git</RepositoryType>	
+    <RepositoryType>Git</RepositoryType>
+    <Title>A set of Perforce helper functions</Title>
+    <Authors>JohnJScott</Authors>	
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -27,7 +29,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Eternal.ConsoleUtilities" Version="1.0.13" />
+    <PackageReference Include="Eternal.ConsoleUtilities" Version="1.0.14" />
     <PackageReference Include="p4api.net" Version="2026.1.299.3959" />
   </ItemGroup>
 

@@ -45,6 +45,10 @@ A typemap with more than just extensions. The typemap can specify paths based on
 
 Files without an extension. This evil Linux paradigm is just ignored as there's no way to determine the proper file type from an extension that doesn't exist.
 
+# Changes 1st September 2026
+
+Updated packages and metadata.
+
 # Changes 29th July 2026
 
 Now ignore deleted depot files.

@@ -35,3 +35,16 @@ However, when being hosted in the cloud, disk space is the primary cost.
 For my old company, doing this would reduce storage needs from 1.8TB ($180 pm) to 400GB ($40 pm). 
 
 This tool does not do the repo fixup, it just tells you if it would be beneficial to do so.
+
+# Changes 1st September 2026
+
+Updated meta data.
+
+# Notes
+
+Full Doxygen documentation at https://eternaldevelopments.com/docs
+
+I have no intention of maintaining backwards compatability, but will endeavor to mention if I make any changes.
+
+This utility appeals to the most niche aspects of development, but if you feel like making a donation, please send DOGE to DFbEt36Qg2s2CVAdk5hZgRJfH8p1g6tW9i or buy a [#programmerlife t-shirt](https://www.bonfire.com/store/programmer-life/)
+
