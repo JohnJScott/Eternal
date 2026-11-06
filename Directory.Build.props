@@ -2,7 +2,7 @@
  <PropertyGroup>
    <Deterministic>true</Deterministic>
    <BaseOutputPath>$(SolutionDir)\Binaries\$(Platform)\</BaseOutputPath>
-   <BaseIntermediateOutputPath>$(SolutionDir)\Intermediate\$(Platform)\</BaseIntermediateOutputPath> 
+   <BaseIntermediateOutputPath>$(SolutionDir)Intermediate\$(Platform)\$(MSBuildProjectName)\</BaseIntermediateOutputPath> 
    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath> 
    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>  
   </PropertyGroup>
