@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net11.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Description>A library to find the current Perforce server connection, user, and local workspace from the current directory.</Description>
@@ -10,7 +10,7 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Version>$(VersionPrefix)</Version>
     <PackageTags>Perforce</PackageTags>
-    <VersionPrefix>1.0.16</VersionPrefix>
+    <VersionPrefix>1.0.17</VersionPrefix>
     <PackageReadmeFile>ReadMe.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/JohnJScott/Eternal</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
@@ -29,7 +29,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Eternal.ConsoleUtilities" Version="1.0.14" />
+    <PackageReference Include="Eternal.ConsoleUtilities" Version="1.0.15" />
     <PackageReference Include="p4api.net" Version="2026.1.299.3959" />
   </ItemGroup>
 

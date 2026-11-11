@@ -1,4 +1,4 @@
-# Eternal TheSwizzler
+﻿# Eternal TheSwizzler
 
 ## Eternal.TheSwizzler NuGet library tool
 Copyright Eternal Developments, LLC. All Rights Reserved.
@@ -51,6 +51,11 @@ This will swap the red and blue components - Eternal.TheSwizzler.exe image.png B
 This will save an image preserving the R and G channels, but setting the blue channel to 0 and the alpha channel to 255, as image.RG01.png - Eternal.TheSwizzler.exe image.png RG01
 
 This will reconstruct the blue component of the normal map and save as image.RG01.RGN1.png - Eternal.TheSwizzler.exe image.RG01.png RGN1
+
+# Changes 11th November 2026
+
+Updated to net11.
+Updated packages.
 
 # Changes 2nd September 2026
 

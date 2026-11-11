@@ -2,10 +2,10 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net11.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <VersionPrefix>1.0.2</VersionPrefix>
+    <VersionPrefix>1.0.3</VersionPrefix>
     <Title>A utility to detect file histories over multiple repos.</Title>
     <SbomSolutionPath>$(MSBuildThisFileDirectory)../Eternal.RepoHistory.slnx</SbomSolutionPath>
     <Authors>JohnJScott</Authors>
@@ -31,8 +31,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Eternal.ConsoleUtilities" Version="1.0.14" />
-    <PackageReference Include="Eternal.PerforceUtilities" Version="1.0.16" />
+    <PackageReference Include="Eternal.ConsoleUtilities" Version="1.0.16" />
+    <PackageReference Include="Eternal.PerforceUtilities" Version="1.0.17" />
   </ItemGroup>
 
   <ItemGroup>

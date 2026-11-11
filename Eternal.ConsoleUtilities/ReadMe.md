@@ -1,4 +1,4 @@
-# Eternal Console Utilities 
+﻿# Eternal Console Utilities 
 
 ## Eternal.ConsoleUtilies NuGet library package
 Copyright Eternal Developments, LLC. All Rights Reserved.
@@ -30,6 +30,11 @@ A set of functions to read and write Xml files.
 ## YamlHelper
 
 A set of functions to read and write Yaml files.
+
+# Changes 11th November 2026
+
+Updated to net11.
+Updated packages.
 
 # Changes 1st September 2026
 

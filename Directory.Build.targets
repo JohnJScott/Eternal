@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
 
   <!--
     CycloneDX SBOM generation, shared by every packable project in this repo.

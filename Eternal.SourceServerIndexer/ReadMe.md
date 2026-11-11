@@ -1,4 +1,4 @@
-# Eternal Source Server Indexer
+﻿# Eternal Source Server Indexer
 
 ## Eternal.SourceServerIndexer utility
 Copyright Eternal Developments, LLC. All Rights Reserved.
@@ -27,6 +27,11 @@ To create a symbol store: symstore add /s d:\\SymStore /f D:\\Symbols\\SymbolFil
 To test, enable source server support and diagnostics in Visual Studio in Options -> Debugging -> General. With the above enabled, you should see lines like this:
 
 ``` SRCSRV:  p4.exe -p server:1666 print -o "C:\\Users\\john.scott\\AppData\\Local\\SourceServer\\REPOSITORY\\Folder\\Folder\\FileName.cpp\\3\\FileName.cpp" -q "//stream/tasks/branch/Folder/Folder/FileName.cpp#3" ```
+
+# Changes 11th November 2026
+
+Updated to net11.
+Updated packages.
 
 # Changes 2nd September 2026
 

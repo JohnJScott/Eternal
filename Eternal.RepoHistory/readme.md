@@ -1,4 +1,4 @@
-# RepoHistory
+﻿# RepoHistory
 
 ## RepoHistory utility for Net10.0
 Copyright Eternal Developments, LLC. All Rights Reserved.
@@ -35,6 +35,11 @@ However, when being hosted in the cloud, disk space is the primary cost.
 For my old company, doing this would reduce storage needs from 1.8TB ($180 pm) to 400GB ($40 pm). 
 
 This tool does not do the repo fixup, it just tells you if it would be beneficial to do so.
+
+# Changes 11th November 2026
+
+Updated to net11.
+Updated packages.
 
 # Changes 1st September 2026
 

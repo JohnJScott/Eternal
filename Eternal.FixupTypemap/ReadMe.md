@@ -1,4 +1,4 @@
-# Eternal FixupTypemap
+﻿# Eternal FixupTypemap
 
 ## Eternal.FixupTypemap NuGet library package
 Copyright Eternal Developments, LLC. All Rights Reserved.
@@ -44,6 +44,11 @@ Case sensitivity. All operations are treated as case insensitive.
 A typemap with more than just extensions. The typemap can specify paths based on more than just the file extension (e.g. '//.../ThirdParty/...'), but I've never see this used in practice, so I haven't implemented it. If you have a use case for this, please let me know and I can consider adding it.
 
 Files without an extension. This evil Linux paradigm is just ignored as there's no way to determine the proper file type from an extension that doesn't exist.
+
+# Changes 11th November 2026
+
+Updated to net11.
+Updated packages.
 
 # Changes 1st September 2026
 

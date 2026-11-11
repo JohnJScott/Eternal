@@ -1,4 +1,4 @@
-# Eternal Perforce Utilities 
+﻿# Eternal Perforce Utilities 
 
 ## Eternal.PerforceUtilies NuGet library package
 Copyright Eternal Developments, LLC. All Rights Reserved.
@@ -15,6 +15,11 @@ A set of helper functions to find the default Perforce connection, user, and wor
 ## PerforceConnectionInfo
 
 A container to store the pertinent connection information to a Perforce server.
+
+# Changes 11th Novembder 2026
+
+Update to net11.
+Updated packages.
 
 # Changes 1st September 2026
 

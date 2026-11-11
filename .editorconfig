@@ -1,6 +1,12 @@
 root = true
 # Remove the line below if you want to inherit .editorconfig settings from higher directories
 
+# Baseline - applies to every file type.
+# This file sets root = true, so nothing is inherited from the .editorconfig
+# in the directory above; the encoding rule has to be restated here.
+[*]
+charset = utf-8-bom
+
 # C# files
 [*.cs]
 
